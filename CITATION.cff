@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use these records or programs, cite the repository as below; cite one issue by its directory (the README's last section)."
+type: dataset
+title: "RISC-V in-order processors accurate timing behaviour - validated versus RTL"
+authors:
+  - name: processor-timing-anomalies
+repository-code: "https://github.com/processor-timing-anomalies/riscv-in-order-pipelines"
+url: "https://github.com/processor-timing-anomalies/riscv-in-order-pipelines"
+license: Apache-2.0
+date-released: 2026-10-24
+version: "2026-10-24"
+keywords:
+  - RISC-V
+  - processor timing
+  - timing anomalies
+  - in-order pipelines
+  - CV32E40X
+  - RTL verification
+  - AI agents
+abstract: >-
+  The public record of hidden timing behaviour of RISC-V in-order cores: the stalls, flushes and costs a core has
+  that its documentation does not state, understates or states wrongly, each found by comparing the RTL against
+  what the documentation promises and each reproduced by a program with its two traces.

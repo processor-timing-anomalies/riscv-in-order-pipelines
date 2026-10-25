@@ -1,0 +1,134 @@
+VERSION 0 5
+VENDOR cv32e40x1_tb 1 0 'CV32E40X RTL under Verilator'
+PARAMS 6 ILEN 32 XLEN 32 FLEN 0 VLEN 0 NHART 1 RETIRE 1
+RET 0x80000000 0x00003117 'auipc sp, 0x3' MODE 0x3 CYCLE 16 X 2 0x80003000 META 2 PCW 0x80000004
+RET 0x80000004 0x01010113 'addi sp, sp, 16' MODE 0x3 CYCLE 1 X 2 0x80003010 META 2 PCW 0x80000008
+RET 0x80000008 0x00000297 'auipc t0, 0x0' MODE 0x3 CYCLE 1 X 5 0x80000008 META 2 PCW 0x8000000c
+RET 0x8000000c 0x0f828293 'addi t0, t0, 248' MODE 0x3 CYCLE 1 X 5 0x80000100 META 2 PCW 0x80000010
+RET 0x80000010 0x30529073 'csrrw zero, mtvec, t0' MODE 0x3 CYCLE 1 C 0x305 0x80000100 META 2 PCW 0x80000014
+RET 0x80000014 0x00001037 'lui zero, 0x1' MODE 0x3 CYCLE 1 META 2 PCW 0x80000018
+RET 0x80000018 0x00001a97 'auipc s5, 0x1' MODE 0x3 CYCLE 1 X 21 0x80001018 META 2 PCW 0x8000001c
+RET 0x8000001c 0xfe8a8a93 'addi s5, s5, -24' MODE 0x3 CYCLE 1 X 21 0x80001000 META 2 PCW 0x80000020
+RET 0x80000020 0x002a8a93 'addi s5, s5, 2' MODE 0x3 CYCLE 1 X 21 0x80001002 META 2 PCW 0x80000024
+RET 0x80000024 0x12300b13 'addi s6, zero, 291' MODE 0x3 CYCLE 1 X 22 0x00000123 META 2 PCW 0x80000028
+RET 0x80000028 0x00002337 'lui t1, 0x2' MODE 0x3 CYCLE 1 X 6 0x00002000 META 2 PCW 0x8000002c
+RET 0x8000002c 0x000033b7 'lui t2, 0x3' MODE 0x3 CYCLE 1 X 7 0x00003000 META 2 PCW 0x80000030
+RET 0x80000030 0x00004e37 'lui t3, 0x4' MODE 0x3 CYCLE 1 X 28 0x00004000 META 2 PCW 0x80000034
+TRAP 0x80000034 0x100aabaf 'lr.w s7, (s5)' MODE 0x3 CYCLE 1 C 0x300 0x00001800 C 0x341 0x80000034 C 0x342 0x00000005 META 2 PCW 0x80000100
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lr.w s7, (s5): 1 cycles after the previous retirement)"
+RET 0x80000100 0x0800006f 'jal zero, 128' MODE 0x3 CYCLE 4 META 2 PCW 0x80000180
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (jal zero, 128: 4 cycles after the previous retirement)"
+RET 0x80000180 0x341022f3 'csrrs t0, mepc, zero' MODE 0x3 CYCLE 2 X 5 0x80000034 META 2 PCW 0x80000184
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (csrrs t0, mepc, zero: 2 cycles after the previous retirement)"
+RET 0x80000184 0x34202f73 'csrrs t5, mcause, zero' MODE 0x3 CYCLE 1 X 30 0x00000005 META 2 PCW 0x80000188
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (csrrs t5, mcause, zero: 1 cycles after the previous retirement)"
+RET 0x80000188 0xffff0f13 'addi t5, t5, -1' MODE 0x3 CYCLE 1 X 30 0x00000004 META 2 PCW 0x8000018c
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (addi t5, t5, -1: 1 cycles after the previous retirement)"
+RET 0x8000018c 0x020f0263 'beq t5, zero, 36' MODE 0x3 CYCLE 1 META 2 PCW 0x80000190
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (beq t5, zero, 36: 1 cycles after the previous retirement)"
+RET 0x80000190 0x0002df03 'lhu t5, 0(t0)' MODE 0x3 CYCLE 1 X 30 0x0000abaf MEM D 2 0x80000034 0x80000034 0 META 2 PCW 0x80000194
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lhu t5, 0(t0): 1 cycles after the previous retirement)"
+RET 0x80000194 0x003f7f13 'andi t5, t5, 3' MODE 0x3 CYCLE 2 X 30 0x00000003 META 2 PCW 0x80000198
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (andi t5, t5, 3: 2 cycles after the previous retirement)"
+RET 0x80000198 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80000036 META 2 PCW 0x8000019c
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (addi t0, t0, 2: 1 cycles after the previous retirement)"
+RET 0x8000019c 0xffdf0f13 'addi t5, t5, -3' MODE 0x3 CYCLE 1 X 30 0x00000000 META 2 PCW 0x800001a0
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (addi t5, t5, -3: 1 cycles after the previous retirement)"
+RET 0x800001a0 0x000f1463 'bne t5, zero, 8' MODE 0x3 CYCLE 1 META 2 PCW 0x800001a4
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (bne t5, zero, 8: 1 cycles after the previous retirement)"
+RET 0x800001a4 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80000038 META 2 PCW 0x800001a8
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (addi t0, t0, 2: 1 cycles after the previous retirement)"
+RET 0x800001a8 0x34129073 'csrrw zero, mepc, t0' MODE 0x3 CYCLE 1 C 0x341 0x80000038 META 2 PCW 0x800001ac
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (csrrw zero, mepc, t0: 1 cycles after the previous retirement)"
+RET 0x800001ac 0x30200073 'mret' MODE 0x3 CYCLE 3 C 0x300 0x00001880 META 2 PCW 0x80000038
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (mret: 3 cycles after the previous retirement)"
+RET 0x80000038 0x0000b3b7 'lui t2, 0xb' MODE 0x3 CYCLE 2 X 7 0x0000b000 META 2 PCW 0x8000003c
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t2, 0xb: 2 cycles after the previous retirement)"
+RET 0x8000003c 0x0000ce37 'lui t3, 0xc' MODE 0x3 CYCLE 1 X 28 0x0000c000 META 2 PCW 0x80000040
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t3, 0xc: 1 cycles after the previous retirement)"
+RET 0x80000040 0x0000deb7 'lui t4, 0xd' MODE 0x3 CYCLE 1 X 29 0x0000d000 META 2 PCW 0x80000044
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t4, 0xd: 1 cycles after the previous retirement)"
+RET 0x80000044 0x00002037 'lui zero, 0x2' MODE 0x3 CYCLE 1 META 2 PCW 0x80000048
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui zero, 0x2: 1 cycles after the previous retirement)"
+RET 0x80000048 0x0000e337 'lui t1, 0xe' MODE 0x3 CYCLE 1 X 6 0x0000e000 META 2 PCW 0x8000004c
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t1, 0xe: 1 cycles after the previous retirement)"
+RET 0x8000004c 0x0000f3b7 'lui t2, 0xf' MODE 0x3 CYCLE 1 X 7 0x0000f000 META 2 PCW 0x80000050
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t2, 0xf: 1 cycles after the previous retirement)"
+RET 0x80000050 0x00010e37 'lui t3, 0x10' MODE 0x3 CYCLE 1 X 28 0x00010000 META 2 PCW 0x80000054
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t3, 0x10: 1 cycles after the previous retirement)"
+TRAP 0x80000054 0x196aad2f 'sc.w s10, s6, (s5)' MODE 0x3 CYCLE 1 C 0x300 0x00001800 C 0x341 0x80000054 C 0x342 0x00000007 META 2 PCW 0x80000100
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (sc.w s10, s6, (s5): 1 cycles after the previous retirement)"
+RET 0x80000100 0x0800006f 'jal zero, 128' MODE 0x3 CYCLE 4 META 2 PCW 0x80000180
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (jal zero, 128: 4 cycles after the previous retirement)"
+RET 0x80000180 0x341022f3 'csrrs t0, mepc, zero' MODE 0x3 CYCLE 2 X 5 0x80000054 META 2 PCW 0x80000184
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (csrrs t0, mepc, zero: 2 cycles after the previous retirement)"
+RET 0x80000184 0x34202f73 'csrrs t5, mcause, zero' MODE 0x3 CYCLE 1 X 30 0x00000007 META 2 PCW 0x80000188
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (csrrs t5, mcause, zero: 1 cycles after the previous retirement)"
+RET 0x80000188 0xffff0f13 'addi t5, t5, -1' MODE 0x3 CYCLE 1 X 30 0x00000006 META 2 PCW 0x8000018c
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (addi t5, t5, -1: 1 cycles after the previous retirement)"
+RET 0x8000018c 0x020f0263 'beq t5, zero, 36' MODE 0x3 CYCLE 1 META 2 PCW 0x80000190
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (beq t5, zero, 36: 1 cycles after the previous retirement)"
+RET 0x80000190 0x0002df03 'lhu t5, 0(t0)' MODE 0x3 CYCLE 1 X 30 0x0000ad2f MEM D 2 0x80000054 0x80000054 0 META 2 PCW 0x80000194
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lhu t5, 0(t0): 1 cycles after the previous retirement)"
+RET 0x80000194 0x003f7f13 'andi t5, t5, 3' MODE 0x3 CYCLE 2 X 30 0x00000003 META 2 PCW 0x80000198
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (andi t5, t5, 3: 2 cycles after the previous retirement)"
+RET 0x80000198 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80000056 META 2 PCW 0x8000019c
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (addi t0, t0, 2: 1 cycles after the previous retirement)"
+RET 0x8000019c 0xffdf0f13 'addi t5, t5, -3' MODE 0x3 CYCLE 1 X 30 0x00000000 META 2 PCW 0x800001a0
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (addi t5, t5, -3: 1 cycles after the previous retirement)"
+RET 0x800001a0 0x000f1463 'bne t5, zero, 8' MODE 0x3 CYCLE 1 META 2 PCW 0x800001a4
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (bne t5, zero, 8: 1 cycles after the previous retirement)"
+RET 0x800001a4 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80000058 META 2 PCW 0x800001a8
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (addi t0, t0, 2: 1 cycles after the previous retirement)"
+RET 0x800001a8 0x34129073 'csrrw zero, mepc, t0' MODE 0x3 CYCLE 1 C 0x341 0x80000058 META 2 PCW 0x800001ac
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (csrrw zero, mepc, t0: 1 cycles after the previous retirement)"
+RET 0x800001ac 0x30200073 'mret' MODE 0x3 CYCLE 3 C 0x300 0x00001880 META 2 PCW 0x80000058
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (mret: 3 cycles after the previous retirement)"
+RET 0x80000058 0x000173b7 'lui t2, 0x17' MODE 0x3 CYCLE 2 X 7 0x00017000 META 2 PCW 0x8000005c
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t2, 0x17: 2 cycles after the previous retirement)"
+RET 0x8000005c 0x00018e37 'lui t3, 0x18' MODE 0x3 CYCLE 1 X 28 0x00018000 META 2 PCW 0x80000060
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t3, 0x18: 1 cycles after the previous retirement)"
+RET 0x80000060 0x00019eb7 'lui t4, 0x19' MODE 0x3 CYCLE 1 X 29 0x00019000 META 2 PCW 0x80000064
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t4, 0x19: 1 cycles after the previous retirement)"
+RET 0x80000064 0x00003037 'lui zero, 0x3' MODE 0x3 CYCLE 1 META 2 PCW 0x80000068
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui zero, 0x3: 1 cycles after the previous retirement)"
+RET 0x80000068 0x0001a337 'lui t1, 0x1a' MODE 0x3 CYCLE 1 X 6 0x0001a000 META 2 PCW 0x8000006c
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t1, 0x1a: 1 cycles after the previous retirement)"
+RET 0x8000006c 0x0001b3b7 'lui t2, 0x1b' MODE 0x3 CYCLE 1 X 7 0x0001b000 META 2 PCW 0x80000070
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t2, 0x1b: 1 cycles after the previous retirement)"
+RET 0x80000070 0x0001ce37 'lui t3, 0x1c' MODE 0x3 CYCLE 1 X 28 0x0001c000 META 2 PCW 0x80000074
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (lui t3, 0x1c: 1 cycles after the previous retirement)"
+TRAP 0x80000074 0x016aa42f 'amoadd.w s0, s6, (s5)' MODE 0x3 CYCLE 1 C 0x300 0x00001800 C 0x341 0x80000074 C 0x342 0x00000007 META 2 PCW 0x80000100
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (amoadd.w s0, s6, (s5): 1 cycles after the previous retirement)"
+RET 0x80000100 0x0800006f 'jal zero, 128' MODE 0x3 CYCLE 4 META 2 PCW 0x80000180
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (jal zero, 128: 4 cycles after the previous retirement)"
+RET 0x80000180 0x341022f3 'csrrs t0, mepc, zero' MODE 0x3 CYCLE 2 X 5 0x80000074 META 2 PCW 0x80000184
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (csrrs t0, mepc, zero: 2 cycles after the previous retirement)"
+RET 0x80000184 0x34202f73 'csrrs t5, mcause, zero' MODE 0x3 CYCLE 1 X 30 0x00000007 META 2 PCW 0x80000188
+META 2 ISSUE "a misaligned lr.w (order 13), sc.w (34) and amoadd.w (55) at tdata + 2 in main memory: the RTL raises a load access fault (5) and store/AMO access faults (7), as Spike does; the exception table gives the address-misaligned causes 4 and 6 for them (csrrs t5, mcause, zero: 1 cycles after the previous retirement)"
+RET 0x80000188 0xffff0f13 'addi t5, t5, -1' MODE 0x3 CYCLE 1 X 30 0x00000006 META 2 PCW 0x8000018c
+RET 0x8000018c 0x020f0263 'beq t5, zero, 36' MODE 0x3 CYCLE 1 META 2 PCW 0x80000190
+RET 0x80000190 0x0002df03 'lhu t5, 0(t0)' MODE 0x3 CYCLE 1 X 30 0x0000a42f MEM D 2 0x80000074 0x80000074 0 META 2 PCW 0x80000194
+RET 0x80000194 0x003f7f13 'andi t5, t5, 3' MODE 0x3 CYCLE 2 X 30 0x00000003 META 2 PCW 0x80000198
+RET 0x80000198 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80000076 META 2 PCW 0x8000019c
+RET 0x8000019c 0xffdf0f13 'addi t5, t5, -3' MODE 0x3 CYCLE 1 X 30 0x00000000 META 2 PCW 0x800001a0
+RET 0x800001a0 0x000f1463 'bne t5, zero, 8' MODE 0x3 CYCLE 1 META 2 PCW 0x800001a4
+RET 0x800001a4 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80000078 META 2 PCW 0x800001a8
+RET 0x800001a8 0x34129073 'csrrw zero, mepc, t0' MODE 0x3 CYCLE 1 C 0x341 0x80000078 META 2 PCW 0x800001ac
+RET 0x800001ac 0x30200073 'mret' MODE 0x3 CYCLE 3 C 0x300 0x00001880 META 2 PCW 0x80000078
+RET 0x80000078 0x000233b7 'lui t2, 0x23' MODE 0x3 CYCLE 2 X 7 0x00023000 META 2 PCW 0x8000007c
+RET 0x8000007c 0x00024e37 'lui t3, 0x24' MODE 0x3 CYCLE 1 X 28 0x00024000 META 2 PCW 0x80000080
+RET 0x80000080 0x00025eb7 'lui t4, 0x25' MODE 0x3 CYCLE 1 X 29 0x00025000 META 2 PCW 0x80000084
+RET 0x80000084 0x00004037 'lui zero, 0x4' MODE 0x3 CYCLE 1 META 2 PCW 0x80000088
+RET 0x80000088 0xffea8a93 'addi s5, s5, -2' MODE 0x3 CYCLE 1 X 21 0x80001000 META 2 PCW 0x8000008c
+RET 0x8000008c 0x00026337 'lui t1, 0x26' MODE 0x3 CYCLE 1 X 6 0x00026000 META 2 PCW 0x80000090
+RET 0x80000090 0x000273b7 'lui t2, 0x27' MODE 0x3 CYCLE 1 X 7 0x00027000 META 2 PCW 0x80000094
+RET 0x80000094 0x00028e37 'lui t3, 0x28' MODE 0x3 CYCLE 1 X 28 0x00028000 META 2 PCW 0x80000098
+RET 0x80000098 0x016aa42f 'amoadd.w s0, s6, (s5)' MODE 0x3 CYCLE 1 X 8 0x11223344 MEM D 4 0x80001000 0x80001000 0 MEM D 4 0x80001000 0x80001000 0 META 2 PCW 0x8000009c
+RET 0x8000009c 0x000293b7 'lui t2, 0x29' MODE 0x3 CYCLE 1 X 7 0x00029000 META 2 PCW 0x800000a0
+RET 0x800000a0 0x0002ae37 'lui t3, 0x2a' MODE 0x3 CYCLE 1 X 28 0x0002a000 META 2 PCW 0x800000a4
+RET 0x800000a4 0x0002beb7 'lui t4, 0x2b' MODE 0x3 CYCLE 1 X 29 0x0002b000 META 2 PCW 0x800000a8
+RET 0x800000a8 0x00002297 'auipc t0, 0x2' MODE 0x3 CYCLE 1 X 5 0x800020a8 META 2 PCW 0x800000ac
+RET 0x800000ac 0xf5828293 'addi t0, t0, -168' MODE 0x3 CYCLE 1 X 5 0x80002000 META 2 PCW 0x800000b0
+RET 0x800000b0 0x00100313 'addi t1, zero, 1' MODE 0x3 CYCLE 1 X 6 0x00000001 META 2 PCW 0x800000b4
+RET 0x800000b4 0x0062a023 'sw t1, 0(t0)' MODE 0x3 CYCLE 1 MEM D 4 0x80002000 0x80002000 0 META 2 PCW 0x800000b8

@@ -1,0 +1,20 @@
+{
+ "test": "hz-I-sw-base-00",
+ "captured": "2026-10-15",
+ "core": "cv32e40x",
+ "rtl_repo": "https://github.com/openhwgroup/cv32e40x.git",
+ "rtl_rev": "d952cd63bc1b4eb58cd893c28ef8283c781e345e",
+ "tools": {
+  "spike": "Spike RISC-V ISA Simulator 1.1.1-dev",
+  "verilator": "Verilator 5.020 2024-01-01 rev (Debian 5.020-1)",
+  "gcc": "riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0"
+ },
+ "repro": [
+  "repro.S"
+ ],
+ "traces": {
+  "rtl": 3399,
+  "spike": 3399
+ },
+ "bus_schedule": "respond:2"
+}
