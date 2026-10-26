@@ -11,7 +11,7 @@ responses are returned in order and at most one per cycle, so a response whose o
 
 ## What the documentation says
 
-load_store_unit.rst 93-95: with several granted requests outstanding 'the memory requests will be kept in-order and one data_rvalid_i will be signalled for each of them, in the order they were issued'; the one-per-cycle spacing is the OBI protocol's (one response phase per cycle) and the harness's
+load_store_unit.rst 93-95: with several granted requests outstanding 'the memory requests will be kept in-order and one data_rvalid_i will be signaled for each of them, in the order they were issued'; the one-per-cycle spacing is the OBI protocol's (one response phase per cycle) and the harness's
 
 ## What the RTL does
 

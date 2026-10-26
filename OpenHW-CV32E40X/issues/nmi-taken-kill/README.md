@@ -11,7 +11,7 @@ a bus error on a load or store is taken as an NMI the cycle after the faulting a
 
 ## What the documentation says
 
-exceptions_interrupts.rst line 103 ('the instruction that causes the fault is allowed to retire and the associated NMI is taken afterwards') and line 105 ('Once the NMI is visible to the core, at most two instructions will retire before the NMI is taken'); pipeline.rst says nothing of an NMI's taking, its kills or what is abandoned
+exceptions_interrupts.rst line 103 ('the instruction that causes the fault is allowed to retire and the associated NMI is taken afterward') and line 105 ('Once the NMI is visible to the core, at most two instructions will retire before the NMI is taken'); pipeline.rst says nothing of an NMI's taking, its kills or what is abandoned
 
 ## What the RTL does
 

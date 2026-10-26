@@ -1,4 +1,4 @@
-# OpenHW CV32E40X: timing behaviour validated versus RTL
+# OpenHW CV32E40X: timing behavior validated versus RTL
 
 <!-- generated: core -->
 | | |
@@ -53,7 +53,7 @@ corrected by the issues above, agreed with the RTL on every other instruction:
 ## The numbers
 
 <!-- generated: numbers -->
-As of the regression recorded on 24 October 2026, our tree at commit `fa369b1`.
+As of the regression recorded on 24 October 2026, our tree at commit `f05a58b`.
 
 | | |
 |---|---|
@@ -137,7 +137,7 @@ The class of an anomaly says how the hardware's trigger compares with that cause
 - **unexplained**: a stall was measured and no cause has been named for it yet; it stays a question until the RTL
   source or a further program explains it.
 - **function**: not a timing finding at all: a wrong value, an unexpected fault, a trace that omits something.
-  It is reported to whoever owns the behaviour, as an issue in its own right.
+  It is reported to whoever owns the behavior, as an issue in its own right.
 
 A cycle count is the cycles between a retirement and the one before it: the `CYCLE` field of `rtl.rvvi.txt`.
 
@@ -151,7 +151,7 @@ issue's directory:
     make dasm      the disassembly, to read beside the traces
 
 Each `Makefile` names the `-march` it was built with, the ISA string Spike is given and the memory map, so the same
-binary runs anywhere those are honoured.  `env/` carries the few lines of start-up and the linker script.
+binary runs anywhere those are honored.  `env/` carries the few lines of start-up and the linker script.
 
 The reproducers of interrupt, NMI and CLIC findings raise the event through a test device of ours.  The upstream Spike has
 no such device, so those programs build but do not reproduce the event on Spike; their published traces are the

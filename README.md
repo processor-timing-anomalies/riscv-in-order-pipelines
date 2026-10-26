@@ -1,7 +1,7 @@
-# RISC-V in-order processors accurate timing behaviour - validated versus RTL
+# RISC-V in-order processors accurate timing behavior - validated versus RTL
 
 A processor's documentation says how long things take: which instruction pairs stall, what a taken branch costs,
-when a CSR write flushes the pipeline.  Hidden timing behaviour is what the hardware does that the documentation
+when a CSR write flushes the pipeline.  Hidden timing behavior is what the hardware does that the documentation
 does not state, understates or states wrongly: a stall with no sentence behind it, an interlock that fires without
 its cause, a cost one cycle off the table.  None of it is a functional bug.  All of it is paid by every program
 that runs on the core, and none of it can be seen without comparing the RTL, cycle by cycle, against what the
@@ -64,10 +64,10 @@ detail: the tool versions, the trace format's version, and which reproducers nee
 For questions or corrections related to this processor-timing-anomalies project, or if you have a core you would like
 us to look at: open an issue on this repository.
 
-## The licence
+## The license
 
 Everything in this repository (the programs, the traces, the documents) is under the Apache License 2.0
-(`LICENSE`).  The cores' RTL and documentation are their vendors' under their own licences and are not here; each
+(`LICENSE`).  The cores' RTL and documentation are their vendors' under their own licenses and are not here; each
 is referenced by repository and commit.
 
 ## Citing this repository
@@ -76,7 +76,7 @@ GitHub's "Cite this repository" reads `CITATION.cff`.  The forms we ask for:
 
 The repository:
 
-> processor-timing-anomalies. *RISC-V in-order processors accurate timing behaviour - validated versus RTL.* 2026. https://github.com/processor-timing-anomalies/riscv-in-order-pipelines (accessed
+> processor-timing-anomalies. *RISC-V in-order processors accurate timing behavior - validated versus RTL.* 2026. https://github.com/processor-timing-anomalies/riscv-in-order-pipelines (accessed
 > DD Month YYYY, commit `xxxxxxx`).
 
 One issue:

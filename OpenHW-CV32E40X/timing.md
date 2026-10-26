@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the CV32E40X
 
-Generated from our records of the CV32E40X on 25 October 2026, for the RTL at commit `d952cd63bc1b4eb58cd893c28ef8283c781e345e`; the configurations measured: cv32e40x-clic (the CLIC build), cv32e40x-pma-a (the PMA with A build), cv32e40x-pma (the PMA build), cv32e40x-zbc (the Zbc build).  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the CV32E40X on 26 October 2026, for the RTL at commit `d952cd63bc1b4eb58cd893c28ef8283c781e345e`; the configurations measured: cv32e40x-clic (the CLIC build), cv32e40x-pma-a (the PMA with A build), cv32e40x-pma (the PMA build), cv32e40x-zbc (the Zbc build).  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the cv32e40x core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -536,7 +536,7 @@ Conditions: the bus schedule a test names.  The manual's cycle table is the spec
 | data: address_phase | 1 | not stated: the manual's protocol section says when a grant may come and when a response may, not when the next request may be presented; th | inferred |
 | data: slot_free_lag | 1 | not stated: 'up to two outstanding transactions', nothing about the cycle a completed one stops counting; the RTL's counter (cnt_q) is a reg | inferred |
 | data: response_spacing | 1 | the protocol's in-order rule (load_store_unit.rst 93-95) with one response phase per cycle: a response due no later than the previous one wa | inferred |
-| data: forward_lag | 0 | not stated: the load data hazard row charges the instruction immediately behind a load only; the RTL forwards a load's data from the cycle i | inferred |
+| data: forward_lag | 0 | not stated: the load data hazard row charges the instruction immediately behind a load only; the RTL forward a load's data from the cycle i | inferred |
 | data: response_wait_freeze | yes | not stated: the RTL's ready chain (ex_stage.sv 469-472: 'The late (data_rvalid_i based) downstream wb_ready_i signal fans into the ready sig | inferred |
 | data: fence_drain | response | load_store_unit.rst 155-158 says the write buffer's transactions must be completed before a fence or fence.i retires, not whether completed  | inferred |
 | data: wbuf_needs_slot | yes | load_store_unit.rst 142-160 says the write buffer, when not full, lets the core proceed without waiting for a bufferable transfer's grant or | inferred |

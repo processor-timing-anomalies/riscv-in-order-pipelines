@@ -4,7 +4,7 @@ This document lists every timing anomaly we found on the CV32E40X: each place wh
 
 Each anomaly has a **class** (the table below: how the hardware's trigger compares with the cause it exists for), a **cost** in cycles, **whom it concerns** (the RTL's developers, the core's performance, or the documentation), a **status**, and, when a small program reproduces it, an **issue directory** under `issues/` with that program, the two RVVI traces (the RTL's and the reference's) and the capture's facts.  The timing specification beside this document (`timing.md`) carries the same anomalies as rows of its section 9, in the context of the rules they break.
 
-Generated from our record on 25 October 2026: 30 anomalies -- 2 in the RTL, 6 on performance, 22 in the documentation.
+Generated from our record on 26 October 2026: 30 anomalies -- 2 in the RTL, 6 on performance, 22 in the documentation.
 
 | class | meaning |
 |---|---|
@@ -354,7 +354,7 @@ a response frees its outstanding-transaction slot the cycle after it is on the w
 
 responses are returned in order and at most one per cycle, so a response whose own delay would put it in the same cycle as, or before, the previous response waits for the cycle after it.
 
-**What the documentation says.**  load_store_unit.rst 93-95: with several granted requests outstanding 'the memory requests will be kept in-order and one data_rvalid_i will be signalled for each of them, in the order they were issued'; the one-per-cycle spacing is the OBI protocol's (one response phase per cycle) and the harness's
+**What the documentation says.**  load_store_unit.rst 93-95: with several granted requests outstanding 'the memory requests will be kept in-order and one data_rvalid_i will be signaled for each of them, in the order they were issued'; the one-per-cycle spacing is the OBI protocol's (one response phase per cycle) and the harness's
 
 **What the RTL does.**  Misalign-lw-00 random:0-3 seed 7: k33 granted 454 with respond 2 -> 456; k34 granted 455 with respond 1 -> due 456, answered 457; a cycle model that gave k34 its response at 456 was a cycle early on the following instruction until it spaced responses as the memory does
 
@@ -462,7 +462,7 @@ on cv32e40x-pma-a (A_EXT=A), an lr.w, sc.w or amoadd.w whose address is not word
 
 a bus error on a load or store is taken as an NMI the cycle after the faulting access retires: every stage is killed and the pc set to the NMI vector; one more load or store retires first when its request was already outstanding (two retirements after the error at most, as the exceptions chapter says), and a pending interrupt is taken after the NMI handler's mret, not before the NMI.
 
-**What the documentation says.**  exceptions_interrupts.rst line 103 ('the instruction that causes the fault is allowed to retire and the associated NMI is taken afterwards') and line 105 ('Once the NMI is visible to the core, at most two instructions will retire before the NMI is taken'); pipeline.rst says nothing of an NMI's taking, its kills or what is abandoned
+**What the documentation says.**  exceptions_interrupts.rst line 103 ('the instruction that causes the fault is allowed to retire and the associated NMI is taken afterward') and line 105 ('Once the NMI is visible to the core, at most two instructions will retire before the NMI is taken'); pipeline.rst says nothing of an NMI's taking, its kills or what is abandoned
 
 **What the RTL does.**  hze-nmi-00: the carrier retires with the error response, the handler's first retirement (the NMI vector's jump, rvfi_intr) comes 5 cycles later, the instructions behind the carrier abandoned and re-executed after the mret; with a lw or sw right behind the carrier that one retires too (its request was outstanding), the handler then 5 cycles after it; with line 17 pending at the same time the NMI's handler runs first and the interrupt's right after its mret
 
