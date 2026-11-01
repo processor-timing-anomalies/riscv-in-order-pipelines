@@ -16,7 +16,7 @@ pipeline.rst, Hazards (lines 114-126): no row for a load or store behind a write
 
 ## What the RTL does
 
-c.lbu and c.sb each one behind csrrs x0, mintthresh, rs1: 2 cycles (own-cv32e40x-clic-00: 2 of 2 blocks, RTL +1); c.lh and c.sh each one behind csrrsi x0, mnxti, 8: 1 cycle (2 of 2 blocks, no stall)
+c.lbu and c.sb each one behind csrrs x0, mintthresh, rs1: 2 cycles (own-cv32e40x-clic-00: 2 of 2 blocks, RTL +1); c.lh and c.sh each one behind csrrsi x0, mnxti, 8: 1 cycle (2 of 2 blocks, no stall); the published traces, from the confirming run of the same test, show it on c.lhu a2, 0(a3) one behind csrrs zero, mintthresh, s5 (order 5051: 2 cycles)
 
 ## From the RTL source (read, not measured)
 
@@ -34,7 +34,7 @@ The program in this directory, built with the RISC-V GNU toolchain and run on Sp
 
 Observed on the RTL (the run this was captured from):
 
-- orders 5048..5051 (c.lhu a2, 0(a3): 2 cycles after the previous retirement): the load one behind the write of mintthresh: 2 cycles where a load takes 1
+- orders 11..12 (lhu a2, 0(a3): 2 cycles after the previous retirement): in CLIC mode a load one behind a write of mintthresh (csrrs x0, mintthresh, rs1) retires in 2 cycles where a load takes 1: the write may enable an interrupt and the core holds the load in EX while the writer is in WB; a store one behind the same write (orders 17-18) likewise 2; one behind a write of mscratch (orders 23-24) the load takes 1
 
 ## Trace
 
@@ -42,7 +42,7 @@ RVVI-TEXT 0.5 traces of the run: `rtl.rvvi.txt`, `spike.rvvi.txt`.  A `META 2 IS
 
 ## Found by
 
-RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-19
+RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-29
 
 ---
 

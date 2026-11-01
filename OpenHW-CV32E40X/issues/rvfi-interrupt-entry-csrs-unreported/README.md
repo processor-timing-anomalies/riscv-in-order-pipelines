@@ -3,7 +3,7 @@
 - Title: rvfi-interrupt-entry-csrs-unreported
 - Class: function -- not a timing finding: a value, a fault or a sequence
 - Core: cv32e40x
-- Found while running: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 

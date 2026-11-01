@@ -4,6 +4,7 @@
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Cost: five cycles on the instruction after every write of jvt (the write itself retires in one), and the interrupt taking blocked for the cycle after the write's retirement
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 
@@ -35,24 +36,7 @@ This program uses a memory-mapped test device of ours: an upstream Spike or a pl
 
 Observed on the RTL (the run this was captured from):
 
-- order 268 lui t1, 0x82: RTL 1 cycles; the documentation, read as written, gives 2
-- order 39 csrrw zero, jvt, s2: RTL 1 cycles; the documentation, read as written, gives 5
-- order 112 jal zero, 128: RTL 6 cycles; the documentation, read as written, gives 7
-- order 50 lui t1, 0xe: RTL 2 cycles; the documentation, read as written, gives 1
-- order 195 lui t2, 0x5b: RTL 1 cycles; the documentation, read as written, gives 2
-- order 112 jal zero, 128: RTL 6 cycles; the documentation, read as written, gives 7
-- order 148 jal zero, 128: RTL 7 cycles; the documentation, read as written, gives 8
-- order 184 jal zero, 128: RTL 8 cycles; the documentation, read as written, gives 5
-- order 220 jal zero, 128: RTL 9 cycles; the documentation, read as written, gives 5
-- order 435 csrrs zero, jvt, s4: RTL 1 cycles; the documentation, read as written, gives 5
-- order 833 csrrw zero, jvt, s6: RTL 1 cycles; the documentation, read as written, gives 5
-- order 834 jal zero, 128: RTL 6 cycles; the documentation, read as written, gives 7
-- order 844 lui t1, 0x1b2: RTL 2 cycles; the documentation, read as written, gives 1
-- order 921 lui t4, 0x1dd: RTL 1 cycles; the documentation, read as written, gives 2
-- order 872 jal zero, 128: RTL 7 cycles; the documentation, read as written, gives 8
-- order 910 jal zero, 128: RTL 8 cycles; the documentation, read as written, gives 5
-- order 948 jal zero, 128: RTL 9 cycles; the documentation, read as written, gives 5
-- order 1251 csrrs zero, jvt, s8: RTL 1 cycles; the documentation, read as written, gives 5
+- orders 26..27 (lui t4, 0x5: 5 cycles after the previous retirement): a write of jvt (order 26) retires in 1 cycle and the instruction behind it 5 cycles later: the write flushes and refetches what follows, the table's 4 (jvt); behind a write of mscratch (orders 32-33) the next instruction follows in 1; with the interrupt line 17 raised right before the write (orders 38-40) the handler's first instruction retires 6 cycles after the jvt write, against 5 after a write of mscratch (orders 55-57)
 
 ## Trace
 
@@ -60,7 +44,7 @@ RVVI-TEXT 0.5 traces of the run: `rtl.rvvi.txt`, `spike.rvvi.txt`.  A `META 2 IS
 
 ## Found by
 
-RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-19
+RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-29
 
 ---
 

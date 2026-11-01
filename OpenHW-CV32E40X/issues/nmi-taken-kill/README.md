@@ -4,6 +4,7 @@
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Cost: the NMI handler's first retirement 5 cycles after the carrier's (the faulting load or store); the instruction behind the carrier retires before the handler only when its data request was outstanding when the error was seen, otherwise it is killed and runs again after the handler's mret
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 
@@ -35,7 +36,7 @@ This program uses a memory-mapped test device of ours: an upstream Spike or a pl
 
 Observed on the RTL (the run this was captured from):
 
-- orders 41..44 (csrrs t0, mcause, zero: 2 cycles after the previous retirement): the NMI's taking: the load at order 41 is answered with a bus error; orders 42 and 43 retire while the NMI is pending; order 44 is the handler's first retirement, mcause 0x80000400; the instructions in flight behind 43 are killed and run again after the handler's mret
+- orders 31..33 (jal zero, 128: 5 cycles after the previous retirement): the store at order 31 asks the test device for a bus error on the next load; the load at order 32 retires with it (1 cycle); nothing retires while the NMI is pending; order 33 is the handler's first retirement, 5 cycles after the load, mcause 0x80000400, and the instruction behind the load is killed and runs again after the handler's mret (order 43); with a second load right behind the faulting one (orders 49-52) that load retires too, its request already out, and the handler follows 5 cycles after it
 
 ## Trace
 
@@ -43,7 +44,7 @@ RVVI-TEXT 0.5 traces of the run: `rtl.rvvi.txt`, `spike.rvvi.txt`.  A `META 2 IS
 
 ## Found by
 
-RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-18
+RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-29
 
 ---
 

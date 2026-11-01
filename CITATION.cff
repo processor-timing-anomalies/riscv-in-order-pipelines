@@ -7,8 +7,8 @@ authors:
 repository-code: "https://github.com/processor-timing-anomalies/riscv-in-order-pipelines"
 url: "https://github.com/processor-timing-anomalies/riscv-in-order-pipelines"
 license: Apache-2.0
-date-released: 2026-10-24
-version: "2026-10-24"
+date-released: 2026-11-01
+version: "2026-11-01"
 keywords:
   - RISC-V
   - processor timing

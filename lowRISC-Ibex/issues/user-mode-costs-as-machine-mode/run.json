@@ -1,0 +1,19 @@
+{
+ "test": "u-mode-same-cost",
+ "captured": "2026-11-01",
+ "core": "ibex",
+ "rtl_repo": "https://github.com/lowRISC/ibex.git",
+ "rtl_rev": "c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa",
+ "tools": {
+  "spike": "Spike RISC-V ISA Simulator 1.1.1-dev",
+  "verilator": "Verilator 5.020 2024-01-01 rev (Debian 5.020-1)",
+  "gcc": "riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0"
+ },
+ "repro": [
+  "repro.S"
+ ],
+ "traces": {
+  "rtl": 44,
+  "spike": 44
+ }
+}

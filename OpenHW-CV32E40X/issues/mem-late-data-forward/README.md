@@ -4,6 +4,7 @@
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Cost: a consumer two or more behind a load waits until the data is on the wire, a jalr one cycle more, instead of the free forward the list gives
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 

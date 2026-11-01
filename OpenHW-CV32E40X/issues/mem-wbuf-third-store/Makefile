@@ -7,16 +7,16 @@
 #
 # What the RTL did, from the run this was captured from (run.json has the rest; a cycle count is the
 # cycles between a retirement and the one before it, CYCLE in rtl.rvvi.txt):
-#   order 1856 sb a0, 0(s1): RTL 2 cycles; the documentation, read as written, gives 1
+#   orders 24..27 (sb a4, 0(a3): 2 cycles after the previous retirement): three bufferable stores behind a 4-cycle mulh, under the bus schedule published beside the program (repro.sched.json): the first (request 1, its grant withheld one cycle) and the second (request 2, granted at once) retire 1 cycle each, the third, the sb (request 3, its grant withheld two cycles), 2 cycles where the write-buffer rule gives 1: the buffer's transfer still holds the last outstanding slot of the response filter; the lb behind it (request 4, its grant withheld three cycles) 6 cycles, the lb after it 1
 #
 # The traces: rtl.rvvi.txt (the RTL, with CYCLE per retirement) and spike.rvvi.txt, RVVI-TEXT 0.5; the lines
 # that matter are followed by a META line saying what was seen there.
 
 CROSS    ?= riscv64-unknown-elf-
-MARCH    ?= rv32im_zicsr
+MARCH    ?= rv32im
 MABI     ?= ilp32
 SPIKE    ?= spike
-SPIKE_ISA ?= rv32imc_zicsr_zifencei_zba_zbb_zbs_zcb_zicclsm
+SPIKE_ISA ?= rv32imc_zicsr_zifencei_zba_zbb_zbs_zcb_zicclsm_zicntr_zihpm_zcmt
 PRIV     ?= m
 MEM      ?= 0x80000000:0x400000
 BOOT     ?= 0x80000000

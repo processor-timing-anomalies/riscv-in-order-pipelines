@@ -1,0 +1,42 @@
+{
+ "schema": "sched 1.0",
+ "core": "cv32e40x-pma",
+ "test": "mem-wbuf-third-store",
+ "bus": "obi-1.2",
+ "writer": "by hand (29 Oct 2026): the grants of the shape the finding was read in",
+ "sched": "hand:accept-1-0-2-3",
+ "seed": 0,
+ "program": "sha256:55932ce3fec4c8fe",
+ "memory": {
+  "default": {
+   "accept": 0,
+   "respond": 1,
+   "err": false
+  },
+  "data": {
+   "requests": 7,
+   "entries": [
+    {
+     "k": 1,
+     "accept": 1,
+     "insn": "sw x10, 0(x9)"
+    },
+    {
+     "k": 3,
+     "accept": 2,
+     "insn": "sb x14, 0(x13)"
+    },
+    {
+     "k": 4,
+     "accept": 3,
+     "insn": "lb x15, 0(x16)"
+    }
+   ]
+  },
+  "fetch": {
+   "requests": null,
+   "entries": []
+  }
+ },
+ "events": []
+}

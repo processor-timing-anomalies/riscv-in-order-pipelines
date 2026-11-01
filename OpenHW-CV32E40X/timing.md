@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the CV32E40X
 
-Generated from our records of the CV32E40X on 26 October 2026, for the RTL at commit `d952cd63bc1b4eb58cd893c28ef8283c781e345e`; the configurations measured: cv32e40x-clic (the CLIC build), cv32e40x-pma-a (the PMA with A build), cv32e40x-pma (the PMA build), cv32e40x-zbc (the Zbc build).  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the CV32E40X on 1 November 2026, for the RTL at commit `d952cd63bc1b4eb58cd893c28ef8283c781e345e`; the configurations measured: cv32e40x-clic (the CLIC build), cv32e40x-pma (the PMA build), cv32e40x-pma-a (the PMA with A build), cv32e40x-rv32i (the RV32I build), cv32e40x-zbc (the Zbc build).  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the cv32e40x core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -13,9 +13,9 @@ This document states what the cv32e40x core promises in time: the pipeline as a 
 | open | a question no run has answered |
 | authored | the core's authors have taken the row as their statement (reserved) |
 
-**Conditions.**  Every row states what it assumes.  The manual's cycle table assumes zero stall on both interfaces (pipeline.rst 30-31), and the hazard rows are compared under that; the memory rows hold under any bus schedule a test names (the waits, the write buffer, the outstanding requests, the PMA regions), so their condition is the schedule; a configuration's rows assume its parameters.  No row claims zero-wait as a general condition of the core.
+**Conditions.**  Every row states what it assumes.  The manual's cycle table assumes zero stall on both interfaces, and the hazard rows are compared under that; the memory rows hold under any bus schedule a test names (the waits, the write buffer, the outstanding requests, the PMA regions), so their condition is the schedule; a configuration's rows assume its parameters.  No row claims zero-wait as a general condition of the core.
 
-**Sources.**  Where the manual is cited: the OpenHW CV32E40X user manual at the pinned RTL commit (pipeline.rst, control_status_registers.rst, exceptions_interrupts.rst); where the RTL is cited: its files and lines at the same commit (`d952cd63bc1b4eb58cd893c28ef8283c781e345e`).
+**Sources.**  Where the manual is cited: the core's own documentation, by file and line at the pinned RTL commit; where the RTL is cited: its files and lines at the same commit (`d952cd63bc1b4eb58cd893c28ef8283c781e345e`).
 
 **Contents**
 
@@ -80,7 +80,7 @@ The cycles an instruction of each class takes in its result stage beyond the one
 
 ## 4. Hazards: the stalls between instructions, derived and documented
 
-A hazard is two instructions within the pipeline's depth that touch the same register, CSR or control.  The rows derived from the structure (section 1) are the manual's rules read through the ISA layer: a dependent instruction at distance d waits until the producer's result is where the reader reads it, the forwarding paths shortening the wait.  The rows the core states on its own are those the structure does not derive; each carries its cause in ISA terms and the width of its trigger against that cause.  Conditions: the zero-wait bus of the manual's cycle table (pipeline.rst 30-31).
+A hazard is two instructions within the pipeline's depth that touch the same register, CSR or control.  The rows derived from the structure (section 1) are the manual's rules read through the ISA layer: a dependent instruction at distance d waits until the producer's result is where the reader reads it, the forwarding paths shortening the wait.  The rows the core states on its own are those the structure does not derive; each carries its cause in ISA terms and the width of its trigger against that cause.  Conditions: the zero-wait bus of the manual's cycle table.
 
 ### 4.1 Derived from the structure
 
@@ -649,14 +649,14 @@ Measured by the timing survey: every retirement of every trace read as a timing 
 
 | measure | value |
 |---|---|
-| cycles per retirement, the programs' single-cost skeletons (90% of their retirements) | 42,356,492 retirements, 52,194,991 cycles: CPI 1.232 (IPC 0.81) |
+| cycles per retirement, the programs' single-cost skeletons (42,356,492 of the 46,867,380 retirements of the certification tests and the benchmarks, 90%) | 42,356,492 retirements, 52,194,991 cycles: CPI 1.232 (IPC 0.81) |
 | real code's shapes no generated suite makes | 2.2% of the programs' retirements (by class) |
 
-The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the results page beside this document.
+The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the README beside this document.
 
 What an ideal mechanism would save, as a ceiling and not a design (the profile summary carries the caveats):
 
-| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of all cycles |
+| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 52,194,991 single-cost cycles |
 |---|---:|---:|---:|
 | a perfect branch prediction: the follower of a taken branch at 1 cycle | 2,633,287 | 5,292,469 | 10.1% |
 | jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 1,514,798 | 1,601,210 | 3.1% |
@@ -703,14 +703,14 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 
 ## 10. What the base build's rows leave to a configuration, and what no test reaches
 
-Every stall and flush term in the RTL source that the base build's own rows do not state is listed here, with where it is handled.  Of the 28: 16 are stated and tested under a configuration of the core (its part of section 12) or became rows of this specification after the source was read -- not gaps, pointers; 9 no test of ours will reach, each with its reason; 3 await a feature we have not built; and 4 questions the manual leaves open are still open.  A row in 10.2 is a hole in the specification, named rather than hidden.
+Every stall and flush term in the RTL source that the base build's own rows do not state is listed here, with where it is handled.  Of the 28 terms: 16 are stated and tested under a configuration of the core (its part of section 12) or became rows of this specification after the source was read -- not gaps, pointers; 9 no test of ours will reach, each with its reason; 3 await a feature we have not built.  Beside the terms, our reading of the RTL source raised 31 questions the manual does not answer (18 on the base build, 13 on the CLIC build): 27 are answered by a measurement and stated above; 4 are still open (2 on the base build, 2 on the CLIC build) and head the table in 10.2.  A row in 10.2 is a hole in the specification, named rather than hidden.
 
 ### 10.1 Specified under a configuration
 
 | term | what it is | where it is stated |
 |---|---|---|
-| `tbljmp_unqual_id` | csr_stall_id, the table-jump half: a table jump (cm.jt, cm.jalt) in ID reads jvt and waits behind any CSR access in EX or WB, as the mret does.  Built: Zc is a localparam (cv32e40x_core.sv:147, ZC_EXT = 1); the core's ISA has Zca and Zcb only | a key of this specification: control.occupancy_before_result: the table jump's CSR-order stall (the own rows csr_implicit_mret_d1/d2, which name cm.jt and cm.jalt as subjects) composes additively with its pointer fetch: the pipeline model control.occupancy_before_result = after_holds; the questions tbljmp_behind_csr and tbljmp_behind_multicycle hold the readings, answered) |
-| `instr_meta.tbljmp` | the table-jump term of jump_in_id (line 302) and its two redirects (lines 1011-1018: the pointer fetch from jvt, then the jump to the pointer), each killing IF | a key of this specification: occupancy.tbljmp: the two redirects are the table jump's own occupancy of 3 in ID (the pointer fetch), the pipeline model occupancy.tbljmp; the jump bubble behind it is the ISA case ctrl_taken_tbljmp_d1) |
+| `tbljmp_unqual_id` | csr_stall_id, the table-jump half: a table jump (cm.jt, cm.jalt) in ID reads jvt and waits behind any CSR access in EX or WB, as the mret does.  Built: Zc is a localparam (cv32e40x_core.sv:147, ZC_EXT = 1); the core's ISA has Zca and Zcb only | a key of this specification: control.occupancy_before_result (the table jump's CSR-order stall (the own rows csr_implicit_mret_d1/d2, which name cm.jt and cm.jalt as subjects) composes additively with its pointer fetch: the pipeline model control.occupancy_before_result = after_holds; the questions tbljmp_behind_csr and tbljmp_behind_multicycle hold the readings, answered) |
+| `instr_meta.tbljmp` | the table-jump term of jump_in_id (line 302) and its two redirects (lines 1011-1018: the pointer fetch from jvt, then the jump to the pointer), each killing IF | a key of this specification: occupancy.tbljmp (the two redirects are the table jump's own occupancy of 3 in ID (the pointer fetch), the pipeline model occupancy.tbljmp; the jump bubble behind it is the ISA case ctrl_taken_tbljmp_d1) |
 | `csr_wr_in_wb_flush_i` | a CSR write of jvt in WB (cv32e40x_cs_registers.sv:1537-1548: csrrw/csrrwi, or a set or clear with a non-zero rs1 field; a pure read does not flush) halts IF, ID and EX for a cycle.  jvt is built (cs_registers.sv:352-354 under ZC_EXT, a localparam at 1) and belongs to Zcmt; the specification carries the document's figure as occupancy.csr_r.jvt and occupancy.csr_i.jvt (see corrections) | a key of this specification: control.flush (the jvt write flush and its acknowledge cycle: the pipeline model control.flush "csr_write_of jvt": "WB+1", exercised by the event sweep and by every generated block with a table jump, whose set-up writes jvt) |
 | `csr_flush_ack_q` | the cycle after a jvt write: IF, ID and EX killed, fetch restarted at the instruction after the write (PC_WB_PLUS4) | a key of this specification: control.flush (the jvt write flush and its acknowledge cycle: the pipeline model control.flush "csr_write_of jvt": "WB+1", exercised by the event sweep and by every generated block with a table jump, whose set-up writes jvt) |
 | `mnxti_id_stall` | csr_mnxti_read_i is set only under `if (CLIC)` (cv32e40x_cs_registers.sv:426-434); without CLIC an access of mnxti is an illegal instruction | covered on cv32e40x-clic |
@@ -757,7 +757,7 @@ Every stall and flush term in the RTL source that the base build's own rows do n
 | blocks whose interval differed from this specification's prediction | 0 |
 | findings in the record | 30 (22 document, 6 performance, 2 rtl) |
 
-Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README and the results pages beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
+Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
 
 ## 12. The configurations: what each build adds or changes
 
@@ -778,20 +778,24 @@ Its interrupt model changes: the interrupt mode, the number of interrupt lines, 
 
 Findings made on it: mcause.minhv stays set after an mret restarts a faulted CLIC pointer fetch successfully (rtl, function); CLIC: an access of mnxti or mscratchcswl behind any CSR instruction waits a cycle (document, intent); CLIC: a load or store behind a write of mie does not wait, unlike the CLINT core (document, intent); CLIC: a load or store behind a write of mintthresh waits a cycle (document, intent); CLIC: a CSR instruction one behind an mscratchcswl access waits a cycle (performance, over-wide); CLIC: a load or store one behind an mcause write waits a cycle (document, intent).
 
-### cv32e40x-pma-a: the PMA with A build
-
-Its pipeline model changes: the cycle counts of the instruction classes it adds (`sc`, `amo`).
-
-Findings made on it: An atomic transaction overlaps no other: a cycle lost on each side of an lr, sc or AMO (performance, over-wide); A misaligned atomic raises an access fault (5, 7), not a misaligned one (4, 6) (document, function).
-
 ### cv32e40x-pma: the PMA build
 
 Its pipeline model changes: the memory side (the regions: the hole past the memory, the I/O window, what is bufferable).
 
 Findings made on it: A fence behind a buffered store waits for the store's response, then runs its own cycles (document, intent); A split access into I/O issues its legal first half, then faults a cycle later (document, function); A bufferable store whose grant is withheld, third behind a mulh, stalls one cycle (document, intent).
 
+### cv32e40x-pma-a: the PMA with A build
+
+Its pipeline model changes: the cycle counts of the instruction classes it adds (`sc`, `amo`).
+
+Findings made on it: An atomic transaction overlaps no other: a cycle lost on each side of an lr, sc or AMO (performance, over-wide); A misaligned atomic raises an access fault (5, 7), not a misaligned one (4, 6) (document, function).
+
+### cv32e40x-rv32i: the RV32I build
+
+This build runs the base build's specification unchanged, with the instruction classes its parameters leave out absent (`RV32=RV32I A_EXT=A_NONE B_EXT=B_NONE M_EXT=M_NONE X_EXT=0 NUM_MHPMCOUNTERS=1`): it has no statement of its own, and no anomaly was found on it.  The README's suite counts are the base build's; this build's runs are not yet in the published record.
+
 ### cv32e40x-zbc: the Zbc build
 
-Nothing beyond the base build: its instructions fall into the base's classes with the base's timing, it has no statement of its own, and no anomaly was found on it; its runs are counted with the base's in the README.
+Nothing beyond the base build: its instructions fall into the base's classes with the base's timing, it has no statement of its own, and no anomaly was found on it.  The README's suite counts are the base build's; this build's runs are not yet in the published record.
 
 © 2026 processor-timing-anomalies, Apache License 2.0

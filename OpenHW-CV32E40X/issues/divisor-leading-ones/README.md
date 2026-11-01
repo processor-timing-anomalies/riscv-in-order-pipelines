@@ -4,6 +4,7 @@
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Cost: none beyond the document's rule read right: a signed divide by a negative divisor costs 3 plus its leading ones less one
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 

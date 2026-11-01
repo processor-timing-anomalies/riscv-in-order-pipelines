@@ -4,6 +4,7 @@
 - Class: over-wide -- the stall fires in cases that have no cause for it: an interlock wider than needed, a performance flaw. The freeze holds IF to ID and ID to EX whether the next stage is occupied or empty: a stage with room ahead of it waits without a cause, because the late rvalid-based ready fans into every stage; a timing-closure choice by the RTL comment, an interlock wider than its cause by the test
 - Cost: every cycle a load or store in WB waits for its response stalls the whole front: nothing enters EX or ID, occupied or empty
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 
@@ -37,7 +38,7 @@ The program in this directory, built with the RISC-V GNU toolchain and run on Sp
 
 Observed on the RTL (the run this was captured from):
 
-- orders 137..139 (lui t4, 0x59: 2 cycles after the previous retirement): under a data bus that answers every request two cycles after its grant: the sw's response is late, the jal behind it retires +1 as always, but its target, the lui already fetched, retires +2 instead of +1: it sat in IF while the store in WB waited, although ID and EX had room (run.json's bus_schedule, respond:2, is the run's bus timing)
+- orders 12..15 (lui t4, 0x5: 2 cycles after the previous retirement): under a data bus answering every second request two cycles after its grant (respond:2): the store (request 2, late) retires 3 cycles after the jalr whose link is its address, the jal behind it 1 cycle after the store as always, and the jal's target, fetched while the store waited for its link, 2 cycles after the jal: it sat in IF while the store in WB waited for its response, although ID and EX had room; let into ID during that wait it would retire 1 after the jal, the cycle table's count; with the store's response on time (orders 22-25) the store retires in 2 and the target again 2 after the jal, the jump's own cost; the same behind a load, late (orders 32-35) and on time (orders 42-45)
 
 ## Trace
 
@@ -45,7 +46,7 @@ RVVI-TEXT 0.5 traces of the run: `rtl.rvvi.txt`, `spike.rvvi.txt`.  A `META 2 IS
 
 ## Found by
 
-RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-15
+RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-29
 
 ---
 

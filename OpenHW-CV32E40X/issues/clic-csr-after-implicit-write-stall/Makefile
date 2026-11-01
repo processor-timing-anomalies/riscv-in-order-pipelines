@@ -7,7 +7,7 @@
 #
 # What the RTL did, from the run this was captured from (run.json has the rest; a cycle count is the
 # cycles between a retirement and the one before it, CYCLE in rtl.rvvi.txt):
-#   order 323 csrrw s5, 0x347, s2: RTL 2 cycles; the documentation, read as written, gives 1
+#   orders 8..9 (csrrw s5, 0x347, s2: 2 cycles after the previous retirement): in CLIC mode a write of mintthresh one behind csrrw rd, mscratchcswl, rs1 retires in 2 cycles where it takes 1 behind an explicit write of mscratch (orders 33-34): the mscratchcswl access writes mscratch implicitly and the core holds every explicit CSR access in EX while that implicit write is in WB, whether or not the access names a register the swap touches; a write of mscratch one behind it (orders 14-15) 2, a read of mintthresh (orders 20-21) 2, a write of mintthresh two behind it (orders 26-28) 1
 #
 # The traces: rtl.rvvi.txt (the RTL, with CYCLE per retirement) and spike.rvvi.txt, RVVI-TEXT 0.5; the lines
 # that matter are followed by a META line saying what was seen there.

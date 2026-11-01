@@ -4,6 +4,7 @@
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Cost: a saving: a jump behind a busy divider pays no bubble of its own, one cycle fewer than the table
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 

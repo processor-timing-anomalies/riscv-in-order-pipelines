@@ -1,9 +1,10 @@
 # Any CSR instruction naming a counter costs one cycle more while an instruction is in WB
 
 - Title: counter-access-stall
-- Class: over-wide -- the stall fires in cases that have no cause for it: an interlock wider than needed, a performance flaw. The stall fires for csrrw with rd = x0, a write that reads nothing, and for mhpmcounter4-31, counters this configuration does not implement: an interlock on the counter address rather than on the read, wider than its cause (a read racing the counter's update); the user-level aliases, hpmcounter4-31 among them, stall the same (15 Oct 2026)
+- Class: over-wide -- the stall fires in cases that have no cause for it: an interlock wider than needed, a performance flaw. The stall fires for csrrw with rd = x0, a write that reads nothing, and for mhpmcounter4-31, counters this configuration does not implement: an interlock on the counter address rather than on the read, wider than its cause (a read racing the counter's update); the user-level aliases, hpmcounter4-31 among them, stall the same (measured 15 Oct 2026, after the capture of 4 Oct 2026 whose traces are here)
 - Cost: one cycle on every CSR instruction that names any counter, machine-level or user alias, implemented or not, reading it or not, while an instruction is in WB
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 
@@ -15,7 +16,7 @@ pipeline.rst, 'Cycle counts per instruction type': CSR Access 1 cycle for every 
 
 ## What the RTL does
 
-csrrw with rd = x0 -- a write that reads nothing -- of mcycle, mcycleh, minstret, minstreth, mhpmcounter3, mhpmcounter3h, mhpmcounter4, mhpmcounter4h, mhpmcounter31 or mhpmcounter31h retires 2 cycles after the instruction before it, behind an ALU instruction, a load, a store, a CSR instruction, a multiply or a divide (116 of 116).  csrrs reading mhpmcounter4, mhpmcounter31 or their high halves, which read 0 with NUM_MHPMCOUNTERS = 1, does the same (80 of 84; the four that retire after the cycles expected are behind a write of the same counter, where the read waits for that write already).  15 Oct 2026, two generated tests on cv32e40x reading every user-level counter with csrrs and with csrrc: every csrrs or csrrc of cycle, instret, hpmcounter3 to hpmcounter31 or their high halves behind an instruction in WB retires 2 cycles after it, 61 reads in each file, hpmcounter4 to 31 reading zero (not implemented) and stalling all the same
+csrrw with rd = x0 -- a write that reads nothing -- of mcycle, mcycleh, minstret, minstreth, mhpmcounter3, mhpmcounter3h, mhpmcounter4, mhpmcounter4h, mhpmcounter31 or mhpmcounter31h retires 2 cycles after the instruction before it, behind an ALU instruction, a load, a store, a CSR instruction, a multiply or a divide (116 of 116).  csrrs reading mhpmcounter4, mhpmcounter31 or their high halves, which read 0 with NUM_MHPMCOUNTERS = 1, does the same (80 of 84; the four that retire after the cycles expected are behind a write of the same counter, where the read waits for that write already).  Later, 15 Oct 2026 (after the capture of 4 Oct 2026 whose traces are here), two generated tests on cv32e40x reading every user-level counter with csrrs and with csrrc: every csrrs or csrrc of cycle, instret, hpmcounter3 to hpmcounter31 or their high halves behind an instruction in WB retires 2 cycles after it, 61 reads in each file, hpmcounter4 to 31 reading zero (not implemented) and stalling all the same
 
 ## From the RTL source (read, not measured)
 

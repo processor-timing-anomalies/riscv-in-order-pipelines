@@ -18,8 +18,9 @@ retirement's cycle, compares, and classifies each disagreement: intended, wider 
 Interrupts are checked the same way, triggered from the harnesses used by both engines; a survey of 54 million
 retirements of real programs says what the suites never exercise.
 
-Each disagreement/issue is reproduced by a small program anyone can build and run, and each comes with the two RVVI traces
-that show it: the reference and the RTL.  Our research method itself is not here; its results are.
+Most issues are reproduced by a small program anyone can build and run, and come with the two RVVI traces that show
+it: the reference and the RTL; each core's README says which issues have no program or no trace yet.  Our research
+method itself is not here; its results are.
 
 Currently our focus is on in-order RISC-V cores and we have started with open source cores from OpenHW.  The first
 core we have looked at is the open source OpenHW CV32E40X: an in-order, 4-stage core, developed within OpenHW by
@@ -28,22 +29,28 @@ TRISTAN project (https://tristan-project.eu/), where NXP's software-defined radi
 as the heart of its embedded platform
 ([Research to reality: how OpenHW Foundation cores are building Europe's open RISC-V](https://blogs.eclipse.org/post/charley-mann/research-reality-how-openhw-foundation-cores-are-building-europes-open-risc-v)).
 
+The second core is lowRISC's Ibex, the core of OpenTitan and of the Sonata board: an in-order RV32 core whose parameters
+select the pipeline itself, two stages or three.  We measured it as two builds from the one RTL, each with a timing
+specification of its own.  Its manual describes the two-stage pipeline alone, so the three-stage build's specification
+is written from the RTL source, every statement cited to its file and lines.
+
 ## The cores
 
 <!-- generated: cores -->
 | core | vendor | RTL | findings | issues | recorded |
 |---|---|---|---|---|---|
-| [CV32E40X](OpenHW-CV32E40X/) | OpenHW Group | [openhwgroup/cv32e40x](https://github.com/openhwgroup/cv32e40x) at [d952cd6](https://github.com/openhwgroup/cv32e40x/tree/d952cd63bc1b4eb58cd893c28ef8283c781e345e) | 30 | 28 | 24 October 2026 |
+| [CV32E40X](OpenHW-CV32E40X/) | OpenHW Group | [openhwgroup/cv32e40x](https://github.com/openhwgroup/cv32e40x) at [d952cd6](https://github.com/openhwgroup/cv32e40x/tree/d952cd63bc1b4eb58cd893c28ef8283c781e345e) | 30 | 28 | 1 November 2026 |
+| [Ibex](lowRISC-Ibex/) | lowRISC | [lowRISC/ibex](https://github.com/lowRISC/ibex) at [c0c0708](https://github.com/lowRISC/ibex/tree/c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa) | 14 | 13 | 1 November 2026 |
 <!-- end -->
 
-Each core has its own directory, named vendor and core as the vendor writes them, with its results in it:
+Each core has its own directory, named vendor and core as the vendor writes them (`OpenHW-CV32E40X/`, `lowRISC-Ibex/`), with its results in it:
 
 | path | what it holds |
 |---|---|
 | `<Vendor-CORE>/README.md` | the core: its ISA and configurations, the RTL commit and the documentation read, the numbers, how its issues read |
-| `<Vendor-CORE>/timing.md` | our generated timing specification for the core: what it promises in time, every statement with its source and grade |
+| `<Vendor-CORE>/timing.md` | our generated timing specification for the core: what it promises in time, every statement with its source and grade; a core whose parameters change the pipeline has one per build (`lowRISC-Ibex/timing-maxperf.md` for Ibex's three-stage build) |
 | `<Vendor-CORE>/findings.md` | every finding on the core: class, cost, whom it concerns, status, the issue directory |
-| `<Vendor-CORE>/issues/<id>/` | one directory per finding: its README (the issue), the reproducer program, the two traces |
+| `<Vendor-CORE>/issues/<id>/` | one directory per finding that has one: its README (the issue) and, where captured, the reproducer program and the two traces; `issues/README.md` lists what each directory holds |
 
 ## Reproducing a timing issue (the reproducers)
 
@@ -86,5 +93,8 @@ One issue:
 One core's timing specification:
 
 > processor-timing-anomalies. *The timing specification of CV32E40X.* In *RISC-V in-order pipelines*, 2026. https://github.com/processor-timing-anomalies/riscv-in-order-pipelines/blob/main/OpenHW-CV32E40X/timing.md
+
+For another core, its directory in place of `OpenHW-CV32E40X` (`lowRISC-Ibex` for Ibex, whose three-stage build's
+specification is `lowRISC-Ibex/timing-maxperf.md`).
 
 © 2026 processor-timing-anomalies, Apache License 2.0

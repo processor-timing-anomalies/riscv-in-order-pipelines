@@ -7,13 +7,13 @@
 #
 # What the RTL did, from the run this was captured from (run.json has the rest; a cycle count is the
 # cycles between a retirement and the one before it, CYCLE in rtl.rvvi.txt):
-#   orders 5048..5051 (c.lhu a2, 0(a3): 2 cycles after the previous retirement): the load one behind the write of mintthresh: 2 cycles where a load takes 1
+#   orders 11..12 (lhu a2, 0(a3): 2 cycles after the previous retirement): in CLIC mode a load one behind a write of mintthresh (csrrs x0, mintthresh, rs1) retires in 2 cycles where a load takes 1: the write may enable an interrupt and the core holds the load in EX while the writer is in WB; a store one behind the same write (orders 17-18) likewise 2; one behind a write of mscratch (orders 23-24) the load takes 1
 #
 # The traces: rtl.rvvi.txt (the RTL, with CYCLE per retirement) and spike.rvvi.txt, RVVI-TEXT 0.5; the lines
 # that matter are followed by a META line saying what was seen there.
 
 CROSS    ?= riscv64-unknown-elf-
-MARCH    ?= rv32ic_zicsr_zcb
+MARCH    ?= rv32i_zicsr
 MABI     ?= ilp32
 SPIKE    ?= spike
 SPIKE_ISA ?= rv32imc_zicsr_zifencei_zba_zbb_zbs_zcb_zicclsm_zicntr_zihpm_zcmt

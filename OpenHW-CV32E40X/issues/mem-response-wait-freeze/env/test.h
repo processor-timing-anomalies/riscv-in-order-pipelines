@@ -110,6 +110,227 @@ trap_resume:
     mret
     .endm
 
+    
+    .macro TEST_TRAP_EVENTS
+    .option push
+    .option norvc
+    .balign 256
+trap_table:
+    .rept 32
+    j       trap_events
+    .endr
+    .option pop
+trap_events:
+    csrr    t0, mcause
+    bgez    t0, 3f
+    andi    t0, t0, 0xff
+    addi    t5, x0, 1
+    sll     t5, t5, t0
+    lui     t0, %hi(TEST_DEVICE_BASE)
+    addi    t0, t0, %lo(TEST_DEVICE_BASE)
+    sw      t5, 4(t0)
+    mret
+3:  csrr    t0, mepc
+    csrr    t5, mcause
+    addi    t5, t5, -1
+    beqz    t5, 2f
+    lhu     t5, 0(t0)
+    andi    t5, t5, 3
+    addi    t0, t0, 2
+    addi    t5, t5, -3
+    bnez    t5, 1f
+    addi    t0, t0, 2
+1:  csrw    mepc, t0
+    mret
+2:  csrw    mepc, ra
+    mret
+    .endm
+
+    
+    .macro TEST_TRAP_EVENTS_NESTED outer
+    .option push
+    .option norvc
+    .balign 256
+trap_table:
+    .rept 32
+    j       trap_events
+    .endr
+    .option pop
+trap_events:
+    csrr    t0, mcause
+    bgez    t0, 3f
+    andi    t0, t0, 0xff
+    addi    t5, x0, 1
+    sll     t5, t5, t0
+    lui     t0, %hi(TEST_DEVICE_BASE)
+    addi    t0, t0, %lo(TEST_DEVICE_BASE)
+    sw      t5, 4(t0)
+    csrr    t0, mcause
+    andi    t0, t0, 0xff
+    addi    t5, x0, \outer
+    bne     t0, t5, 4f
+    csrr    t5, mscratch
+    lui     t0, %hi(TEST_DEVICE_BASE)
+    addi    t0, t0, %lo(TEST_DEVICE_BASE)
+    sw      t5, 16(t0)
+    csrr    t0, mepc
+    csrw    mscratch, t0
+    csrrsi  x0, mstatus, 8
+    nop
+    nop
+    nop
+    csrrci  x0, mstatus, 8
+    csrr    t0, mscratch
+    csrw    mepc, t0
+4:  mret
+3:  csrr    t0, mepc
+    csrr    t5, mcause
+    addi    t5, t5, -1
+    beqz    t5, 2f
+    lhu     t5, 0(t0)
+    andi    t5, t5, 3
+    addi    t0, t0, 2
+    addi    t5, t5, -3
+    bnez    t5, 1f
+    addi    t0, t0, 2
+1:  csrw    mepc, t0
+    mret
+2:  csrw    mepc, ra
+    mret
+    .endm
+
+    
+    .macro TEST_TRAP_EVENTS_CLIC_ENTRY
+    .option push
+    .option norvc
+    .balign 128
+trap_table:
+    j       trap_events
+    .option pop
+    .endm
+
+    .macro TEST_TRAP_EVENTS_CLIC_TAIL
+3:  csrr    t0, mepc
+    csrr    t5, mcause
+    addi    t5, t5, -1
+    beqz    t5, 2f
+    lhu     t5, 0(t0)
+    andi    t5, t5, 3
+    addi    t0, t0, 2
+    addi    t5, t5, -3
+    bnez    t5, 1f
+    addi    t0, t0, 2
+1:  csrw    mepc, t0
+    mret
+2:  csrw    mepc, ra
+    mret
+clic_sub:
+    csrr    t0, mcause
+    andi    t0, t0, 0x7ff
+    lui     t5, %hi(TEST_DEVICE_BASE)
+    addi    t5, t5, %lo(TEST_DEVICE_BASE)
+    sw      t0, 36(t5)
+    ret
+    .section .data
+    .balign 128
+clic_vtable:
+    .rept 16
+    .word   trap_events
+    .endr
+    .rept 16
+    .word   clic_sub
+    .endr
+    .previous
+    .endm
+
+    .macro TEST_TRAP_EVENTS_CLIC
+    TEST_TRAP_EVENTS_CLIC_ENTRY
+trap_events:
+    csrr    t0, mcause
+    bgez    t0, 3f
+    csrr    t0, 0xFB1
+    csrr    t0, mcause
+    andi    t0, t0, 0x7ff
+    lui     t5, %hi(TEST_DEVICE_BASE)
+    addi    t5, t5, %lo(TEST_DEVICE_BASE)
+    sw      t0, 36(t5)
+    mret
+    TEST_TRAP_EVENTS_CLIC_TAIL
+    .endm
+
+    /* TEST_TRAP_EVENTS_CLIC_NESTED outer: the id `outer`'s handler arms the second event with the CLIC_ARM word the
+       block left in mscratch, saves mepc and mcause in memory (clic_save: a nested entry overwrites both CSRs and the
+       nested handler clobbers t0 and t5; mcause's mpil is this level), opens the window (mstatus.MIE) for four
+       retirements, closes it, restores both and returns; a pre-empting id (a level above this one) lands in the
+       window, a lower one waits for the mret.  Retirements after the ARM store: lui 1, addi 2, csrr mepc 3, sw 4,
+       csrr mcause 5, sw 6, csrrsi 7, the nops 8-10, csrrci 11. */
+    .macro TEST_TRAP_EVENTS_CLIC_NESTED outer
+    TEST_TRAP_EVENTS_CLIC_ENTRY
+trap_events:
+    csrr    t0, mcause
+    bgez    t0, 3f
+    csrr    t0, 0xFB1
+    csrr    t0, mcause
+    andi    t0, t0, 0x7ff
+    lui     t5, %hi(TEST_DEVICE_BASE)
+    addi    t5, t5, %lo(TEST_DEVICE_BASE)
+    sw      t0, 36(t5)
+    addi    t5, x0, \outer
+    bne     t0, t5, 4f
+    csrr    t5, mscratch
+    lui     t0, %hi(TEST_DEVICE_BASE)
+    addi    t0, t0, %lo(TEST_DEVICE_BASE)
+    sw      t5, 40(t0)
+    lui     t5, %hi(clic_save)
+    addi    t5, t5, %lo(clic_save)
+    csrr    t0, mepc
+    sw      t0, 0(t5)
+    csrr    t0, mcause
+    sw      t0, 4(t5)
+    csrrsi  x0, mstatus, 8
+    nop
+    nop
+    nop
+    csrrci  x0, mstatus, 8
+    lui     t5, %hi(clic_save)
+    addi    t5, t5, %lo(clic_save)
+    lw      t0, 0(t5)
+    csrw    mepc, t0
+    lw      t0, 4(t5)
+    csrw    mcause, t0
+4:  mret
+    TEST_TRAP_EVENTS_CLIC_TAIL
+    .section .data
+    .balign 8
+clic_save:
+    .word   0, 0
+    .previous
+    .endm
+
+    /* TEST_TRAP_EVENTS_CLIC_MNXTI: after the clear, the handler services every further pending non-vectored id above
+       its level through mnxti (csrrsi mnxti, MIE: the table entry's address, else 0), calling clic_sub for each, then
+       closes MIE and returns: one entry for several ids. */
+    .macro TEST_TRAP_EVENTS_CLIC_MNXTI
+    TEST_TRAP_EVENTS_CLIC_ENTRY
+trap_events:
+    csrr    t0, mcause
+    bgez    t0, 3f
+    csrr    t0, 0xFB1
+    csrr    t0, mcause
+    andi    t0, t0, 0x7ff
+    lui     t5, %hi(TEST_DEVICE_BASE)
+    addi    t5, t5, %lo(TEST_DEVICE_BASE)
+    sw      t0, 36(t5)
+5:  csrrsi  t0, 0x345, 8
+    beqz    t0, 4f
+    lw      t0, 0(t0)
+    jalr    t0
+    j       5b
+4:  csrrci  x0, mstatus, 8
+    mret
+    TEST_TRAP_EVENTS_CLIC_TAIL
+    .endm
+
     .macro TEST_HTIF
     .section .htif, "aw", @progbits
     .align 6

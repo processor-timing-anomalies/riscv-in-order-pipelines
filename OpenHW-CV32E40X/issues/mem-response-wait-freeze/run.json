@@ -1,6 +1,6 @@
 {
- "test": "hz-I-sw-base-00",
- "captured": "2026-10-15",
+ "test": "mem-response-wait-freeze",
+ "captured": "2026-10-29",
  "core": "cv32e40x",
  "rtl_repo": "https://github.com/openhwgroup/cv32e40x.git",
  "rtl_rev": "d952cd63bc1b4eb58cd893c28ef8283c781e345e",
@@ -13,8 +13,8 @@
   "repro.S"
  ],
  "traces": {
-  "rtl": 3399,
-  "spike": 3399
+  "rtl": 51,
+  "spike": 51
  },
  "bus_schedule": "respond:2"
 }

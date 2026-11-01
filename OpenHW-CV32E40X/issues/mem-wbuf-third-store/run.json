@@ -1,6 +1,6 @@
 {
- "test": "hzs-shape-01-zmmul-00",
- "captured": "2026-10-12",
+ "test": "mem-wbuf-third-store",
+ "captured": "2026-10-29",
  "core": "cv32e40x-pma",
  "rtl_repo": "https://github.com/openhwgroup/cv32e40x.git",
  "rtl_rev": "d952cd63bc1b4eb58cd893c28ef8283c781e345e",
@@ -12,5 +12,9 @@
  "repro": [
   "repro.S"
  ],
- "traces": {}
+ "traces": {
+  "rtl": 35,
+  "spike": 35
+ },
+ "bus_schedule": "hand:accept-1-0-2-3"
 }

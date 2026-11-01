@@ -4,6 +4,7 @@
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Cost: one cycle on every read of mhpmcounter3h while an instruction is in WB
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 

@@ -10,7 +10,7 @@
 #
 # What the RTL did, from the run this was captured from (run.json has the rest; a cycle count is the
 # cycles between a retirement and the one before it, CYCLE in rtl.rvvi.txt):
-#   orders 41..44 (csrrs t0, mcause, zero: 2 cycles after the previous retirement): the NMI's taking: the load at order 41 is answered with a bus error; orders 42 and 43 retire while the NMI is pending; order 44 is the handler's first retirement, mcause 0x80000400; the instructions in flight behind 43 are killed and run again after the handler's mret
+#   orders 31..33 (jal zero, 128: 5 cycles after the previous retirement): the store at order 31 asks the test device for a bus error on the next load; the load at order 32 retires with it (1 cycle); nothing retires while the NMI is pending; order 33 is the handler's first retirement, 5 cycles after the load, mcause 0x80000400, and the instruction behind the load is killed and runs again after the handler's mret (order 43); with a second load right behind the faulting one (orders 49-52) that load retires too, its request already out, and the handler follows 5 cycles after it
 #
 # The traces: rtl.rvvi.txt (the RTL, with CYCLE per retirement) and spike.rvvi.txt, RVVI-TEXT 0.5; the lines
 # that matter are followed by a META line saying what was seen there.
@@ -19,7 +19,7 @@ CROSS    ?= riscv64-unknown-elf-
 MARCH    ?= rv32i_zicsr
 MABI     ?= ilp32
 SPIKE    ?= spike
-SPIKE_ISA ?= rv32imc_zicsr_zifencei_zba_zbb_zbs_zcb_zicclsm_zicntr_zihpm
+SPIKE_ISA ?= rv32imc_zicsr_zifencei_zba_zbb_zbs_zcb_zicclsm_zicntr_zihpm_zcmt
 PRIV     ?= m
 MEM      ?= 0x80000000:0x400000
 BOOT     ?= 0x80000000

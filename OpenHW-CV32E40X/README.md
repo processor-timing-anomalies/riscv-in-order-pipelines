@@ -22,8 +22,7 @@ base's bit-manipulation set (`B_EXT=ZBA_ZBB_ZBC_ZBS`).  Every issue names the co
 
 <!-- generated: found -->
 **Comparing the RTL against the timing its documentation promises, on the base build and the 5 configurations, we
-found 30 anomalies: 2 in the RTL, 6 on performance, 22 in the documentation.**  28 of them have an issue directory
-with a program that reproduces them; the other 2 were read in the RTL source or seen in a run no small program repeats yet.
+found 30 anomalies: 2 in the RTL, 6 on performance, 22 in the documentation.**  28 of them have an issue directory: 21 hold a program that reproduces the anomaly and the two traces of its run; 7 (`mem-address-phase`, `mem-late-data-forward`, `mem-pma-split-first-half`, `mem-response-frees-slot`, `mem-responses-in-order`, `mem-split-second-half`, `mem-wbuf-fence-drain`) hold the issue text alone, the anomaly read in the RTL source or seen in a run no small program repeats yet.  The other 2 (`csr-rows-unnamed`, `clic-minhv-after-restart`) have no directory; the findings page states each.
 
 | | |
 |---|---|
@@ -36,10 +35,10 @@ corrected by the issues above, agreed with the RTL on every other instruction:
 
 | | |
 |---|---|
-| the focused test suites | 4,421 tests (4,267 generated in 7 suites, plus the RISC-V architecture certification tests), 8,454,387 instruction intervals compared on the base build, 0 disagreeing |
+| the focused test suites | 4,470 tests (4,301 generated in 7 suites, the RISC-V architecture certification tests and a smoke program), 8,436,463 instruction intervals compared on the base build, 0 disagreeing |
 | the benchmarks | 105 programs (Dhrystone, CoreMark, riscv-tests, Embench-IoT, Mälardalen, TACLeBench), 66,570,521 instruction intervals, 0 disagreeing |
 | the search beyond the suites | 463,409 distinct instruction shapes, 0 disagreeing |
-| the documentation's own timing statements | 19 of 19 proved on the RTL |
+| the documentation's own timing statements | 19 of 19 proved on the RTL (the rows of the timing specification's sections 4.2 and 4.3) |
 <!-- end -->
 
 ## What is in this repository
@@ -48,23 +47,24 @@ corrected by the issues above, agreed with the RTL on every other instruction:
 |---|---|
 | [timing.md](timing.md) | our accurate, complete timing specification for the CV32E40X: what the core promises in time, every statement with its source (the manual, the RTL source, or a measurement) and its grade |
 | [findings.md](findings.md) | every anomaly we found with the core: its class, its cost, whom it concerns, its status and the issue directory it points at |
-| [issues/](issues/) | one directory per finding: its `README.md` (the issue), the reproducer program with its `env/` and `Makefile`, the two traces, `run.json` (the capture's facts, machine-readable) |
+| [issues/](issues/) | one directory per finding that has one: its `README.md` (the issue) and, where a program was captured, the reproducer with its `env/` and `Makefile`, the two traces and `run.json` (the capture's facts, machine-readable); [issues/README.md](issues/README.md) says what each directory holds |
 
 ## The numbers
 
 <!-- generated: numbers -->
-As of the regression recorded on 24 October 2026, our tree at commit `f05a58b`.
+As of the regression recorded on 1 November 2026, at commit `d98bca8` of our tree (the commit that recorded it); the test and interval counts are
+summed from that record's per-test table.
 
 | | |
 |---|---|
-| statements of the documentation, each proved against the RTL | 19 of 19 |
-| instruction intervals compared, RTL against the documented timing | 8,454,387 over 9 suites, 0 disagreeing |
+| statements of the documentation, each proved against the RTL | 19 of 19 (the rows of the timing specification's sections 4.2 and 4.3) |
+| instruction intervals compared, RTL against the documented timing | 8,436,463 over 7 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
 | instruction sequences searched beyond the suites | 463,409 distinct shapes, 0 disagreeing |
 | anomalies | 30: 20 where the documentation is behind the hardware, 6 where a stall fires wider than its cause, 4 not a timing matter |
 | issue directories | 28: 21 for the documentation, 6 on performance, 1 on the RTL |
 | injected timing and functional mutation faults the programs catch | 46 of 49 caught; the 3 survivors equivalent to the original, each explained |
 | instruction shapes of real programs that the generated suites also exercise | 97.8% of their retirements; the remaining 2.2% are shapes no suite makes yet |
-| cycles per instruction over the benchmarks' timed parts | CPI 1.233, IPC 0.811, over 59,646,454 instructions in 105 programs (per suite in the results page) |
+| cycles per instruction over the benchmarks' timed parts | CPI 1.233, IPC 0.811, over 59,646,454 instructions in 105 programs (per suite in the runs table below) |
 <!-- end -->
 
 ## The runs behind the numbers
@@ -72,7 +72,7 @@ As of the regression recorded on 24 October 2026, our tree at commit `f05a58b`.
 <!-- generated: runs -->
 | our test suites | tests | passed | skipped | intervals compared | disagreeing |
 |---|---:|---:|---:|---:|---:|
-| the generated suites (7) and the RISC-V architecture certification tests | 4,421 | 2,014 | 2,407 | 8,454,387 | 0 |
+| 7 generated suites, the RISC-V architecture certification tests and a smoke program | 4,470 | 2,025 | 2,445 | 8,436,463 | 0 |
 
 A skipped test is one the core cannot run as built (an extension it lacks, a case the generator could not place); it is counted, not hidden.
 
@@ -99,16 +99,17 @@ What "no timing anomaly left" rests on, in eight parts, each with its state:
 | the documented statements, each proved | closed |
 | everything generated, compared against the documented timing | closed |
 | the RTL's own stall and flush mechanisms, read from its source: each exercised by a test or named unreachable with its reason | closed, except 3 terms not yet exercised (`sys_wfe_insn`, `wfe_in_wb`, `mintthresh_we`), each awaiting a feature of ours; the specification's section 10 says which |
-| bus timing under a schedule | the scheduled suite: 857,223 intervals, 0 disagreeing; the survey does not yet read the schedule |
+| bus timing under a schedule | the scheduled suite: 864,221 intervals, 0 disagreeing; the survey does not yet read the schedule |
 | state interactions: CSR side effects, modes, reserved forms | 19 crosses of 41,918 blocks on the core and its configurations, 0 disagreeing |
 | real programs' shapes, covered by the suites | 97.8% covered; the rest open |
 | detection power: injected timing and functional mutation faults | closed (the 3 survivors explained) |
-| timing conditions in the RTL that the manual says nothing about, each answered by reading the source and measuring | 31 found; 27 answered and now stated in the specification; 4 open: `fencei_ack_wait`, `tbljmp_behind_mret`, `jalr_after_mnxti_d1`, `clic_ptr_csr_impl_write` |
+| timing conditions in the RTL that the manual says nothing about, each a question answered by reading the source and measuring | 31 questions (18 on the base build, 13 on the CLIC build); 27 answered and now stated in the specification; 4 open: `fencei_ack_wait`, `tbljmp_behind_mret` (the base build); `jalr_after_mnxti_d1`, `clic_ptr_csr_impl_write` (the CLIC build) |
 <!-- end -->
 
 ## How to read an issue
 
-Every issue directory's `README.md` has the same parts, in this order:
+Every issue directory's `README.md` has these parts, in this order; a part is left out when there is nothing for it (no
+sentence of the manual to quote, no measurement beyond the one under Issue, no program captured yet):
 
 | part | what it says |
 |---|---|

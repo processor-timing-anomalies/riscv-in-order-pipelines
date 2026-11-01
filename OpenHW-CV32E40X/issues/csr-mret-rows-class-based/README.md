@@ -4,6 +4,7 @@
 - Class: over-wide -- the stall fires in cases that have no cause for it: an interlock wider than needed, a performance flaw. The mret interlock fires on any CSR access, mscratch included, which mret does not read: the trigger is wider than its cause (mret's implicit reads of mstatus and mepc), as the manual words it
 - Cost: two cycles on an mret one behind any CSR access and one cycle two behind, mscratch and the other CSRs mret does not read included
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 
@@ -21,7 +22,7 @@ The program in this directory, built with the RISC-V GNU toolchain and run on Sp
 
 Observed on the RTL (the run this was captured from):
 
-- orders 53..54 (mret: 3 cycles after the previous retirement): an mret one behind a csrrc of mscratch, a CSR it does not read, retires +2 (the manual's rows 126 and 118 say any CSR access; the second window, orders 110-112, is the same two behind at +1)
+- orders 13..14 (mret: 3 cycles after the previous retirement): an mret one behind a csrrc of mscratch, a CSR it does not read, retires 3 cycles after it: 1 plus a stall of 2, as the manual's rows 126 and 118 word it for any CSR access; two behind (orders 22-24) 2 cycles, three behind (orders 32-35) 1
 
 ## Trace
 
@@ -29,7 +30,7 @@ RVVI-TEXT 0.5 traces of the run: `rtl.rvvi.txt`, `spike.rvvi.txt`.  A `META 2 IS
 
 ## Found by
 
-RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-15
+RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-29
 
 ---
 

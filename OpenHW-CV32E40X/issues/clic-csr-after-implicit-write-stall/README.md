@@ -34,7 +34,7 @@ The program in this directory, built with the RISC-V GNU toolchain and run on Sp
 
 Observed on the RTL (the run this was captured from):
 
-- order 323 csrrw s5, 0x347, s2: RTL 2 cycles; the documentation, read as written, gives 1
+- orders 8..9 (csrrw s5, 0x347, s2: 2 cycles after the previous retirement): in CLIC mode a write of mintthresh one behind csrrw rd, mscratchcswl, rs1 retires in 2 cycles where it takes 1 behind an explicit write of mscratch (orders 33-34): the mscratchcswl access writes mscratch implicitly and the core holds every explicit CSR access in EX while that implicit write is in WB, whether or not the access names a register the swap touches; a write of mscratch one behind it (orders 14-15) 2, a read of mintthresh (orders 20-21) 2, a write of mintthresh two behind it (orders 26-28) 1
 
 ## Trace
 
@@ -42,7 +42,7 @@ RVVI-TEXT 0.5 traces of the run: `rtl.rvvi.txt`, `spike.rvvi.txt`.  A `META 2 IS
 
 ## Found by
 
-RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-22
+RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-29
 
 ---
 

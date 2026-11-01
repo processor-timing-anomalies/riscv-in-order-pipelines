@@ -4,6 +4,7 @@
 - Class: over-wide -- the stall fires in cases that have no cause for it: an interlock wider than needed, a performance flaw. The cause would be an implicit CSR write by the tselect access; the trigger is the address alone: a pure read of tselect (csrrs rd, tselect, x0, which writes nothing) makes the next CSR instruction wait, measured; the write form is expected to pay the same and is not yet in a block
 - Cost: one cycle on every CSR instruction one behind any access of tselect, a read included
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 

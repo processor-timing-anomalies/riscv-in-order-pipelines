@@ -1,6 +1,6 @@
 {
- "test": "hze-nmi-00",
- "captured": "2026-10-18",
+ "test": "nmi-taken-kill",
+ "captured": "2026-10-29",
  "core": "cv32e40x",
  "rtl_repo": "https://github.com/openhwgroup/cv32e40x.git",
  "rtl_rev": "d952cd63bc1b4eb58cd893c28ef8283c781e345e",
@@ -13,8 +13,7 @@
   "repro.S"
  ],
  "traces": {
-  "rtl": 328,
-  "spike": 328
- },
- "bus_schedule": "none"
+  "rtl": 69,
+  "spike": 69
+ }
 }

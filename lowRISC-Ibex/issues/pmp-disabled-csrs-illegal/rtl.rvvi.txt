@@ -1,0 +1,85 @@
+VERSION 0 5
+VENDOR ibex1_tb 1 0 'Ibex RTL under Verilator'
+PARAMS 6 ILEN 32 XLEN 32 FLEN 0 VLEN 0 NHART 1 RETIRE 1
+RET 0x80000080 0x7810006f 'jal zero, 3968' MODE 0x3 CYCLE 15 META 2 PCW 0x80001000
+RET 0x80001000 0x00003117 'auipc sp, 0x3' MODE 0x3 CYCLE 1 X 2 0x80004000 META 2 PCW 0x80001004
+RET 0x80001004 0x01010113 'addi sp, sp, 16' MODE 0x3 CYCLE 1 X 2 0x80004010 META 2 PCW 0x80001008
+RET 0x80001008 0x00000297 'auipc t0, 0x0' MODE 0x3 CYCLE 1 X 5 0x80001008 META 2 PCW 0x8000100c
+RET 0x8000100c 0x0f828293 'addi t0, t0, 248' MODE 0x3 CYCLE 1 X 5 0x80001100 META 2 PCW 0x80001010
+RET 0x80001010 0x30529073 'csrrw zero, mtvec, t0' MODE 0x3 CYCLE 1 C 0x305 0x80001101 META 2 PCW 0x80001014
+RET 0x80001014 0x00001037 'lui zero, 0x1' MODE 0x3 CYCLE 3 META 2 PCW 0x80001018
+RET 0x80001018 0x00000e93 'addi t4, zero, 0' MODE 0x3 CYCLE 1 X 29 0x00000000 META 2 PCW 0x8000101c
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t4, zero, 0: 1 cycles after the previous retirement)"
+TRAP 0x8000101c 0x3a0023f3 'csrrs t2, pmpcfg0, zero' MODE 0x3 CYCLE 1 C 0x300 0x00001800 C 0x341 0x8000101c C 0x342 0x00000002 C 0x343 0x3a0023f3 C 0x7c0 0x00000040 META 2 PCW 0x80001100
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (csrrs t2, pmpcfg0, zero: 1 cycles after the previous retirement)"
+RET 0x80001100 0x0800006f 'jal zero, 128' MODE 0x3 CYCLE 4 META 2 PCW 0x80001180
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (jal zero, 128: 4 cycles after the previous retirement)"
+RET 0x80001180 0x341022f3 'csrrs t0, mepc, zero' MODE 0x3 CYCLE 1 X 5 0x8000101c META 2 PCW 0x80001184
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (csrrs t0, mepc, zero: 1 cycles after the previous retirement)"
+RET 0x80001184 0x34202f73 'csrrs t5, mcause, zero' MODE 0x3 CYCLE 1 X 30 0x00000002 META 2 PCW 0x80001188
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (csrrs t5, mcause, zero: 1 cycles after the previous retirement)"
+RET 0x80001188 0xff8f0f13 'addi t5, t5, -8' MODE 0x3 CYCLE 1 X 30 0xfffffffa META 2 PCW 0x8000118c
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t5, t5, -8: 1 cycles after the previous retirement)"
+RET 0x8000118c 0x020f0a63 'beq t5, zero, 52' MODE 0x3 CYCLE 1 META 2 PCW 0x80001190
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (beq t5, zero, 52: 1 cycles after the previous retirement)"
+RET 0x80001190 0x007f0f13 'addi t5, t5, 7' MODE 0x3 CYCLE 1 X 30 0x00000001 META 2 PCW 0x80001194
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t5, t5, 7: 1 cycles after the previous retirement)"
+RET 0x80001194 0x020f0263 'beq t5, zero, 36' MODE 0x3 CYCLE 1 META 2 PCW 0x80001198
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (beq t5, zero, 36: 1 cycles after the previous retirement)"
+RET 0x80001198 0x0002df03 'lhu t5, 0(t0)' MODE 0x3 CYCLE 2 X 30 0x000023f3 MEM D 2 0x8000101c 0x8000101c 0 META 2 PCW 0x8000119c
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (lhu t5, 0(t0): 2 cycles after the previous retirement)"
+RET 0x8000119c 0x003f7f13 'andi t5, t5, 3' MODE 0x3 CYCLE 1 X 30 0x00000003 META 2 PCW 0x800011a0
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (andi t5, t5, 3: 1 cycles after the previous retirement)"
+RET 0x800011a0 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x8000101e META 2 PCW 0x800011a4
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t0, t0, 2: 1 cycles after the previous retirement)"
+RET 0x800011a4 0xffdf0f13 'addi t5, t5, -3' MODE 0x3 CYCLE 1 X 30 0x00000000 META 2 PCW 0x800011a8
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t5, t5, -3: 1 cycles after the previous retirement)"
+RET 0x800011a8 0x000f1463 'bne t5, zero, 8' MODE 0x3 CYCLE 1 META 2 PCW 0x800011ac
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (bne t5, zero, 8: 1 cycles after the previous retirement)"
+RET 0x800011ac 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80001020 META 2 PCW 0x800011b0
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t0, t0, 2: 1 cycles after the previous retirement)"
+RET 0x800011b0 0x34129073 'csrrw zero, mepc, t0' MODE 0x3 CYCLE 1 C 0x341 0x80001020 META 2 PCW 0x800011b4
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (csrrw zero, mepc, t0: 1 cycles after the previous retirement)"
+RET 0x800011b4 0x30200073 'mret' MODE 0x3 CYCLE 1 C 0x300 0x00000080 C 0x7c0 0x00000000 META 2 PCW 0x80001020
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (mret: 1 cycles after the previous retirement)"
+RET 0x80001020 0x001e8e93 'addi t4, t4, 1' MODE 0x3 CYCLE 3 X 29 0x00000001 META 2 PCW 0x80001024
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t4, t4, 1: 3 cycles after the previous retirement)"
+TRAP 0x80001024 0x3b002e73 'csrrs t3, pmpaddr0, zero' MODE 0x3 CYCLE 1 C 0x300 0x00001800 C 0x341 0x80001024 C 0x342 0x00000002 C 0x343 0x3b002e73 C 0x7c0 0x00000040 META 2 PCW 0x80001100
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (csrrs t3, pmpaddr0, zero: 1 cycles after the previous retirement)"
+RET 0x80001100 0x0800006f 'jal zero, 128' MODE 0x3 CYCLE 4 META 2 PCW 0x80001180
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (jal zero, 128: 4 cycles after the previous retirement)"
+RET 0x80001180 0x341022f3 'csrrs t0, mepc, zero' MODE 0x3 CYCLE 1 X 5 0x80001024 META 2 PCW 0x80001184
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (csrrs t0, mepc, zero: 1 cycles after the previous retirement)"
+RET 0x80001184 0x34202f73 'csrrs t5, mcause, zero' MODE 0x3 CYCLE 1 X 30 0x00000002 META 2 PCW 0x80001188
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (csrrs t5, mcause, zero: 1 cycles after the previous retirement)"
+RET 0x80001188 0xff8f0f13 'addi t5, t5, -8' MODE 0x3 CYCLE 1 X 30 0xfffffffa META 2 PCW 0x8000118c
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t5, t5, -8: 1 cycles after the previous retirement)"
+RET 0x8000118c 0x020f0a63 'beq t5, zero, 52' MODE 0x3 CYCLE 1 META 2 PCW 0x80001190
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (beq t5, zero, 52: 1 cycles after the previous retirement)"
+RET 0x80001190 0x007f0f13 'addi t5, t5, 7' MODE 0x3 CYCLE 1 X 30 0x00000001 META 2 PCW 0x80001194
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t5, t5, 7: 1 cycles after the previous retirement)"
+RET 0x80001194 0x020f0263 'beq t5, zero, 36' MODE 0x3 CYCLE 1 META 2 PCW 0x80001198
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (beq t5, zero, 36: 1 cycles after the previous retirement)"
+RET 0x80001198 0x0002df03 'lhu t5, 0(t0)' MODE 0x3 CYCLE 2 X 30 0x00002e73 MEM D 2 0x80001024 0x80001024 0 META 2 PCW 0x8000119c
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (lhu t5, 0(t0): 2 cycles after the previous retirement)"
+RET 0x8000119c 0x003f7f13 'andi t5, t5, 3' MODE 0x3 CYCLE 1 X 30 0x00000003 META 2 PCW 0x800011a0
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (andi t5, t5, 3: 1 cycles after the previous retirement)"
+RET 0x800011a0 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80001026 META 2 PCW 0x800011a4
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t0, t0, 2: 1 cycles after the previous retirement)"
+RET 0x800011a4 0xffdf0f13 'addi t5, t5, -3' MODE 0x3 CYCLE 1 X 30 0x00000000 META 2 PCW 0x800011a8
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t5, t5, -3: 1 cycles after the previous retirement)"
+RET 0x800011a8 0x000f1463 'bne t5, zero, 8' MODE 0x3 CYCLE 1 META 2 PCW 0x800011ac
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (bne t5, zero, 8: 1 cycles after the previous retirement)"
+RET 0x800011ac 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80001028 META 2 PCW 0x800011b0
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (addi t0, t0, 2: 1 cycles after the previous retirement)"
+RET 0x800011b0 0x34129073 'csrrw zero, mepc, t0' MODE 0x3 CYCLE 1 C 0x341 0x80001028 META 2 PCW 0x800011b4
+META 2 ISSUE "orders 8 and 24: a csrr of pmpcfg0 and of pmpaddr0 on a build with PMPEnable = 0 each raise an illegal-instruction exception (mcause 2), the handler resuming behind them; the manual says the registers read as zero (csrrw zero, mepc, t0: 1 cycles after the previous retirement)"
+RET 0x800011b4 0x30200073 'mret' MODE 0x3 CYCLE 1 C 0x300 0x00000080 C 0x7c0 0x00000000 META 2 PCW 0x80001028
+RET 0x80001028 0x001e8e93 'addi t4, t4, 1' MODE 0x3 CYCLE 3 X 29 0x00000002 META 2 PCW 0x8000102c
+RET 0x8000102c 0x00200313 'addi t1, zero, 2' MODE 0x3 CYCLE 1 X 6 0x00000002 META 2 PCW 0x80001030
+RET 0x80001030 0x026e9063 'bne t4, t1, 32' MODE 0x3 CYCLE 1 META 2 PCW 0x80001034
+RET 0x80001034 0x00002037 'lui zero, 0x2' MODE 0x3 CYCLE 1 META 2 PCW 0x80001038
+RET 0x80001038 0x00002297 'auipc t0, 0x2' MODE 0x3 CYCLE 1 X 5 0x80003038 META 2 PCW 0x8000103c
+RET 0x8000103c 0xfc828293 'addi t0, t0, -56' MODE 0x3 CYCLE 1 X 5 0x80003000 META 2 PCW 0x80001040
+RET 0x80001040 0x00100313 'addi t1, zero, 1' MODE 0x3 CYCLE 1 X 6 0x00000001 META 2 PCW 0x80001044
+RET 0x80001044 0x0062a023 'sw t1, 0(t0)' MODE 0x3 CYCLE 2 MEM D 4 0x80003000 0x80003000 0 META 2 PCW 0x80001048

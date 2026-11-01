@@ -1,6 +1,6 @@
 {
- "test": "hzn-clic5-002",
- "captured": "2026-10-22",
+ "test": "clic-csr-after-implicit-write-stall",
+ "captured": "2026-10-29",
  "core": "cv32e40x-clic",
  "rtl_repo": "https://github.com/openhwgroup/cv32e40x.git",
  "rtl_rev": "d952cd63bc1b4eb58cd893c28ef8283c781e345e",
@@ -13,7 +13,7 @@
   "repro.S"
  ],
  "traces": {
-  "rtl": 734,
-  "spike": 734
+  "rtl": 40,
+  "spike": 40
  }
 }

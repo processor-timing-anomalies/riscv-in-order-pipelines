@@ -1,6 +1,6 @@
 {
- "test": "own-cv32e40x-clic-00",
- "captured": "2026-10-19",
+ "test": "clic-implicit-csr-read-stall",
+ "captured": "2026-10-29",
  "core": "cv32e40x-clic",
  "rtl_repo": "https://github.com/openhwgroup/cv32e40x.git",
  "rtl_rev": "d952cd63bc1b4eb58cd893c28ef8283c781e345e",
@@ -13,7 +13,7 @@
   "repro.S"
  ],
  "traces": {
-  "rtl": 5078,
-  "spike": 5078
+  "rtl": 36,
+  "spike": 36
  }
 }

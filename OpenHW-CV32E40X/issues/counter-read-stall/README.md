@@ -4,6 +4,7 @@
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Cost: one cycle on every read of a counter while an instruction is in WB
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 
@@ -25,8 +26,8 @@ csrrs of mcycle or minstret retires 2 cycles after the instruction before it, st
 
 The programs in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):
 
-- `repro-probe-csr-read.S`
-- `repro-probe-csrs.S`
+- `repro-probe-csr-read.S` (a probe program of this finding; the traces are not of it)
+- `repro-probe-csrs.S` (a probe program of this finding; the traces are not of it)
 - `repro.S`
 
     make           build repro.elf (and the probes) with the toolchain

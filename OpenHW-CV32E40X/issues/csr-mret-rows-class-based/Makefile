@@ -7,7 +7,7 @@
 #
 # What the RTL did, from the run this was captured from (run.json has the rest; a cycle count is the
 # cycles between a retirement and the one before it, CYCLE in rtl.rvvi.txt):
-#   orders 53..54 (mret: 3 cycles after the previous retirement): an mret one behind a csrrc of mscratch, a CSR it does not read, retires +2 (the manual's rows 126 and 118 say any CSR access; the second window, orders 110-112, is the same two behind at +1)
+#   orders 13..14 (mret: 3 cycles after the previous retirement): an mret one behind a csrrc of mscratch, a CSR it does not read, retires 3 cycles after it: 1 plus a stall of 2, as the manual's rows 126 and 118 word it for any CSR access; two behind (orders 22-24) 2 cycles, three behind (orders 32-35) 1
 #
 # The traces: rtl.rvvi.txt (the RTL, with CYCLE per retirement) and spike.rvvi.txt, RVVI-TEXT 0.5; the lines
 # that matter are followed by a META line saying what was seen there.
@@ -16,7 +16,7 @@ CROSS    ?= riscv64-unknown-elf-
 MARCH    ?= rv32i_zicsr
 MABI     ?= ilp32
 SPIKE    ?= spike
-SPIKE_ISA ?= rv32imc_zicsr_zifencei_zba_zbb_zbs_zcb_zicclsm_zicntr_zihpm
+SPIKE_ISA ?= rv32imc_zicsr_zifencei_zba_zbb_zbs_zcb_zicclsm_zicntr_zihpm_zcmt
 PRIV     ?= m
 MEM      ?= 0x80000000:0x400000
 BOOT     ?= 0x80000000

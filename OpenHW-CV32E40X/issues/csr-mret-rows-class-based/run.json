@@ -1,6 +1,6 @@
 {
- "test": "hz-Sm-mret-zicsr-00",
- "captured": "2026-10-15",
+ "test": "csr-mret-rows-class-based",
+ "captured": "2026-10-29",
  "core": "cv32e40x",
  "rtl_repo": "https://github.com/openhwgroup/cv32e40x.git",
  "rtl_rev": "d952cd63bc1b4eb58cd893c28ef8283c781e345e",
@@ -13,7 +13,7 @@
   "repro.S"
  ],
  "traces": {
-  "rtl": 639,
-  "spike": 639
+  "rtl": 41,
+  "spike": 41
  }
 }

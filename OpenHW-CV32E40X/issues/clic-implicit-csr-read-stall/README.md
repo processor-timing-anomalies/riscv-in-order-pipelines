@@ -34,7 +34,7 @@ The program in this directory, built with the RISC-V GNU toolchain and run on Sp
 
 Observed on the RTL (the run this was captured from):
 
-- orders 4905..4908 (csrrs a6, 0x345, zero: 2 cycles after the previous retirement): the mnxti read one behind a CSR instruction: 2 cycles where any other CSR instruction takes 1
+- orders 10..11 (csrrs a6, 0x345, zero: 2 cycles after the previous retirement): in CLIC mode a read of mnxti (csrrs rd, mnxti, x0) one behind a CSR instruction (a csrrc of mscratch) retires in 2 cycles where any other CSR instruction in that position takes 1 (a read of mtval, orders 22-23: 1): the core reads mstatus implicitly for mnxti and holds the access in EX while a CSR instruction is in WB; the access of mscratchcswl (csrrw rd, mscratchcswl, rs1) one behind a csrrs of mscratch (orders 16-17) likewise 2; the mnxti read two behind (orders 28-30) 1
 
 ## Trace
 
@@ -42,7 +42,7 @@ RVVI-TEXT 0.5 traces of the run: `rtl.rvvi.txt`, `spike.rvvi.txt`.  A `META 2 IS
 
 ## Found by
 
-RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-19
+RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-29
 
 ---
 

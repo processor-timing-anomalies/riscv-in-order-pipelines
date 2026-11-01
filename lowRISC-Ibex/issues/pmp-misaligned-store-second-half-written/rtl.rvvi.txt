@@ -1,0 +1,54 @@
+VERSION 0 5
+VENDOR ibex1_tb 1 0 'Ibex RTL under Verilator'
+PARAMS 6 ILEN 32 XLEN 32 FLEN 0 VLEN 0 NHART 1 RETIRE 1
+RET 0x80000080 0x7810006f 'jal zero, 3968' MODE 0x3 CYCLE 15 META 2 PCW 0x80001000
+RET 0x80001000 0x00003117 'auipc sp, 0x3' MODE 0x3 CYCLE 2 X 2 0x80004000 META 2 PCW 0x80001004
+RET 0x80001004 0x01010113 'addi sp, sp, 16' MODE 0x3 CYCLE 1 X 2 0x80004010 META 2 PCW 0x80001008
+RET 0x80001008 0x00000297 'auipc t0, 0x0' MODE 0x3 CYCLE 1 X 5 0x80001008 META 2 PCW 0x8000100c
+RET 0x8000100c 0x0f828293 'addi t0, t0, 248' MODE 0x3 CYCLE 1 X 5 0x80001100 META 2 PCW 0x80001010
+RET 0x80001010 0x30529073 'csrrw zero, mtvec, t0' MODE 0x3 CYCLE 1 C 0x305 0x80001101 META 2 PCW 0x80001014
+RET 0x80001014 0x00001037 'lui zero, 0x1' MODE 0x3 CYCLE 3 META 2 PCW 0x80001018
+RET 0x80001018 0x00001397 'auipc t2, 0x1' MODE 0x3 CYCLE 1 X 7 0x80002018 META 2 PCW 0x8000101c
+RET 0x8000101c 0xfe838393 'addi t2, t2, -24' MODE 0x3 CYCLE 1 X 7 0x80002000 META 2 PCW 0x80001020
+RET 0x80001020 0x0023de13 'srli t3, t2, 2' MODE 0x3 CYCLE 1 X 28 0x20000800 META 2 PCW 0x80001024
+RET 0x80001024 0x3b0e1073 'csrrw zero, pmpaddr0, t3' MODE 0x3 CYCLE 1 C 0x3b0 0x20000800 META 2 PCW 0x80001028
+RET 0x80001028 0x09100313 'addi t1, zero, 145' MODE 0x3 CYCLE 3 X 6 0x00000091 META 2 PCW 0x8000102c
+RET 0x8000102c 0x3a031073 'csrrw zero, pmpcfg0, t1' MODE 0x3 CYCLE 1 C 0x3a0 0x00000091 META 2 PCW 0x80001030
+RET 0x80001030 0xaabbdeb7 'lui t4, 0xaabbd' MODE 0x3 CYCLE 3 X 29 0xaabbd000 META 2 PCW 0x80001034
+RET 0x80001034 0xcdde8e93 'addi t4, t4, -803' MODE 0x3 CYCLE 1 X 29 0xaabbccdd META 2 PCW 0x80001038
+META 2 ISSUE "addi t4, t4, -803: in the window of the instruction at order 16 (RTL 1 cycles)"
+META 2 ISSUE "addi t4, t4, -803: in the window of the instruction at order 16 (RTL 1 cycles)"
+RET 0x80001038 0x00000493 'addi s1, zero, 0' MODE 0x3 CYCLE 1 X 9 0x00000000 META 2 PCW 0x8000103c
+META 2 ISSUE "addi s1, zero, 0: in the window of the instruction at order 16 (RTL 1 cycles)"
+META 2 ISSUE "addi s1, zero, 0: in the window of the instruction at order 16 (RTL 1 cycles)"
+META 2 ISSUE "addi s1, zero, 0: in the window of the instruction at order 17 (RTL 1 cycles)"
+META 2 ISSUE "addi s1, zero, 0: in the window of the instruction at order 17 (RTL 1 cycles)"
+TRAP 0x8000103c 0x01d3a123 'sw t4, 2(t2)' MODE 0x3 CYCLE 3 META 2 PCW 0x80001100
+META 2 ISSUE "sw t4, 2(t2): the RTL retires it 3 cycle(s) after the previous retirement; the documentation, read as written, gives 2 -- a misaligned store splits into two word-aligned transactions, each checked by the PMP on its own; when the first is refused the LSU goes WAIT_GNT_MIS to WAIT_RVALID_MIS without a transaction and then requests the second half when that half`s own check passes, so the store faults (mcause 7) and the memory holds the second half`s bytes.  The manual states the bus side of it (`the second part is still issued and its response ignored`, for a first part the bus answered with an error); for a PMP refusal the same path writes memory under a faulting store.  Spike faults the whole access and writes nothing, so the two engines differ in memory, visible to the comparison only through a later load of that word -- the document: load_store_unit.rst, `Misaligned Accesses`: if the first part of a misaligned access receives an error response, the second part is still issued and its response ignored; pmp.rst says nothing of misaligned accesses"
+META 2 ISSUE "sw t4, 2(t2): the RTL retires it 3 cycle(s) after the previous retirement; the documentation, read as written, gives 2 -- a misaligned store splits into two word-aligned transactions, each checked by the PMP on its own; when the first is refused the LSU goes WAIT_GNT_MIS to WAIT_RVALID_MIS without a transaction and then requests the second half when that half`s own check passes, so the store faults (mcause 7) and the memory holds the second half`s bytes.  The manual states the bus side of it (`the second part is still issued and its response ignored`, for a first part the bus answered with an error); for a PMP refusal the same path writes memory under a faulting store.  Spike faults the whole access and writes nothing, so the two engines differ in memory, visible to the comparison only through a later load of that word -- the document: load_store_unit.rst, `Misaligned Accesses`: if the first part of a misaligned access receives an error response, the second part is still issued and its response ignored; pmp.rst says nothing of misaligned accesses"
+META 2 ISSUE "sw t4, 2(t2): in the window of the instruction at order 17 (RTL 3 cycles)"
+META 2 ISSUE "sw t4, 2(t2): in the window of the instruction at order 17 (RTL 3 cycles)"
+RET 0x80001100 0x0800006f 'jal zero, 128' MODE 0x3 CYCLE 4 C 0x300 0x00001800 C 0x341 0x8000103c C 0x342 0x00000007 C 0x343 0x80002002 C 0x7c0 0x00000040 META 2 PCW 0x80001180
+META 2 ISSUE "jal zero, 128: the RTL retires it 4 cycle(s) after the previous retirement; the documentation, read as written, gives 5 -- a misaligned store splits into two word-aligned transactions, each checked by the PMP on its own; when the first is refused the LSU goes WAIT_GNT_MIS to WAIT_RVALID_MIS without a transaction and then requests the second half when that half`s own check passes, so the store faults (mcause 7) and the memory holds the second half`s bytes.  The manual states the bus side of it (`the second part is still issued and its response ignored`, for a first part the bus answered with an error); for a PMP refusal the same path writes memory under a faulting store.  Spike faults the whole access and writes nothing, so the two engines differ in memory, visible to the comparison only through a later load of that word -- the document: load_store_unit.rst, `Misaligned Accesses`: if the first part of a misaligned access receives an error response, the second part is still issued and its response ignored; pmp.rst says nothing of misaligned accesses"
+META 2 ISSUE "jal zero, 128: the RTL retires it 4 cycle(s) after the previous retirement; the documentation, read as written, gives 5 -- a misaligned store splits into two word-aligned transactions, each checked by the PMP on its own; when the first is refused the LSU goes WAIT_GNT_MIS to WAIT_RVALID_MIS without a transaction and then requests the second half when that half`s own check passes, so the store faults (mcause 7) and the memory holds the second half`s bytes.  The manual states the bus side of it (`the second part is still issued and its response ignored`, for a first part the bus answered with an error); for a PMP refusal the same path writes memory under a faulting store.  Spike faults the whole access and writes nothing, so the two engines differ in memory, visible to the comparison only through a later load of that word -- the document: load_store_unit.rst, `Misaligned Accesses`: if the first part of a misaligned access receives an error response, the second part is still issued and its response ignored; pmp.rst says nothing of misaligned accesses"
+RET 0x80001180 0x341022f3 'csrrs t0, mepc, zero' MODE 0x3 CYCLE 2 X 5 0x8000103c META 2 PCW 0x80001184
+RET 0x80001184 0x34202f73 'csrrs t5, mcause, zero' MODE 0x3 CYCLE 1 X 30 0x00000007 META 2 PCW 0x80001188
+RET 0x80001188 0xff8f0f13 'addi t5, t5, -8' MODE 0x3 CYCLE 1 X 30 0xffffffff META 2 PCW 0x8000118c
+RET 0x8000118c 0x020f0a63 'beq t5, zero, 52' MODE 0x3 CYCLE 1 META 2 PCW 0x80001190
+RET 0x80001190 0x007f0f13 'addi t5, t5, 7' MODE 0x3 CYCLE 1 X 30 0x00000006 META 2 PCW 0x80001194
+RET 0x80001194 0x020f0263 'beq t5, zero, 36' MODE 0x3 CYCLE 1 META 2 PCW 0x80001198
+RET 0x80001198 0x0002df03 'lhu t5, 0(t0)' MODE 0x3 CYCLE 1 X 30 0x0000a123 MEM D 2 0x8000103c 0x8000103c 0 META 2 PCW 0x8000119c
+RET 0x8000119c 0x003f7f13 'andi t5, t5, 3' MODE 0x3 CYCLE 2 X 30 0x00000003 META 2 PCW 0x800011a0
+RET 0x800011a0 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x8000103e META 2 PCW 0x800011a4
+RET 0x800011a4 0xffdf0f13 'addi t5, t5, -3' MODE 0x3 CYCLE 1 X 30 0x00000000 META 2 PCW 0x800011a8
+RET 0x800011a8 0x000f1463 'bne t5, zero, 8' MODE 0x3 CYCLE 1 META 2 PCW 0x800011ac
+RET 0x800011ac 0x00228293 'addi t0, t0, 2' MODE 0x3 CYCLE 1 X 5 0x80001040 META 2 PCW 0x800011b0
+RET 0x800011b0 0x34129073 'csrrw zero, mepc, t0' MODE 0x3 CYCLE 1 C 0x341 0x80001040 META 2 PCW 0x800011b4
+RET 0x800011b4 0x30200073 'mret' MODE 0x3 CYCLE 1 C 0x300 0x00000080 C 0x7c0 0x00000000 META 2 PCW 0x80001040
+RET 0x80001040 0x00148493 'addi s1, s1, 1' MODE 0x3 CYCLE 3 X 9 0x00000001 META 2 PCW 0x80001044
+RET 0x80001044 0x0043a403 'lw s0, 4(t2)' MODE 0x3 CYCLE 1 X 8 0x0000aabb MEM D 4 0x80002004 0x80002004 0 META 2 PCW 0x80001048
+RET 0x80001048 0x00002037 'lui zero, 0x2' MODE 0x3 CYCLE 1 META 2 PCW 0x8000104c
+RET 0x8000104c 0x00002297 'auipc t0, 0x2' MODE 0x3 CYCLE 1 X 5 0x8000304c META 2 PCW 0x80001050
+RET 0x80001050 0xfb428293 'addi t0, t0, -76' MODE 0x3 CYCLE 1 X 5 0x80003000 META 2 PCW 0x80001054
+RET 0x80001054 0x00100313 'addi t1, zero, 1' MODE 0x3 CYCLE 1 X 6 0x00000001 META 2 PCW 0x80001058
+RET 0x80001058 0x0062a023 'sw t1, 0(t0)' MODE 0x3 CYCLE 1 MEM D 4 0x80003000 0x80003000 0 META 2 PCW 0x8000105c

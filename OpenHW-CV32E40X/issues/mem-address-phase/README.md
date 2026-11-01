@@ -4,6 +4,7 @@
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Cost: one cycle between consecutive data requests: the next issues the cycle after the previous grant
 - Core: cv32e40x
+- Found while running: cv32e40x (the base build)
 
 ## Issue
 

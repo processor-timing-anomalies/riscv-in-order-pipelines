@@ -34,11 +34,15 @@ The program in this directory, built with the RISC-V GNU toolchain and run on Sp
 
 Observed on the RTL (the run this was captured from):
 
-- order 1856 sb a0, 0(s1): RTL 2 cycles; the documentation, read as written, gives 1
+- orders 24..27 (sb a4, 0(a3): 2 cycles after the previous retirement): three bufferable stores behind a 4-cycle mulh, under the bus schedule published beside the program (repro.sched.json): the first (request 1, its grant withheld one cycle) and the second (request 2, granted at once) retire 1 cycle each, the third, the sb (request 3, its grant withheld two cycles), 2 cycles where the write-buffer rule gives 1: the buffer's transfer still holds the last outstanding slot of the response filter; the lb behind it (request 4, its grant withheld three cycles) 6 cycles, the lb after it 1
+
+## Trace
+
+RVVI-TEXT 0.5 traces of the run: `rtl.rvvi.txt`, `spike.rvvi.txt`.  A `META 2 ISSUE "..."` line follows each retirement that matters, saying what was seen there.
 
 ## Found by
 
-RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-12
+RTL https://github.com/openhwgroup/cv32e40x.git at d952cd63bc1b4eb58cd893c28ef8283c781e345e; spike: Spike RISC-V ISA Simulator 1.1.1-dev; verilator: Verilator 5.020 2024-01-01 rev (Debian 5.020-1); gcc: riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0; captured 2026-10-29
 
 ---
 
