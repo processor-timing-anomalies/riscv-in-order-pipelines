@@ -24,7 +24,7 @@ table says what each directory holds.
 | [user-mode-costs-as-machine-mode](user-mode-costs-as-machine-mode/) | documentation | Instructions cost the same cycles in U-mode as in M-mode, unstated | the issue, the program, the two traces, `run.json` |
 | [csr-write-flush-any-csr](csr-write-flush-any-csr/) | performance | Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too | the issue, the program, the two traces, `run.json` |
 
-In all, 13 directories: 13 hold a program that reproduces the anomaly and the two traces of its run.  The other 1 (`pmp-layer-reasons-on-the-pmp-build`) have no directory; the findings page states each.
+In all, 13 directories: 13 hold a program that reproduces the anomaly and the two traces of its run.
 <!-- end -->
 
 © 2026 processor-timing-anomalies, Apache License 2.0

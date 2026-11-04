@@ -4,7 +4,7 @@ This document lists every timing anomaly we found on the Ibex: each place where 
 
 Each anomaly has a **class** (the table below: how the hardware's trigger compares with the cause it exists for), a **cost** in cycles, **whom it concerns** (the RTL's developers, the core's performance, or the documentation), a **status**, and, for most, an **issue directory** under `issues/` with the issue's text and, when a small program reproduces it, that program, the two RVVI traces (the RTL's and the reference's) and the capture's facts; `issues/README.md` says what each directory holds.  The timing specification beside this document (`timing.md`) carries the same anomalies as rows of its section 9, in the context of the rules they break.
 
-Generated from our record on 4 November 2026: 14 anomalies -- 2 in the RTL, 1 on performance, 11 in the documentation.
+Generated from our record on 4 November 2026: 13 anomalies -- 2 in the RTL, 1 on performance, 10 in the documentation.
 
 | class | meaning |
 |---|---|
@@ -31,7 +31,6 @@ Generated from our record on 4 November 2026: 14 anomalies -- 2 in the RTL, 1 on
   - [pmp-fault-wb-entry-four-cycles](#pmp-fault-wb-entry-four-cycles-a-writeback-raised-trap-enters-its-handler-a-cycle-after-an-idex-one): A writeback-raised trap enters its handler a cycle after an ID/EX one
   - [pmp-disabled-csrs-illegal](#pmp-disabled-csrs-illegal-with-pmpenable-0-the-pmp-csrs-trap-as-illegal-not-read-as-zero): With PMPEnable 0 the PMP CSRs trap as illegal, not read as zero
   - [pmp-w-without-r-under-mml](#pmp-w-without-r-under-mml-the-manuals-w1-r0-rule-holds-only-while-mseccfgmml-is-clear): The manual's W=1 R=0 rule holds only while mseccfg.MML is clear
-  - [pmp-layer-reasons-on-the-pmp-build](#pmp-layer-reasons-on-the-pmp-build-two-inherited-layer-reasons-say-no-pmp-on-the-pmp-build): Two inherited layer reasons say 'no PMP' on the PMP build
   - [interrupts-in-user-whatever-mie](#interrupts-in-user-whatever-mie-in-u-mode-an-interrupt-is-taken-with-mstatusmie-clear-the-manuals-enable-rule-omits-it): In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it
   - [user-mode-costs-as-machine-mode](#user-mode-costs-as-machine-mode-instructions-cost-the-same-cycles-in-u-mode-as-in-m-mode-unstated): Instructions cost the same cycles in U-mode as in M-mode, unstated
 
@@ -50,7 +49,6 @@ Generated from our record on 4 November 2026: 14 anomalies -- 2 in the RTL, 1 on
 | A writeback-raised trap enters its handler a cycle after an ID/EX one | document | intent | one cycle more on the entry of every handler of a load or store fault than of an ID/EX exception | ibex-pmp | clarified; to file | [issues/pmp-fault-wb-entry-four-cycles/](issues/pmp-fault-wb-entry-four-cycles/) |
 | With PMPEnable 0 the PMP CSRs trap as illegal, not read as zero | document | intent | none in cycles; an illegal-instruction trap where software expects a zero | ibex | clarified; to file | [issues/pmp-disabled-csrs-illegal/](issues/pmp-disabled-csrs-illegal/) |
 | The manual's W=1 R=0 rule holds only while mseccfg.MML is clear | document | intent | none in cycles; a permission reading software would get wrong from the manual under MML | ibex-pmp | clarified; to file | [issues/pmp-w-without-r-under-mml/](issues/pmp-w-without-r-under-mml/) |
-| Two inherited layer reasons say 'no PMP' on the PMP build | document | intent | none; a reason in our own layer | ibex-pmp | open; not needed | - |
 | In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it | document | intent | none in cycles; software reading the manual would expect MIE to mask interrupts in U, which it does not | ibex | confirmed; to file | [issues/interrupts-in-user-whatever-mie/](issues/interrupts-in-user-whatever-mie/) |
 | Instructions cost the same cycles in U-mode as in M-mode, unstated | document | intent | none; a statement the manual lacks | ibex | confirmed; to file | [issues/user-mode-costs-as-machine-mode/](issues/user-mode-costs-as-machine-mode/) |
 
@@ -235,22 +233,6 @@ cs_registers.rst says a pmpcfg byte with W = 1 and R = 0 'will be treated by the
 **What the RTL does.**  the four PMP files on ibex-pmp, 31 Oct 2026: under MML a region written W = 1, R = 0 reads back as written and decides as a shared region, as the model predicts; under MML clear it reads back W = 0
 
 **From the RTL source (read, not measured).**  `rtl/ibex_cs_registers.sv`, lines 1442 (`pmp_cfg_wdata`): the W bit is kept only with R set or mseccfg.mml set; R is stored as written
-
-### pmp-layer-reasons-on-the-pmp-build: Two inherited layer reasons say 'no PMP' on the PMP build
-
-- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
-- Cost: none; a reason in our own layer
-- Found on: ibex-pmp
-- Status: open; not needed
-- Issue directory: -
-
-ibex-pmp extends ibex-maxperf and inherits two source notes that argue from PMPEnable = 0: memory.regions ('this configuration has no PMP ... one attribution for the whole address space') and code_writable ('no PMP on this configuration, FENCE.I flushes the prefetch buffer').  On ibex-pmp both values stand -- memory.regions is the PMA attribution, which Ibex has none of, the PMP being memory.pmp; code_writable holds while no region denies the write or the fetch, the reset state -- but for reasons the inherited text does not give.  The RTL pass of 31 Oct 2026 listed both as corrections to take through the record.
-
-**What the documentation says.**  our layer's source notes, not Ibex's manual
-
-**What the RTL does.**  ibex_core.sv 1589-1613 (PMPEnable, the three channels built), 1062 (the store's request gated by the PMP); ibex_pmp.sv 136-139 (an unmatched M-mode access allowed with mseccfg 0)
-
-**From the RTL source (read, not measured).**  `rtl/ibex_core.sv`, lines 1062, 1589-1613 (`pmp_req_err`): with PMPEnable the PMP's three channels gate the data request and mark the fetch; with no region programd and mseccfg 0 every M-mode access passes, so the inherited values hold in the reset state
 
 ### [interrupts-in-user-whatever-mie](issues/interrupts-in-user-whatever-mie/): In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it
 

@@ -33,13 +33,13 @@ anomalies below name the build they were found on.
 
 <!-- generated: found -->
 **Comparing the RTL against the timing its documentation promises, on the base build, the maxperf build with B full, PMP and the instruction cache, the maxperf build and the maxperf build with B full and PMP, we
-found 14 anomalies: 2 in the RTL, 1 on performance, 11 in the documentation.**  13 of them have an issue directory: 13 hold a program that reproduces the anomaly and the two traces of its run.  The other 1 (`pmp-layer-reasons-on-the-pmp-build`) have no directory; the findings page states each.
+found 13 anomalies: 2 in the RTL, 1 on performance, 10 in the documentation.**  13 of them have an issue directory: 13 hold a program that reproduces the anomaly and the two traces of its run.
 
 | | |
 |---|---|
 | RTL, 2 | The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU; A misaligned store the PMP refuses still writes its second half |
 | performance, 1 | stalls that fire wider than their cause: a cycle paid in cases that have no reason to pay it |
-| documentation, 11 | places where the manual is silent, behind the hardware, or wrong about a stall or a cost |
+| documentation, 10 | places where the manual is silent, behind the hardware, or wrong about a stall or a cost |
 
 Everywhere else the core's timing was as predicted.  Our predictions for this core, built from its documentation and
 corrected by the issues above, agreed with the RTL on every other instruction:
@@ -87,7 +87,7 @@ summed from the per-test tables of the records of the base build and the maxperf
 | statements of the documentation, each proved against the RTL | 18 of 18 (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
 | instruction intervals compared, RTL against the documented timing | 24,471,592 over 7 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
 | instruction sequences searched beyond the suites | not yet run on this core |
-| anomalies | 14: 11 where the documentation is behind the hardware, 1 where a stall fires wider than its cause, 2 not a timing matter |
+| anomalies | 13: 10 where the documentation is behind the hardware, 1 where a stall fires wider than its cause, 2 not a timing matter |
 | issue directories | 13: 10 for the documentation, 1 on performance, 2 on the RTL |
 | injected timing and functional mutation faults the programs catch | not yet run on this core |
 | instruction shapes of real programs that the generated suites also exercise | 78.3% of their retirements; the remaining 21.7% are shapes no suite makes yet |

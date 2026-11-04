@@ -623,7 +623,6 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 | A writeback-raised trap enters its handler a cycle after an ID/EX one | document | intent | one cycle more on the entry of every handler of a load or store fault than of an ID/EX exception | ibex-pmp | clarified; to file | [issues/pmp-fault-wb-entry-four-cycles/](issues/pmp-fault-wb-entry-four-cycles/) |
 | A misaligned store the PMP refuses still writes its second half | rtl | function | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
 | The manual's W=1 R=0 rule holds only while mseccfg.MML is clear | document | intent | none in cycles; a permission reading software would get wrong from the manual under MML | ibex-pmp | clarified; to file | [issues/pmp-w-without-r-under-mml/](issues/pmp-w-without-r-under-mml/) |
-| Two inherited layer reasons say 'no PMP' on the PMP build | document | intent | none; a reason in our own layer | ibex-pmp | open; not needed | - |
 
 ## 10. What the base build's rows leave to a configuration, and what no test reaches
 
@@ -666,7 +665,7 @@ Every stall and flush term in the RTL source that the base build's own rows do n
 
 | measure | value |
 |---|---|
-| findings in the record | 5 (4 document, 1 rtl) |
+| findings in the record | 4 (3 document, 1 rtl) |
 
 Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
 

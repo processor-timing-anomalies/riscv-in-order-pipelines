@@ -570,7 +570,6 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 | A misaligned store the PMP refuses still writes its second half | rtl | function | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
 | With PMPEnable 0 the PMP CSRs trap as illegal, not read as zero | document | intent | none in cycles; an illegal-instruction trap where software expects a zero | ibex | clarified; to file | [issues/pmp-disabled-csrs-illegal/](issues/pmp-disabled-csrs-illegal/) |
 | The manual's W=1 R=0 rule holds only while mseccfg.MML is clear | document | intent | none in cycles; a permission reading software would get wrong from the manual under MML | ibex-pmp | clarified; to file | [issues/pmp-w-without-r-under-mml/](issues/pmp-w-without-r-under-mml/) |
-| Two inherited layer reasons say 'no PMP' on the PMP build | document | intent | none; a reason in our own layer | ibex-pmp | open; not needed | - |
 | In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it | document | intent | none in cycles; software reading the manual would expect MIE to mask interrupts in U, which it does not | ibex | confirmed; to file | [issues/interrupts-in-user-whatever-mie/](issues/interrupts-in-user-whatever-mie/) |
 | Instructions cost the same cycles in U-mode as in M-mode, unstated | document | intent | none; a statement the manual lacks | ibex | confirmed; to file | [issues/user-mode-costs-as-machine-mode/](issues/user-mode-costs-as-machine-mode/) |
 | Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too | performance | over-wide | two cycles on every write of a CSR that changes nothing in flight: the counters and their inhibit, the event selectors, mtval, mcause, mcounteren; a trap handle | ibex | clarified; to file | [issues/csr-write-flush-any-csr/](issues/csr-write-flush-any-csr/) |
@@ -612,7 +611,7 @@ Every stall and flush term in the RTL source that the base build's own rows do n
 
 | measure | value |
 |---|---|
-| findings in the record | 14 (11 document, 2 rtl, 1 performance) |
+| findings in the record | 13 (10 document, 2 rtl, 1 performance) |
 
 Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
 
