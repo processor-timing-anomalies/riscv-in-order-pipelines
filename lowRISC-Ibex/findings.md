@@ -4,7 +4,7 @@ This document lists every timing anomaly we found on the Ibex: each place where 
 
 Each anomaly has a **class** (the table below: how the hardware's trigger compares with the cause it exists for), a **cost** in cycles, **whom it concerns** (the RTL's developers, the core's performance, or the documentation), a **status**, and, for most, an **issue directory** under `issues/` with the issue's text and, when a small program reproduces it, that program, the two RVVI traces (the RTL's and the reference's) and the capture's facts; `issues/README.md` says what each directory holds.  The timing specification beside this document (`timing.md`) carries the same anomalies as rows of its section 9, in the context of the rules they break.
 
-Generated from our record on 1 November 2026: 14 anomalies -- 2 in the RTL, 1 on performance, 11 in the documentation.
+Generated from our record on 4 November 2026: 14 anomalies -- 2 in the RTL, 1 on performance, 11 in the documentation.
 
 | class | meaning |
 |---|---|
@@ -164,7 +164,7 @@ an exception's handler and an mret's return start executing 3 cycles after the t
 - Status: clarified; to file
 - Issue directory: [issues/interrupt-and-wake-latency-unstated/](issues/interrupt-and-wake-latency-unstated/)
 
-the documentation gives no cycle count for an interrupt's entry nor for a wfi's wake, where the cv32e40x manual gives both: on the small configuration the handler's first instruction retires 5 cycles after the instruction that was in ID/EX when the request arrived (its own 2-cycle vector jal included), 6 after a flushing CSR write, and a wfi costs the instruction behind it 4 cycles when the line is already up (FLUSH, WAIT_SLEEP, SLEEP, FIRST_FETCH), the stream resuming 2 cycles after a later rise.
+the documentation gives no cycle count for an interrupt's entry nor for a wfi's wake, where a core's manual can give both, an entry latency and a wake latency in cycles: on the small configuration the handler's first instruction retires 5 cycles after the instruction that was in ID/EX when the request arrived (its own 2-cycle vector jal included), 6 after a flushing CSR write, and a wfi costs the instruction behind it 4 cycles when the line is already up (FLUSH, WAIT_SLEEP, SLEEP, FIRST_FETCH), the stream resuming 2 cycles after a later rise.
 
 **What the documentation says.**  exceptions_interrupts.rst describes the vector jump (lines 9-13, 28-62) and the enables without cycles; integration.rst 483-487 describes core_sleep_o without the states or their count; pipeline_details.rst's table has no row for an interrupt or a wfi
 

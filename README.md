@@ -40,7 +40,7 @@ is written from the RTL source, every statement cited to its file and lines.
 | core | vendor | RTL | findings | issues | recorded |
 |---|---|---|---|---|---|
 | [CV32E40X](OpenHW-CV32E40X/) | OpenHW Group | [openhwgroup/cv32e40x](https://github.com/openhwgroup/cv32e40x) at [d952cd6](https://github.com/openhwgroup/cv32e40x/tree/d952cd63bc1b4eb58cd893c28ef8283c781e345e) | 30 | 28 | 1 November 2026 |
-| [Ibex](lowRISC-Ibex/) | lowRISC | [lowRISC/ibex](https://github.com/lowRISC/ibex) at [c0c0708](https://github.com/lowRISC/ibex/tree/c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa) | 14 | 13 | 1 November 2026 |
+| [Ibex](lowRISC-Ibex/) | lowRISC | [lowRISC/ibex](https://github.com/lowRISC/ibex) at [c0c0708](https://github.com/lowRISC/ibex/tree/c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa) | 14 | 13 | 4 November 2026 |
 <!-- end -->
 
 Each core has its own directory, named vendor and core as the vendor writes them (`OpenHW-CV32E40X/`, `lowRISC-Ibex/`), with its results in it:

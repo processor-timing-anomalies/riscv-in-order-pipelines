@@ -7,6 +7,7 @@
 | RTL | [lowRISC/ibex](https://github.com/lowRISC/ibex) at commit [c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa](https://github.com/lowRISC/ibex/tree/c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa) |
 | documentation | the documentation in that repository at that commit (`doc/`), its pipeline details page above all |
 | base build | RV32IMC (Zca) with Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MFast RV32B=RV32BNone RV32ZC=RV32Zca BranchTargetALU=0 WritebackStage=0 ICache=0 ICacheECC=0 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=0 PMPGranularity=0 PMPNumRegions=4 MHPMCounterNum=10 MHPMCounterWidth=40`) |
+| the maxperf build with B full, PMP and the instruction cache | RV32IMC (Zca, Zcb, Zcmp) with B full (Zba, Zbb, Zbs, Zbc, Zbkb, Zbkc, Zbkx), PMP (16 regions, Smepmp), the 4 kB two-way instruction cache with ECC, Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MSingleCycle RV32B=RV32BFull RV32ZC=RV32ZcaZcbZcmp BranchTargetALU=1 WritebackStage=1 ICache=1 ICacheECC=1 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=1 PMPGranularity=0 PMPNumRegions=16 MHPMCounterNum=10 MHPMCounterWidth=40`) |
 | the maxperf build | RV32IMC (Zca, Zcb; Zcmp built, untested) with Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MSingleCycle RV32B=RV32BNone RV32ZC=RV32ZcaZcbZcmp BranchTargetALU=1 WritebackStage=1 ICache=0 ICacheECC=0 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=0 PMPGranularity=0 PMPNumRegions=4 MHPMCounterNum=10 MHPMCounterWidth=40`) |
 | the maxperf build with B full and PMP | RV32IMC (Zca, Zcb; Zcmp built, untested) with B full (Zba, Zbb, Zbs, Zbc, Zbkb, Zbkc, Zbkx), PMP (16 regions, Smepmp), Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MSingleCycle RV32B=RV32BFull RV32ZC=RV32ZcaZcbZcmp BranchTargetALU=1 WritebackStage=1 ICache=0 ICacheECC=0 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=1 PMPGranularity=0 PMPNumRegions=16 MHPMCounterNum=10 MHPMCounterWidth=40`) |
 <!-- end -->
@@ -31,7 +32,7 @@ anomalies below name the build they were found on.
 ## What we found
 
 <!-- generated: found -->
-**Comparing the RTL against the timing its documentation promises, on the base build, the maxperf build and the maxperf build with B full and PMP, we
+**Comparing the RTL against the timing its documentation promises, on the base build, the maxperf build with B full, PMP and the instruction cache, the maxperf build and the maxperf build with B full and PMP, we
 found 14 anomalies: 2 in the RTL, 1 on performance, 11 in the documentation.**  13 of them have an issue directory: 13 hold a program that reproduces the anomaly and the two traces of its run.  The other 1 (`pmp-layer-reasons-on-the-pmp-build`) have no directory; the findings page states each.
 
 | | |
@@ -45,14 +46,18 @@ corrected by the issues above, agreed with the RTL on every other instruction:
 
 | | |
 |---|---|
-| the focused test suites | 4,927 tests (4,420 generated in 7 suites, the RISC-V architecture certification tests and a smoke program), 19,512,443 instruction intervals compared on the base build and the maxperf build and the maxperf build with B full and PMP, 0 disagreeing |
+| the focused test suites | 5,503 tests (4,994 generated in 7 suites, the RISC-V architecture certification tests and a smoke program), 24,471,592 instruction intervals compared on the base build and the maxperf build and the maxperf build with B full and PMP, 0 disagreeing |
 | the benchmarks | 107 programs (CoreMark, Dhrystone, Embench-IoT, Mälardalen, riscv-tests, TACLeBench), 41,100,262 instruction intervals, 0 disagreeing |
 | the search beyond the suites | not yet run on this core |
-| the documentation's own timing statements | 17 of 17 proved on the RTL (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
+| the documentation's own timing statements | 18 of 18 proved on the RTL (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
 <!-- end -->
 
-The four documentation anomalies are gaps rather than errors: a cost the manual states without its count, or does not
-state at all.  A CSR write flushes the pipeline, as the stall table says, but the instruction after it pays two cycles,
+The documentation anomalies are of two kinds, counted in the table above.  Gaps, a cost the manual states without its
+count or does not state at all, are the first four below.  Rules the manual states that the hardware does not follow as
+written came with the PMP and user-mode rounds: the PMP CSRs trap as illegal instructions on a build without PMP where
+the manual says they read as zero; the manual's rule that a region may be writable without being readable holds only
+while `mseccfg.MML` is clear; and an interrupt in user mode is taken whatever `mstatus.MIE` says, where the manual's
+enable rule reads as if it were not.  Each has its issue directory.  A CSR write flushes the pipeline, as the stall table says, but the instruction after it pays two cycles,
 not the one its "additional fetch-latency" suggests, and the two exempt CSRs (`mscratch`, `mepc`) are the whole rule.  A
 division or remainder with a non-zero divisor takes 37 cycles, the count the decode-execute page gives, where the stall
 table's "1 or 37" read under its own rule would make 38.  A trap entry and an `mret` each cost one cycle more than a jump,
@@ -74,13 +79,13 @@ next pc sees a mismatch on every such jump.
 ## The numbers
 
 <!-- generated: numbers -->
-As of the regression recorded on 1 November 2026, at commit `d98bca8` of our tree (the commit that recorded it); the test and interval counts are
-summed from the per-test tables of the records of the base build and the maxperf build and the maxperf build with B full and PMP.
+As of the regression recorded on 4 November 2026, at commit `448464c` of our tree (the commit that recorded it); the test and interval counts are
+summed from the per-test tables of the records of the base build and the maxperf build and the maxperf build with B full and PMP.  The maxperf build with B full, PMP and the instruction cache has no record yet, so its runs are not in these numbers.
 
 | | |
 |---|---|
-| statements of the documentation, each proved against the RTL | 17 of 17 (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
-| instruction intervals compared, RTL against the documented timing | 19,512,443 over 7 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
+| statements of the documentation, each proved against the RTL | 18 of 18 (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
+| instruction intervals compared, RTL against the documented timing | 24,471,592 over 7 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
 | instruction sequences searched beyond the suites | not yet run on this core |
 | anomalies | 14: 11 where the documentation is behind the hardware, 1 where a stall fires wider than its cause, 2 not a timing matter |
 | issue directories | 13: 10 for the documentation, 1 on performance, 2 on the RTL |
@@ -95,9 +100,10 @@ summed from the per-test tables of the records of the base build and the maxperf
 | our test suites | tests | passed | skipped | intervals compared | disagreeing |
 |---|---:|---:|---:|---:|---:|
 | the base build: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 1,424 | 1,342 | 82 | 5,401,802 | 0 |
-| the maxperf build: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 1,493 | 1,417 | 76 | 5,585,584 | 0 |
-| the maxperf build with B full and PMP: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 2,010 | 1,983 | 27 | 8,525,057 | 0 |
-| **all** | **4,927** | **4,742** | **185** | **19,512,443** | **0** |
+| the maxperf build with B full, PMP and the instruction cache: not yet recorded | - | - | - | - | - |
+| the maxperf build: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 1,715 | 1,639 | 76 | 7,272,934 | 0 |
+| the maxperf build with B full and PMP: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 2,364 | 2,337 | 27 | 11,796,856 | 0 |
+| **all** | **5,503** | **5,318** | **185** | **24,471,592** | **0** |
 
 A skipped test is one the core cannot run as built (an extension it lacks, a case the generator could not place); it is counted, not hidden.
 
@@ -123,12 +129,12 @@ What "no timing anomaly left" rests on, in eight parts, each with its state:
 |---|---|
 | the documented statements, each proved | closed |
 | everything generated, compared against the documented timing | closed |
-| the RTL's own stall and flush mechanisms, read from its source: each exercised by a test or named unreachable with its reason | closed, except 6 terms not yet exercised (`data_ind_timing_i`, `INSTR_EXPANDED_COMMIT`, `icache_enable_i`, `instr_intg_err`, `irq_nm_int`, `illegal_csr`), each awaiting a feature of ours; the specification's section 10 says which |
-| bus timing under a schedule | the scheduled suite: 2,619,266 intervals, 0 disagreeing; the survey does not yet read the schedule |
+| the RTL's own stall and flush mechanisms, read from its source: each exercised by a test or named unreachable with its reason | closed, except 7 terms not yet exercised (`data_ind_timing_i`, `INSTR_EXPANDED_COMMIT`, `icache_enable_i`, `instr_intg_err`, `irq_nm_int`, `ic_scr_key_valid_i`, `illegal_csr`), each awaiting a feature of ours; the specification's section 10 says which |
+| bus timing under a schedule | the scheduled suite: 2,626,054 intervals, 0 disagreeing; the survey does not yet read the schedule |
 | state interactions: CSR side effects, modes, reserved forms | open: the search has not run on this core yet |
 | real programs' shapes, covered by the suites | 78.3% covered; the rest open |
 | detection power: injected timing and functional mutation faults | open: no mutation campaign on this core yet |
-| timing conditions in the RTL that the manual says nothing about, each a question answered by reading the source and measuring | 18 questions (6 on the base build, 8 on the maxperf build, 4 on the maxperf build with B full and PMP); 6 answered and now stated in the specification; 12 open: `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry` (the base build); `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry` (the maxperf build); `pmp_fault_lsu_aligned`, `pmp_fault_lsu_misaligned_first`, `pmp_fault_lsu_misaligned_second`, `pmp_fault_fetch` (the maxperf build with B full and PMP) |
+| timing conditions in the RTL that the manual says nothing about, each a question answered by reading the source and measuring | 28 questions (6 on the base build, 8 on the maxperf build with B full, PMP and the instruction cache, 9 on the maxperf build, 5 on the maxperf build with B full and PMP); 8 answered and now stated in the specification; 20 open: `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry` (the base build); `fetch_hit`, `fetch_miss_after_redirect`, `fetch_miss_sequential`, `fetch_fill_wrap_starve`, `fetch_inval_window`, `fetch_redirect_behind_stale_fill`, `fetch_disabled_stream`, `fetch_ecc_error_refetch` (the maxperf build with B full, PMP and the instruction cache); `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry`, `zcmp_commit_irq_hold` (the maxperf build); `pmp_fault_lsu_misaligned_first`, `pmp_fault_lsu_misaligned_second`, `pmp_fault_zcmp_uop` (the maxperf build with B full and PMP) |
 <!-- end -->
 
 What is not here yet, and is planned: the benchmark programs on the PMP build (they are in the tables above for the

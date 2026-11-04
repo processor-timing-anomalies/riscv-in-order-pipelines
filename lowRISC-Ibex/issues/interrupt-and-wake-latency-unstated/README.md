@@ -8,7 +8,7 @@
 
 ## Issue
 
-the documentation gives no cycle count for an interrupt's entry nor for a wfi's wake, where the cv32e40x manual gives both: on the small configuration the handler's first instruction retires 5 cycles after the instruction that was in ID/EX when the request arrived (its own 2-cycle vector jal included), 6 after a flushing CSR write, and a wfi costs the instruction behind it 4 cycles when the line is already up (FLUSH, WAIT_SLEEP, SLEEP, FIRST_FETCH), the stream resuming 2 cycles after a later rise.
+the documentation gives no cycle count for an interrupt's entry nor for a wfi's wake, where a core's manual can give both, an entry latency and a wake latency in cycles: on the small configuration the handler's first instruction retires 5 cycles after the instruction that was in ID/EX when the request arrived (its own 2-cycle vector jal included), 6 after a flushing CSR write, and a wfi costs the instruction behind it 4 cycles when the line is already up (FLUSH, WAIT_SLEEP, SLEEP, FIRST_FETCH), the stream resuming 2 cycles after a later rise.
 
 ## What the documentation says
 
