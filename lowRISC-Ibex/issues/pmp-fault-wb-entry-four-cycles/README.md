@@ -22,6 +22,32 @@ exception_interrupts.rst, 'Exceptions': the load and store access faults with th
 
 `rtl/ibex_controller.sv`, lines 276-277, 283-294, 315-322, 819-836 (`exc_req_lsu`): exc_req_lsu = store_err_i | load_err_i, 'from the Writeback stage with no instruction valid': it takes the controller to FLUSH in the cycle after the response, where an ID/EX exception (exc_req_d) does so in the instruction's own cycle; the handler's fetch follows FLUSH in both
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32E` | `0` |
+| `RV32M` | `RV32MSingleCycle` |
+| `RV32B` | `RV32BFull` |
+| `RV32ZC` | `RV32ZcaZcbZcmp` |
+| `BranchTargetALU` | `1` |
+| `WritebackStage` | `1` |
+| `ICache` | `0` |
+| `ICacheECC` | `0` |
+| `ICacheScramble` | `0` |
+| `BranchPredictor` | `0` |
+| `DbgTriggerEn` | `0` |
+| `SecureIbex` | `0` |
+| `PMPEnable` | `1` |
+| `PMPGranularity` | `0` |
+| `PMPNumRegions` | `16` |
+| `MHPMCounterNum` | `10` |
+| `MHPMCounterWidth` | `40` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

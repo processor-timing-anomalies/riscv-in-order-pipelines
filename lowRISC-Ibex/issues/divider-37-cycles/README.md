@@ -22,6 +22,32 @@ the instruction behind a div with a non-zero divisor retires 37 cycles after it 
 
 `rtl/ibex_multdiv_fast.sv`, lines 391-520 (`md_state_q`): the divider's sequence is MD_IDLE, MD_ABS_A, MD_ABS_B, 31 cycles of MD_COMP (the counter from 31 to 1), MD_LAST, MD_CHANGE_SIGN and MD_FINISH: 37 states, 2 for a zero divisor (MD_IDLE to MD_FINISH); the table's 37 is this count
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32E` | `0` |
+| `RV32M` | `RV32MFast` |
+| `RV32B` | `RV32BNone` |
+| `RV32ZC` | `RV32Zca` |
+| `BranchTargetALU` | `0` |
+| `WritebackStage` | `0` |
+| `ICache` | `0` |
+| `ICacheECC` | `0` |
+| `ICacheScramble` | `0` |
+| `BranchPredictor` | `0` |
+| `DbgTriggerEn` | `0` |
+| `SecureIbex` | `0` |
+| `PMPEnable` | `0` |
+| `PMPGranularity` | `0` |
+| `PMPNumRegions` | `4` |
+| `MHPMCounterNum` | `10` |
+| `MHPMCounterWidth` | `40` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

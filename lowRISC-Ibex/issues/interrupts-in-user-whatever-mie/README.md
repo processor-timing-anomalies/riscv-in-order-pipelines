@@ -22,6 +22,32 @@ the U-mode event files on the three Ibex builds, 1 Nov 2026: every line raised w
 
 `rtl/ibex_controller.sv`, lines handle_irq (`irq_enabled`): irq_enabled = csr_mstatus_mie_i | (priv_mode_i == PRIV_LVL_U): the global enable gates M-mode alone
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32E` | `0` |
+| `RV32M` | `RV32MFast` |
+| `RV32B` | `RV32BNone` |
+| `RV32ZC` | `RV32Zca` |
+| `BranchTargetALU` | `0` |
+| `WritebackStage` | `0` |
+| `ICache` | `0` |
+| `ICacheECC` | `0` |
+| `ICacheScramble` | `0` |
+| `BranchPredictor` | `0` |
+| `DbgTriggerEn` | `0` |
+| `SecureIbex` | `0` |
+| `PMPEnable` | `0` |
+| `PMPGranularity` | `0` |
+| `PMPNumRegions` | `4` |
+| `MHPMCounterNum` | `10` |
+| `MHPMCounterWidth` | `40` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

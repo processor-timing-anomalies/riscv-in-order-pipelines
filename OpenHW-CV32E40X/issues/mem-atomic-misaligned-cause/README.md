@@ -21,6 +21,34 @@ the probe's run, 13 Oct 2026: lr.w s7, (s5) at tdata + 2 traps with mcause 5, sc
 
 `rtl/cv32e40x_controller_fsm.sv`, lines 343, 356-357 (`exception_cause_wb`): an atomic's alignment error reaching WB (align_status_wb_i != ALIGN_OK, from cv32e40x_align_check.sv: the check runs when atop[5] is set, cv32e40x_load_store_unit.sv 833) is an exception whose cause is EXC_CAUSE_STORE_FAULT for ALIGN_WR_ERR and EXC_CAUSE_LOAD_FAULT otherwise; no EXC_CAUSE_*_MISALIGNED is ever selected by that chain
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+| `PMA_NUM_REGIONS` | `2` |
+| `PMA_R0_LOW` | `537903104` |
+| `PMA_R0_HIGH` | `537911296` |
+| `PMA_R0_MAIN` | `0` |
+| `PMA_R0_BUFFERABLE` | `0` |
+| `PMA_R0_CACHEABLE` | `0` |
+| `PMA_R0_ATOMIC` | `0` |
+| `PMA_R1_LOW` | `536870912` |
+| `PMA_R1_HIGH` | `537919488` |
+| `PMA_R1_MAIN` | `1` |
+| `PMA_R1_BUFFERABLE` | `1` |
+| `PMA_R1_CACHEABLE` | `0` |
+| `PMA_R1_ATOMIC` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

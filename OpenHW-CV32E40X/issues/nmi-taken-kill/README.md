@@ -22,6 +22,21 @@ hze-nmi-00: the carrier retires with the error response, the handler's first ret
 
 `rtl/cv32e40x_controller_fsm.sv`, lines 729-742 (`nmi_allowed`): a pending NMI (nmi_pending_q, set at lines 1214-1230 by a bus error on a data response in WB) that is allowed (lines 562-563: the interrupt's conditions without the blanking, and not the cycle after waking to a debug request or an interrupt) kills IF, ID, EX and WB, sets the pc to PC_TRAP_NMI and saves the cause 1024 (load) or 1025 (store)
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

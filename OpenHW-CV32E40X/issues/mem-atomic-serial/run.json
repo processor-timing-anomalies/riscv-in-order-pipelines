@@ -18,5 +18,26 @@
  "traces": {
   "rtl": 8045,
   "spike": 8045
- }
+ },
+ "rtl_params": [
+  "RV32=RV32I",
+  "A_EXT=A",
+  "B_EXT=ZBA_ZBB_ZBS",
+  "M_EXT=M",
+  "X_EXT=0",
+  "NUM_MHPMCOUNTERS=1",
+  "PMA_NUM_REGIONS=2",
+  "PMA_R0_LOW=537903104",
+  "PMA_R0_HIGH=537911296",
+  "PMA_R0_MAIN=0",
+  "PMA_R0_BUFFERABLE=0",
+  "PMA_R0_CACHEABLE=0",
+  "PMA_R0_ATOMIC=0",
+  "PMA_R1_LOW=536870912",
+  "PMA_R1_HIGH=537919488",
+  "PMA_R1_MAIN=1",
+  "PMA_R1_BUFFERABLE=1",
+  "PMA_R1_CACHEABLE=0",
+  "PMA_R1_ATOMIC=1"
+ ]
 }

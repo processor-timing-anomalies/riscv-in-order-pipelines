@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the Ibex maxperf build with B full, PMP and the instruction cache
 
-Generated from our records of the Ibex maxperf build with B full, PMP and the instruction cache on 4 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the Ibex maxperf build with B full, PMP and the instruction cache on 5 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the ibex-icache core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -597,7 +597,7 @@ Conditions: the bus schedule a test names.  The manual's cycle table is the spec
 | the memory side | this core | source | grade |
 |---|---|---|---|
 | bus | - | bus/.json | stated |
-| fetch | model prefetch-buffer; outstanding 2; buffer_words 3; cache ways 2; sets 256; line_bytes 8; fill_buffers 4; replacement round_robin_global; inval_on fence.i, reset; inval_cycles 256; enable cpuctrlsts |  | stated |
+| fetch | model icache; outstanding 2; buffer_words 3; cache ways 2; sets 256; line_bytes 8; fill_buffers 4; replacement round_robin_global; inval_on fence.i, reset; inval_cycles 256; enable cpuctrlsts.0; enabl | rtl/ibex_icache.sv, rtl/ibex_if_stage.sv 222-231, 248-253, 267, 690, 699-704, 709-711, 714-721, 727, 731-737, 744, 764-782, 788-789, 798-813, 832-835, 846-859, 1033-1036, 1051, 1063-1083, 1134-1138; if_stage 299-349, 850 | read |
 
 ## 6. CSRs and counters: the accesses that wait
 
@@ -611,36 +611,51 @@ No events section in this specification.
 
 ## 8. What real programs pay on this core: the cycles lost to stalls, by cause
 
-No profile yet (make -C hazards profiles CORE=ibex-icache).
+Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 3 retirements before the subject) over 11,769,828 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
+
+| measure | value |
+|---|---|
+| cycles per retirement, the programs' single-cost skeletons (145,896 of the 370,350 retirements of the certification tests and the benchmarks, 39%) | 145,896 retirements, 264,779 cycles: CPI 1.815 (IPC 0.55) |
+| real code's shapes no generated suite makes | 9.2% of the programs' retirements (by class) |
+
+The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the README beside this document.
+
+What an ideal mechanism would save, as a ceiling and not a design (the profile summary carries the caveats):
+
+| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 264,779 single-cost cycles |
+|---|---:|---:|---:|
+| no load-use bubble | 34,695 | 34,695 | 13.1% |
+| a perfect branch prediction: the follower of a taken branch at 1 cycle | 7,887 | 8,709 | 3.3% |
+| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 1,924 | 3,285 | 1.2% |
+| no extra cycle at a pc+2 target | 12 | 12 | 0.0% |
 
 ## 9. Where the RTL and the manual differ: the anomalies we found
 
 Each row is a finding: what the manual says, what the RTL measured, the class (intent: the trigger is its cause and the manual is behind; over-wide: an interlock firing without its cause; narrower; function), its cost, and whose it is to act on (the documentation, the RTL, or the core's performance).  The reproducer, the two traces and the run's facts are in the issue directory named.
 
-*(none)*
+| finding | for | class | cost | found on | status | issue directory |
+|---|---|---|---|---|---|---|
+| With the cache disabled the fetch stream is the cache's own, not the prefetch buffer's | document | intent | under instruction-side wait states, a different cycle on most redirects and sequential fetches than the uncached build's: a user who turns the cache off to get  | ibex-icache | confirmed; to file | [issues/icache-disabled-is-not-the-prefetch-buffer/](issues/icache-disabled-is-not-the-prefetch-buffer/) |
+| A fence.i on the cached build costs a 258-cycle walk of bus fetches; the table says 1 - N | document | intent | 258 cycles of fetch at the bus's miss cost after every fence.i on a cached build, against the table's '1 - N' | ibex-icache | confirmed; to file | [issues/icache-fence-i-walk-258-cycles/](issues/icache-fence-i-walk-258-cycles/) |
+| The first 258 cycles after reset are an invalidation walk: every fetch a bus request | document | intent | 258 cycles at the start of every run at the bus's miss cost; a short program's cycles per instruction on the cached build say more about the walk than the cache | ibex-icache | confirmed; to file | [issues/icache-reset-walk/](issues/icache-reset-walk/) |
+| A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | document | intent | one cycle on a lookup that waits for a buffer to free, under instruction-side wait states | ibex-icache | confirmed; to file | [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/) |
+| A misaligned access holds ID/EX until both halves are accepted and its first response | document | intent | under data-side wait states, the cycles of the second half's grant and the first half's response, on every misaligned access | ibex-icache | confirmed; to file | [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/) |
 
 ## 10. What the base build's rows leave to a configuration, and what no test reaches
 
-Every stall and flush term in the RTL source that the base build's own rows do not state is listed here, with where it is handled.  Of the 4 terms: 2 are stated and tested under a configuration of the core (its part of section 12) or became rows of this specification after the source was read -- not gaps, pointers; 1 no test of ours will reach, each with its reason; 1 await a feature we have not built.  Beside the terms, our reading of the RTL source raised 8 questions the manual does not answer (8 on the base build): 0 are answered by a measurement and stated above; 8 are still open (8 on the base build) and head the table in 10.2.  A row in 10.2 is a hole in the specification, named rather than hidden.
+Every stall and flush term in the RTL source that the base build's own rows do not state is listed here, with where it is handled.  Of the 4 terms: 2 are stated and tested under a configuration of the core (its part of section 12) or became rows of this specification after the source was read -- not gaps, pointers; 1 no test of ours will reach, each with its reason; 1 await a feature we have not built.  Beside the terms, our reading of the RTL source raised 8 questions the manual does not answer (8 on the base build): 7 are answered by a measurement and stated above; 1 are still open (1 on the base build) and head the table in 10.2.  A row in 10.2 is a hole in the specification, named rather than hidden.
 
 ### 10.1 Specified under a configuration
 
 | term | what it is | where it is stated |
 |---|---|---|
-| `valid_new_req` | the prefetch buffer's request rule (NUM_REQS 2 outstanding, a new request with room in the FIFO or on a branch, the request held until granted) and its fifo_clear on every redirect are not elaborated on this build: gen_icache replaces the module, and the cache's own request stream (lookup_req_ic0, fill_ext_req, instr_req) takes its place -- the questions fetch_disabled_stream and fetch_miss_* and the correction memory.fetch.model.  RTL_CTRL lists the file; the check requires it in rtl.files | covered on ibex-pmp: ICache = 0 there: its stated entry valid_new_req (memory.fetch.outstanding 2), inherited from ibex-maxperf's, and the fetch model fetchmodel.py checked under the fetch rotation on 3-4 Nov 2026 |
+| `valid_new_req` | the prefetch buffer's request rule (NUM_REQS 2 outstanding, a new request with room in the FIFO or on a branch, the request held until granted) and its fifo_clear on every redirect are not elaborated on this build: gen_icache replaces the module, and the cache's own request stream (lookup_req_ic0, fill_ext_req, instr_req) takes its place -- the questions fetch_disabled_stream and fetch_miss_* (answered) and the correction memory.fetch.model (taken).  RTL_CTRL lists the file; the check requires it in rtl.files | covered on ibex-pmp: ICache = 0 there: its stated entry valid_new_req (memory.fetch.outstanding 2), inherited from ibex-maxperf's, and the fetch model fetchmodel.py checked under the fetch rotation on 3-4 Nov 2026 |
 | `DEPTH` | the three-entry FIFO (DEPTH = NUM_REQS + 1) and its valid_unaligned rule for an uncompressed instruction at a half-word address are not elaborated on this build; the cache's fill buffers hold the words (two beats per line, up to four lines) and its 16-bit skid buffer takes the misaligned case (the stated entry skid_ready).  RTL_CTRL lists the file; the check requires it in rtl.files | covered on ibex-pmp: ICache = 0 there: its stated entry DEPTH (memory.fetch.buffer_words 3, penalties.misaligned_target 1), inherited from ibex-maxperf's |
 
 ### 10.2 Not reached, and why
 
 | core | what | why | reach | RTL |
 |---|---|---|---|---|
-| ibex-icache | open question `fetch_hit` | fill_hit_ic1 = lookup_valid_ic1 & fill_in_ic1 & tag_hit_ic1 & ~ecc_err_ic1; fill_out_req with the hit as a data source; fill_data_hit = fill_busy_q & fill_hit_ic1 & fill_data_sel; line_data = \|fill_data_hit ? hit_data_ic1 : fill_out_data; data_valid = \|fill_out_arb | open | rtl/ibex_icache.sv:754-756, 803-808, 872-873, 1051, 1075 |
-| ibex-icache | open question `fetch_miss_after_redirect` | fill_spec_req, fill_spec_done = fill_spec_req & instr_gnt_i, fill_spec_hold; instr_req = ((~icache_enable_i \| branch_i) & lookup_grant_ic0) \| (\|fill_ext_req), instr_addr the lookup's word when no buffer requests | open | rtl/ibex_icache.sv:708-712, 1033-1044 |
-| ibex-icache | open question `fetch_miss_sequential` | fill_ext_req = fill_busy_q & ~fill_ext_done_d; fill_ext_cnt_d counts the granted beats from fill_spec_done (0 for a sequential lookup); fill_ext_arb the oldest requester; fill_data_sel and fill_out_arb the oldest buffer with data to output | open | rtl/ibex_icache.sv:762-782, 848-856 |
-| ibex-icache | open question `fetch_fill_wrap_starve` | fill_ext_beat = {1'b0, fill_addr_q[IC_LINE_W-1:BUS_W]} + fill_ext_cnt_q, fill_ext_off its low bits (the beat's address wraps within the line); fill_out_cnt_d starts at lookup_addr_ic0's beat offset; fill_ext_done_d cancels a non-allocating line at its end | open | rtl/ibex_icache.sv:773-782, 810-815, 835-842 |
-| ibex-icache | open question `fetch_inval_window` | inval_block_cache = 1 by default and 0 only in INVAL_IDLE without icache_inval_i; INVAL_IDLE -> AWAIT_SCRAMBLE_KEY on the request, -> INVAL_CACHE on ic_scr_key_valid_i, inval_write_req and inval_index_q + 1 per cycle, -> INVAL_IDLE on &inval_index_q, back to AWAIT_SCRAMBLE_KEY on a new request | open | rtl/ibex_icache.sv:1222-1274 |
-| ibex-icache | open question `fetch_redirect_behind_stale_fill` | fill_stale_d = fill_busy_q & (branch_i \| fill_stale_q); fill_done's (fill_out_done \| fill_stale_q \| branch_i) & fill_rvd_done; fill_ext_done_d's ~fill_cache_q & (branch_i \| fill_stale_q \| end of line) and ~fill_ext_hold_q; fill_ext_arb and fill_data_sel by fill_older_q | open | rtl/ibex_icache.sv:734-748, 773-782, 848-856 |
-| ibex-icache | open question `fetch_disabled_stream` | instr_req = ((~icache_enable_i \| branch_i) & lookup_grant_ic0) \| (\|fill_ext_req); instr_addr the requesting buffer's beat or the lookup's word; fill_spec_req with ~icache_enable_i; fill_ext_done_d's end-of-line cancel for a line that will not be cached | open | rtl/ibex_icache.sv:708-712, 773-782, 1033-1044 |
 | ibex-icache | open question `fetch_ecc_error_refetch` | ecc_err_ic1 = lookup_valid_ic1 & (((\|data_err_ic1) & tag_hit_ic1) \| (\|tag_err_ic1)); ecc_correction_ways_d, ecc_correction_write_d = ecc_err_ic1 registered into ecc_write_req, ecc_write_ways, ecc_write_index; ecc_error_o = ecc_err_ic1 | open | rtl/ibex_icache.sv:546-600, 645-651 |
 | ibex-icache | not built: `ic_scr_key_valid_i` | AWAIT_SCRAMBLE_KEY waits for the key provider: OUT_OF_RESET and every invalidation request raise ic_scr_key_req_o when the key is not valid and the walk starts only when it is. | awaiting a feature: our records Ibex step 5: ibex-opentitan (ICacheScramble 1) with the key handshake in the harness answering scramble_req_o after a programmable number of cycles | rtl/ibex_icache.sv:1228-1247 |
 | ibex-icache | not built: `cache_cnt_q` | gen_caching_logic: allocate only a redirect's target line and CACHE_AHEAD = 2 lines after it (fill_cache_new gated by branch_i \| cache_cnt_q); this build elaborates gen_cache_all (687-691: every miss allocates, the stated entry lookup_actual_ic0). | out: no build of Ibex reaches it: the parameter is the module's alone, not passed by ibex_if_stage.sv 301-307 or ibex_top.sv; the specification's replacement and fill rules are the allocate-everything ones | rtl/ibex_icache.sv:666-686 |
@@ -649,7 +664,7 @@ Every stall and flush term in the RTL source that the base build's own rows do n
 
 | measure | value |
 |---|---|
-| findings in the record | 0 |
+| findings in the record | 5 (5 document) |
 
 Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
 

@@ -18,13 +18,26 @@ pipeline.rst 30-31: the cycle table assumes zero stall on the data-side interfac
 
 a generated store test under a bus answering every request two cycles after its grant: jal zero, 8 (order 161) behind sw gp, 8(ra) with a late response: the jal retires +1 as always, its target lui +2 instead of +1 (the target fetched in the jal's ID cycle sat in IF); under a schedule that delays every second response by one cycle, the single-hazard suite shows 377 intervals a cycle longer than the cycle table and the Hazards list give, in 61 tests, 217 of them the targets of taken jumps, all RTL +2 against the table's +1; all 377 are this rule.  hzc-interleave-00 random:0-3: jalr s4, 0(a6) (order 663) behind lw a6 and lb s2 with late responses retires two cycles after the lb, not one: the waveform shows id_ready and ex_ready low in the two cycles the lb waits in WB.  Waveforms from a tracing build read with a VCD script, 9 Oct 2026
 
-## The data bus timing of the run
+## The bus timing of the run
 
 The run answered every data request two cycles after its grant, every grant in the request cycle.  The issue shows only under such waits; a testbench that answers every request in the next cycle will not see it.
 
 ## From the RTL source (read, not measured)
 
 `rtl/cv32e40x_ex_stage.sv`, lines 469-472 (`ex_ready_o`): 'The late (data_rvalid_i based) downstream wb_ready_i signal fans into the ready signals of all functional units': ex_ready_o includes lsu_ready_i; id_stage.sv 674: id_ready_o = ex_ready_i && !halt_id; wb_stage.sv 157: wb_ready_o includes lsu_ready_i -- the chain is low while the LSU in WB waits for data_rvalid_i
+
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
 
 ## To reproduce
 

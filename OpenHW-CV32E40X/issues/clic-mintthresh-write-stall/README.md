@@ -22,6 +22,23 @@ c.lbu and c.sb each one behind csrrs x0, mintthresh, rs1: 2 cycles (own-cv32e40x
 
 `rtl/cv32e40x_cs_registers.sv`, lines 1550-1557 (`csr_irq_enable_write_o`): the clic_irq_en branch (line 1553): csr_irq_enable_write_o includes mintthresh_we; the pass also read an mnxti write as writing mstatus (lines 936-938) and so expected the stall behind it, which the measurement does not show: the write enable it sets is not one of the four the branch names
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+| `CLIC` | `1` |
+| `CLIC_ID_WIDTH` | `5` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

@@ -22,6 +22,21 @@ the jvt write retires one cycle after the instruction before it; the instruction
 
 `rtl/cv32e40x_cs_registers.sv`, lines 1545-1548 (`csr_wr_in_wb_flush_o`): csr_wr_in_wb_flush_o = jvt_wr_in_wb: a write of jvt in WB is the one CSR write that asks the controller for a flush; the controller (rtl/cv32e40x_controller_fsm.sv 933-950) halts IF, ID and EX in that cycle, kills them in the next (csr_flush_ack_q) and restarts fetch from the oldest killed instruction, and interrupt_allowed (line 557) is low in that acknowledge cycle
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

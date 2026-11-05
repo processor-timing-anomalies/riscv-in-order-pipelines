@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the Ibex
 
-Generated from our records of the Ibex on 4 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the Ibex on 5 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the ibex core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -470,6 +470,7 @@ Conditions: the bus schedule a test names.  The manual's cycle table is the spec
 | data: write_buffer | 0 | load_store_unit.rst 8-10 | stated |
 | data: wait_stage | IDEX | load_store_unit.rst 8-10 | stated |
 | data: response_stage | IDEX | load_store_unit.rst 8-10 | stated |
+| data: split_hold | first_response | load_store_unit.rst 8-10 | stated |
 | fetch | outstanding 2; buffer_words 3 | instruction_fetch.rst 15-20 | stated |
 | regions |  | this configuration has no PMP and Ibex has no PMA: one attribution for the whole address space | inferred |
 | misaligned | split | load_store_unit.rst 83-90 | stated |
@@ -573,6 +574,11 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 | In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it | document | intent | none in cycles; software reading the manual would expect MIE to mask interrupts in U, which it does not | ibex | confirmed; to file | [issues/interrupts-in-user-whatever-mie/](issues/interrupts-in-user-whatever-mie/) |
 | Instructions cost the same cycles in U-mode as in M-mode, unstated | document | intent | none; a statement the manual lacks | ibex | confirmed; to file | [issues/user-mode-costs-as-machine-mode/](issues/user-mode-costs-as-machine-mode/) |
 | Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too | performance | over-wide | two cycles on every write of a CSR that changes nothing in flight: the counters and their inhibit, the event selectors, mtval, mcause, mcounteren; a trap handle | ibex | clarified; to file | [issues/csr-write-flush-any-csr/](issues/csr-write-flush-any-csr/) |
+| With the cache disabled the fetch stream is the cache's own, not the prefetch buffer's | document | intent | under instruction-side wait states, a different cycle on most redirects and sequential fetches than the uncached build's: a user who turns the cache off to get  | ibex-icache | confirmed; to file | [issues/icache-disabled-is-not-the-prefetch-buffer/](issues/icache-disabled-is-not-the-prefetch-buffer/) |
+| A fence.i on the cached build costs a 258-cycle walk of bus fetches; the table says 1 - N | document | intent | 258 cycles of fetch at the bus's miss cost after every fence.i on a cached build, against the table's '1 - N' | ibex-icache | confirmed; to file | [issues/icache-fence-i-walk-258-cycles/](issues/icache-fence-i-walk-258-cycles/) |
+| The first 258 cycles after reset are an invalidation walk: every fetch a bus request | document | intent | 258 cycles at the start of every run at the bus's miss cost; a short program's cycles per instruction on the cached build say more about the walk than the cache | ibex-icache | confirmed; to file | [issues/icache-reset-walk/](issues/icache-reset-walk/) |
+| A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | document | intent | one cycle on a lookup that waits for a buffer to free, under instruction-side wait states | ibex-icache | confirmed; to file | [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/) |
+| A misaligned access holds ID/EX until both halves are accepted and its first response | document | intent | under data-side wait states, the cycles of the second half's grant and the first half's response, on every misaligned access | ibex-icache | confirmed; to file | [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/) |
 
 ## 10. What the base build's rows leave to a configuration, and what no test reaches
 
@@ -611,7 +617,7 @@ Every stall and flush term in the RTL source that the base build's own rows do n
 
 | measure | value |
 |---|---|
-| findings in the record | 13 (10 document, 2 rtl, 1 performance) |
+| findings in the record | 18 (15 document, 2 rtl, 1 performance) |
 
 Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
 

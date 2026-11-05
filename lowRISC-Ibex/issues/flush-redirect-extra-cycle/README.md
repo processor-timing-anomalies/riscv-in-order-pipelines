@@ -22,6 +22,32 @@ an ecall's handler's first instruction retires 4 cycles after the ecall's record
 
 `rtl/ibex_controller.sv`, lines 667-681, 818-836, 955-961 (`special_req`): an exception request or an mret is a special request: DECODE retains ID and enters FLUSH, which sets the pc (the exception vector with csr_save_cause, mepc with csr_restore_mret) and flushes ID; the target is fetched from FLUSH, a cycle after a jump's would be
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32E` | `0` |
+| `RV32M` | `RV32MFast` |
+| `RV32B` | `RV32BNone` |
+| `RV32ZC` | `RV32Zca` |
+| `BranchTargetALU` | `0` |
+| `WritebackStage` | `0` |
+| `ICache` | `0` |
+| `ICacheECC` | `0` |
+| `ICacheScramble` | `0` |
+| `BranchPredictor` | `0` |
+| `DbgTriggerEn` | `0` |
+| `SecureIbex` | `0` |
+| `PMPEnable` | `0` |
+| `PMPGranularity` | `0` |
+| `PMPNumRegions` | `4` |
+| `MHPMCounterNum` | `10` |
+| `MHPMCounterWidth` | `40` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

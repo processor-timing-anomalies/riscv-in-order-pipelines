@@ -16,5 +16,13 @@
  "traces": {
   "rtl": 5012,
   "spike": 5012
- }
+ },
+ "rtl_params": [
+  "RV32=RV32I",
+  "A_EXT=A_NONE",
+  "B_EXT=ZBA_ZBB_ZBS",
+  "M_EXT=M",
+  "X_EXT=0",
+  "NUM_MHPMCOUNTERS=1"
+ ]
 }

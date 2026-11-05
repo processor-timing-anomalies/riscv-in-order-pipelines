@@ -22,6 +22,23 @@ csrrw s4, mscratchcswl, s3 then csrrw s5, mintthresh, s2: the second retires 2 c
 
 `rtl/cv32e40x_controller_bypass.sv`, lines 259-266 (`csr_impl_write_in_wb (csr_stall_ex, rule 2)`): read 21 Oct 2026 (ours, not the RTL pass's): 'an explicit CSR read is in EX while any implicit write is in WB (conservative stall)' -- the stall is keyed on any implicit write in WB, not on the CSR the read names; mscratchcswl sets csr_impl_wr for the mscratch swap
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+| `CLIC` | `1` |
+| `CLIC_ID_WIDTH` | `5` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

@@ -4,7 +4,7 @@ This document lists every timing anomaly we found on the Ibex: each place where 
 
 Each anomaly has a **class** (the table below: how the hardware's trigger compares with the cause it exists for), a **cost** in cycles, **whom it concerns** (the RTL's developers, the core's performance, or the documentation), a **status**, and, for most, an **issue directory** under `issues/` with the issue's text and, when a small program reproduces it, that program, the two RVVI traces (the RTL's and the reference's) and the capture's facts; `issues/README.md` says what each directory holds.  The timing specification beside this document (`timing.md`) carries the same anomalies as rows of its section 9, in the context of the rules they break.
 
-Generated from our record on 4 November 2026: 13 anomalies -- 2 in the RTL, 1 on performance, 10 in the documentation.
+Generated from our record on 5 November 2026: 18 anomalies -- 2 in the RTL, 1 on performance, 15 in the documentation.
 
 | class | meaning |
 |---|---|
@@ -33,6 +33,11 @@ Generated from our record on 4 November 2026: 13 anomalies -- 2 in the RTL, 1 on
   - [pmp-w-without-r-under-mml](#pmp-w-without-r-under-mml-the-manuals-w1-r0-rule-holds-only-while-mseccfgmml-is-clear): The manual's W=1 R=0 rule holds only while mseccfg.MML is clear
   - [interrupts-in-user-whatever-mie](#interrupts-in-user-whatever-mie-in-u-mode-an-interrupt-is-taken-with-mstatusmie-clear-the-manuals-enable-rule-omits-it): In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it
   - [user-mode-costs-as-machine-mode](#user-mode-costs-as-machine-mode-instructions-cost-the-same-cycles-in-u-mode-as-in-m-mode-unstated): Instructions cost the same cycles in U-mode as in M-mode, unstated
+  - [icache-disabled-is-not-the-prefetch-buffer](#icache-disabled-is-not-the-prefetch-buffer-with-the-cache-disabled-the-fetch-stream-is-the-caches-own-not-the-prefetch-buffers): With the cache disabled the fetch stream is the cache's own, not the prefetch buffer's
+  - [icache-fence-i-walk-258-cycles](#icache-fence-i-walk-258-cycles-a-fencei-on-the-cached-build-costs-a-258-cycle-walk-of-bus-fetches-the-table-says-1---n): A fence.i on the cached build costs a 258-cycle walk of bus fetches; the table says 1 - N
+  - [icache-reset-walk](#icache-reset-walk-the-first-258-cycles-after-reset-are-an-invalidation-walk-every-fetch-a-bus-request): The first 258 cycles after reset are an invalidation walk: every fetch a bus request
+  - [icache-fill-buffer-frees-a-cycle-late](#icache-fill-buffer-frees-a-cycle-late-a-fill-buffer-frees-the-cycle-after-its-last-word-so-the-next-lookup-waits-a-cycle): A fill buffer frees the cycle after its last word, so the next lookup waits a cycle
+  - [split-access-holds-until-both-halves-accepted](#split-access-holds-until-both-halves-accepted-a-misaligned-access-holds-idex-until-both-halves-are-accepted-and-its-first-response): A misaligned access holds ID/EX until both halves are accepted and its first response
 
 ## All of them
 
@@ -51,6 +56,11 @@ Generated from our record on 4 November 2026: 13 anomalies -- 2 in the RTL, 1 on
 | The manual's W=1 R=0 rule holds only while mseccfg.MML is clear | document | intent | none in cycles; a permission reading software would get wrong from the manual under MML | ibex-pmp | clarified; to file | [issues/pmp-w-without-r-under-mml/](issues/pmp-w-without-r-under-mml/) |
 | In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it | document | intent | none in cycles; software reading the manual would expect MIE to mask interrupts in U, which it does not | ibex | confirmed; to file | [issues/interrupts-in-user-whatever-mie/](issues/interrupts-in-user-whatever-mie/) |
 | Instructions cost the same cycles in U-mode as in M-mode, unstated | document | intent | none; a statement the manual lacks | ibex | confirmed; to file | [issues/user-mode-costs-as-machine-mode/](issues/user-mode-costs-as-machine-mode/) |
+| With the cache disabled the fetch stream is the cache's own, not the prefetch buffer's | document | intent | under instruction-side wait states, a different cycle on most redirects and sequential fetches than the uncached build's: a user who turns the cache off to get the documented uncached timing does not get it | ibex-icache | confirmed; to file | [issues/icache-disabled-is-not-the-prefetch-buffer/](issues/icache-disabled-is-not-the-prefetch-buffer/) |
+| A fence.i on the cached build costs a 258-cycle walk of bus fetches; the table says 1 - N | document | intent | 258 cycles of fetch at the bus's miss cost after every fence.i on a cached build, against the table's '1 - N' | ibex-icache | confirmed; to file | [issues/icache-fence-i-walk-258-cycles/](issues/icache-fence-i-walk-258-cycles/) |
+| The first 258 cycles after reset are an invalidation walk: every fetch a bus request | document | intent | 258 cycles at the start of every run at the bus's miss cost; a short program's cycles per instruction on the cached build say more about the walk than the cache (caches-PLAN decision 17) | ibex-icache | confirmed; to file | [issues/icache-reset-walk/](issues/icache-reset-walk/) |
+| A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | document | intent | one cycle on a lookup that waits for a buffer to free, under instruction-side wait states | ibex-icache | confirmed; to file | [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/) |
+| A misaligned access holds ID/EX until both halves are accepted and its first response | document | intent | under data-side wait states, the cycles of the second half's grant and the first half's response, on every misaligned access | ibex-icache | confirmed; to file | [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/) |
 
 ## For the RTL's developers
 
@@ -265,6 +275,86 @@ pipeline_details.rst gives every instruction's cycles with no word on the privil
 **What the RTL does.**  the U-mode event files and the PMP U files on ibex, ibex-maxperf and ibex-pmp, 1 Nov 2026: our model's M-mode rules predict every U retirement
 
 **From the RTL source (read, not measured).**  `rtl/ibex_core.sv`, lines the privilege is a CSR state (ibex_cs_registers.sv priv_lvl_q), no timing path reads it but the PMP's and the controller's irq_enabled (`priv_mode_id_o`): the pipeline's stalls and bubbles take no privilege input
+
+### [icache-disabled-is-not-the-prefetch-buffer](issues/icache-disabled-is-not-the-prefetch-buffer/): With the cache disabled the fetch stream is the cache's own, not the prefetch buffer's
+
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
+- Cost: under instruction-side wait states, a different cycle on most redirects and sequential fetches than the uncached build's: a user who turns the cache off to get the documented uncached timing does not get it
+- Found on: ibex-icache
+- Status: confirmed; to file
+- Issue directory: [issues/icache-disabled-is-not-the-prefetch-buffer/](issues/icache-disabled-is-not-the-prefetch-buffer/)
+
+icache.rst says the cache's interface matches the IF stage so that the cache can be enabled or disabled, and that disabled, every lookup goes to the bus and nothing is allocated.  It does not say that the cache module replaces the prefetch buffer whole: with the enable bit clear the request stream is the cache's, four fill buffers, a speculative request in the lookup's own cycle after a redirect and the sequential request a cycle later, so a build with the cache off does not have the uncached build's timing under instruction-side wait states; it differs from the first redirect.
+
+**What the documentation says.**  icache.rst 20 (the interface matches the IF stage, enable or disable), the enable's description (disabled: every lookup to the bus, nothing allocated); ibex_if_stage.sv 299-349 gen_icache or gen_prefetch_buffer, one or the other
+
+**What the RTL does.**  the scheduled suite with the cache off, 4 Nov 2026: 0 differ with the cache's request rules, 175,077 differ with the prefetch buffer's
+
+**From the RTL source (read, not measured).**  `rtl/ibex_icache.sv`, lines 222-231, 248-253, 699-711, 764-782, 805-808, 846, 1033-1036 (`fill_alloc_cnt, fill_ext_req, branch_or_lookup`): the lookup is granted while a buffer is free; the speculative request goes out in the lookup's own cycle unless an older buffer still requests; each buffer requests beat by beat to the line's end; none of it depends on icache_enable_i
+
+### [icache-fence-i-walk-258-cycles](issues/icache-fence-i-walk-258-cycles/): A fence.i on the cached build costs a 258-cycle walk of bus fetches; the table says 1 - N
+
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
+- Cost: 258 cycles of fetch at the bus's miss cost after every fence.i on a cached build, against the table's '1 - N'
+- Found on: ibex-icache
+- Status: confirmed; to file
+- Issue directory: [issues/icache-fence-i-walk-258-cycles/](issues/icache-fence-i-walk-258-cycles/)
+
+pipeline_details.rst's cycle table gives the instruction fence as '1 - N' and icache.rst says lookups miss until the invalidation completes, without a count.  The walk writes one set a cycle, 256 sets plus about two, and from the fence.i's own cycle every fetch is a bus request answered at T+2 with nothing allocated; a second fence.i during the walk restarts it.
+
+**What the documentation says.**  pipeline_details.rst 96 (Instruction Fence, 1 - N); icache.rst 26-27, 117-119 (the invalidation, lookups miss until it completes)
+
+**What the RTL does.**  the cache file and the smoke tests with the cache on, 4 Nov 2026, 0 differ
+
+**From the RTL source (read, not measured).**  `rtl/ibex_icache.sv`, lines 1215-1287 (`inval_block_cache, inval_index_q`): the invalidation writes one set per cycle from the fence.i's cycle; lookups cannot hit and nothing allocates while it runs
+
+### [icache-reset-walk](issues/icache-reset-walk/): The first 258 cycles after reset are an invalidation walk: every fetch a bus request
+
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
+- Cost: 258 cycles at the start of every run at the bus's miss cost; a short program's cycles per instruction on the cached build say more about the walk than the cache (caches-PLAN decision 17)
+- Found on: ibex-icache
+- Status: confirmed; to file
+- Issue directory: [issues/icache-reset-walk/](issues/icache-reset-walk/)
+
+icache.rst describes reset only for the scrambling key (RndCnstIbexKey, ic_scr_key_valid reads 1).  The cache also invalidates itself after reset, the same 256-set walk plus about two cycles, so the first 258 cycles of every program fetch through the bus with nothing allocated, cache enabled or not.
+
+**What the documentation says.**  icache.rst 105 (out of reset the key holds RndCnstIbexKey); nothing on the invalidation at reset
+
+**What the RTL does.**  the cached build's runs of 4 Nov 2026: the first 258 cycles blocked on every one
+
+**From the RTL source (read, not measured).**  `rtl/ibex_icache.sv`, lines 1215-1287 (`inval_block_cache`): the invalidation state machine runs from reset as it does after icache_inval_i
+
+### [icache-fill-buffer-frees-a-cycle-late](issues/icache-fill-buffer-frees-a-cycle-late/): A fill buffer frees the cycle after its last word, so the next lookup waits a cycle
+
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
+- Cost: one cycle on a lookup that waits for a buffer to free, under instruction-side wait states
+- Found on: ibex-icache
+- Status: confirmed; to file
+- Issue directory: [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/)
+
+a fill buffer's done state is registered: a word arriving or a beat popped in cycle c makes the buffer done in c + 1 and free from c + 2, so a lookup that needs that buffer is granted one cycle later than a buffer freed at once would allow.  Nothing in icache.rst describes when a buffer frees.
+
+**What the documentation says.**  icache.rst 60-75 (the fill buffers), no word on when a buffer frees
+
+**What the RTL does.**  the VCD of firstTest-imc under FSCHED=all, 4 Nov 2026; the scheduled suite at 0 differ with the rule
+
+**From the RTL source (read, not measured).**  `rtl/ibex_icache.sv`, lines 731-737 (`fill_done, fill_out_done, fill_rvd_done`): fill_done is registered from the done conditions, so the buffer is busy for the cycle after its last pop or arrival
+
+### [split-access-holds-until-both-halves-accepted](issues/split-access-holds-until-both-halves-accepted/): A misaligned access holds ID/EX until both halves are accepted and its first response
+
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
+- Cost: under data-side wait states, the cycles of the second half's grant and the first half's response, on every misaligned access
+- Found on: ibex-icache
+- Status: confirmed; to file
+- Issue directory: [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/)
+
+load_store_unit.rst says a misaligned access is split into two and needs at least two cycles.  Under a bus schedule that withholds a grant or a response, the hold is longer and has a shape: ID/EX is held until the second half's request is accepted and the first half's response is on the wire (the LSU's WAIT_RVALID_MIS and GNTS_DONE states), so the fixed misaligned occupancy the specification carried is wrong under waits.  On every Ibex build.
+
+**What the documentation says.**  load_store_unit.rst 81-86 (Misaligned Accesses: at least two cycles)
+
+**What the RTL does.**  the scheduled suites of the three Ibex builds on 4 Nov 2026 at 0 differ with the hold
+
+**From the RTL source (read, not measured).**  `rtl/ibex_load_store_unit.sv`, lines WAIT_RVALID_MIS, GNTS_DONE (`ls_fsm_cs, addr_incr_req_o`): the LSU holds the stage through the second half's request and the first half's response
 
 
 © 2026 processor-timing-anomalies, Apache License 2.0

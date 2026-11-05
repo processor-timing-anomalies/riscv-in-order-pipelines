@@ -16,5 +16,13 @@
   "rtl": 51,
   "spike": 51
  },
- "bus_schedule": "respond:2"
+ "bus_schedule": "respond:2",
+ "rtl_params": [
+  "RV32=RV32I",
+  "A_EXT=A_NONE",
+  "B_EXT=ZBA_ZBB_ZBS",
+  "M_EXT=M",
+  "X_EXT=0",
+  "NUM_MHPMCOUNTERS=1"
+ ]
 }

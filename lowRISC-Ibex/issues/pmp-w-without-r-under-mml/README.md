@@ -22,6 +22,32 @@ the four PMP files on ibex-pmp, 31 Oct 2026: under MML a region written W = 1, R
 
 `rtl/ibex_cs_registers.sv`, lines 1442 (`pmp_cfg_wdata`): the W bit is kept only with R set or mseccfg.mml set; R is stored as written
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32E` | `0` |
+| `RV32M` | `RV32MSingleCycle` |
+| `RV32B` | `RV32BFull` |
+| `RV32ZC` | `RV32ZcaZcbZcmp` |
+| `BranchTargetALU` | `1` |
+| `WritebackStage` | `1` |
+| `ICache` | `0` |
+| `ICacheECC` | `0` |
+| `ICacheScramble` | `0` |
+| `BranchPredictor` | `0` |
+| `DbgTriggerEn` | `0` |
+| `SecureIbex` | `0` |
+| `PMPEnable` | `1` |
+| `PMPGranularity` | `0` |
+| `PMPNumRegions` | `16` |
+| `MHPMCounterNum` | `10` |
+| `MHPMCounterWidth` | `40` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

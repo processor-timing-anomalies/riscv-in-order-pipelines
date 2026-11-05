@@ -1,0 +1,25 @@
+VERSION 0 5
+VENDOR ibex1_tb 1 0 'Ibex RTL under Verilator'
+PARAMS 6 ILEN 32 XLEN 32 FLEN 0 VLEN 0 NHART 1 RETIRE 1
+RET 0x80000080 0x7810006f 'jal zero, 3968' MODE 0x3 CYCLE 15 META 2 PCW 0x80001000
+RET 0x80001000 0x00003117 'auipc sp, 0x3' MODE 0x3 CYCLE 2 X 2 0x80004000 META 2 PCW 0x80001004
+RET 0x80001004 0x01010113 'addi sp, sp, 16' MODE 0x3 CYCLE 1 X 2 0x80004010 META 2 PCW 0x80001008
+RET 0x80001008 0x7c00e073 'csrrsi zero, 0x7c0, 1' MODE 0x3 CYCLE 1 C 0x7c0 0x00000101 META 2 PCW 0x8000100c
+RET 0x8000100c 0x00001037 'lui zero, 0x1' MODE 0x3 CYCLE 3 META 2 PCW 0x80001010
+RET 0x80001010 0x00001397 'auipc t2, 0x1' MODE 0x3 CYCLE 1 X 7 0x80002010 META 2 PCW 0x80001014
+RET 0x80001014 0xff038393 'addi t2, t2, -16' MODE 0x3 CYCLE 1 X 7 0x80002000 META 2 PCW 0x80001018
+RET 0x80001018 0xaabbdeb7 'lui t4, 0xaabbd' MODE 0x3 CYCLE 1 X 29 0xaabbd000 META 2 PCW 0x8000101c
+RET 0x8000101c 0xcdde8e93 'addi t4, t4, -803' MODE 0x3 CYCLE 1 X 29 0xaabbccdd META 2 PCW 0x80001020
+RET 0x80001020 0x01d3a123 'sw t4, 2(t2)' MODE 0x3 CYCLE 4 MEM D 4 0x80002002 0x80002002 0 META 2 PCW 0x80001024
+META 2 ISSUE "the misaligned store (order 9) and the misaligned load (order 10) each take 4 cycles under a data bus that withholds every grant one cycle, where the manual gives a misaligned access at least two: each holds ID/EX until its second half is accepted and its first half`s response is on the wire (sw t4, 2(t2): 4 cycles after the previous retirement)"
+RET 0x80001024 0x0023ae03 'lw t3, 2(t2)' MODE 0x3 CYCLE 4 X 28 0xaabbccdd MEM D 4 0x80002002 0x80002002 0 META 2 PCW 0x80001028
+META 2 ISSUE "the misaligned store (order 9) and the misaligned load (order 10) each take 4 cycles under a data bus that withholds every grant one cycle, where the manual gives a misaligned access at least two: each holds ID/EX until its second half is accepted and its first half`s response is on the wire (lw t3, 2(t2): 4 cycles after the previous retirement)"
+RET 0x80001028 0x00002037 'lui zero, 0x2' MODE 0x3 CYCLE 1 META 2 PCW 0x8000102c
+RET 0x8000102c 0x00100f13 'addi t5, zero, 1' MODE 0x3 CYCLE 1 X 30 0x00000001 META 2 PCW 0x80001030
+RET 0x80001030 0xaabbdfb7 'lui t6, 0xaabbd' MODE 0x3 CYCLE 1 X 31 0xaabbd000 META 2 PCW 0x80001034
+RET 0x80001034 0xcddf8f93 'addi t6, t6, -803' MODE 0x3 CYCLE 1 X 31 0xaabbccdd META 2 PCW 0x80001038
+RET 0x80001038 0x01fe1e63 'bne t3, t6, 28' MODE 0x3 CYCLE 1 META 2 PCW 0x8000103c
+RET 0x8000103c 0x00002297 'auipc t0, 0x2' MODE 0x3 CYCLE 1 X 5 0x8000303c META 2 PCW 0x80001040
+RET 0x80001040 0xfc428293 'addi t0, t0, -60' MODE 0x3 CYCLE 1 X 5 0x80003000 META 2 PCW 0x80001044
+RET 0x80001044 0x00100313 'addi t1, zero, 1' MODE 0x3 CYCLE 1 X 6 0x00000001 META 2 PCW 0x80001048
+RET 0x80001048 0x0062a023 'sw t1, 0(t0)' MODE 0x3 CYCLE 2 MEM D 4 0x80003000 0x80003000 0 META 2 PCW 0x8000104c

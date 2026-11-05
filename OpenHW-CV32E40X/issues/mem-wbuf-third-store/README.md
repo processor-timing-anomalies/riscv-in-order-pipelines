@@ -22,6 +22,34 @@ hzs-shape-01-zmmul-00 on cv32e40x-pma, 12 Oct 2026, block 60 (shape s3_mem14_mem
 
 `rtl/cv32e40x_lsu_response_filter.sv`, lines 109-110, 158-160 (`bus_cnt_q, ready_o, resp_valid_o`): the filter sits between the MPU and the write buffer (cv32e40x_load_store_unit.sv 873-899); bus_cnt_q counts a transfer from the buffer taking it (bus_trans_accepted = ready_i && valid_o, ready_i the buffer's ready) to its response (resp_valid_i), so a transfer the buffer holds counts as outstanding; ready_o = ready_i && bus_cnt_q < DEPTH (2) holds the core's next transfer, bufferable or not, while two are open; resp_valid_o = bus_resp_is_bufferable ? core_resp_is_bufferable : resp_valid_i gives a bufferable store its response the cycle the buffer takes it when the oldest open transfer is bufferable -- traced cycle by cycle (the rtl field)
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+| `PMA_NUM_REGIONS` | `2` |
+| `PMA_R0_LOW` | `537903104` |
+| `PMA_R0_HIGH` | `537911296` |
+| `PMA_R0_MAIN` | `0` |
+| `PMA_R0_BUFFERABLE` | `0` |
+| `PMA_R0_CACHEABLE` | `0` |
+| `PMA_R0_ATOMIC` | `0` |
+| `PMA_R1_LOW` | `536870912` |
+| `PMA_R1_HIGH` | `537919488` |
+| `PMA_R1_MAIN` | `1` |
+| `PMA_R1_BUFFERABLE` | `1` |
+| `PMA_R1_CACHEABLE` | `0` |
+| `PMA_R1_ATOMIC` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

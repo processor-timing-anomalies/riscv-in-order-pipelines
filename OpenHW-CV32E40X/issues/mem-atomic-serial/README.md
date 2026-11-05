@@ -22,6 +22,34 @@ the single suite's A files on cv32e40x-pma-a, 12 Oct 2026, every disagreement a 
 
 `rtl/cv32e40x_controller_bypass.sv`, lines 282-293 (`ctrl_byp_o.atomic_stall`): with A_EXT != A_NONE, EX is stalled while lsu_bus_busy_i (the response filter's bus-side count, a transfer accepted and not yet answered) in two cases: an atomic instruction in EX (1: it waits for every outstanding transaction), and any LSU instruction in EX while an atomic is in WB (2: it waits for the atomic's response); the stall is one of the bypass stalls that halt EX (controller_fsm.sv 666) -- on the zero-wait bus a response follows its grant by one cycle, so each case costs exactly one cycle
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+| `PMA_NUM_REGIONS` | `2` |
+| `PMA_R0_LOW` | `537903104` |
+| `PMA_R0_HIGH` | `537911296` |
+| `PMA_R0_MAIN` | `0` |
+| `PMA_R0_BUFFERABLE` | `0` |
+| `PMA_R0_CACHEABLE` | `0` |
+| `PMA_R0_ATOMIC` | `0` |
+| `PMA_R1_LOW` | `536870912` |
+| `PMA_R1_HIGH` | `537919488` |
+| `PMA_R1_MAIN` | `1` |
+| `PMA_R1_BUFFERABLE` | `1` |
+| `PMA_R1_CACHEABLE` | `0` |
+| `PMA_R1_ATOMIC` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The programs in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

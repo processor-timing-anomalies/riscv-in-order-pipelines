@@ -22,6 +22,23 @@ csrrw x0, mcause, s2 then lw s4, 0(a5): the load retires 2 cycles after the writ
 
 `rtl/cv32e40x_cs_registers.sv`, lines 912-920, 1028-1037 (`mstatus_alias_we`): read 22 Oct 2026 (ours, not the RTL pass's): in CLIC mode a write to mcause.mpp or mcause.mpie is aliased to mstatus (mstatus_alias_we, 912-920) and the alias branch sets mstatus_we (1028-1037), so csr_irq_enable_write_o (1550-1557) fires for it and irq_enable_stall (controller_bypass.sv 275-278) holds the load or store in EX while the write is in WB
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+| `CLIC` | `1` |
+| `CLIC_ID_WIDTH` | `5` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

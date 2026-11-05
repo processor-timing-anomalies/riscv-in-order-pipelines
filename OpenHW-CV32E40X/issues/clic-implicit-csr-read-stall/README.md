@@ -22,6 +22,23 @@ csrrs rd, mnxti, x0 and csrrw rd, mscratchcswl, rs1, each one behind csrrs/csrrc
 
 `rtl/cv32e40x_controller_bypass.sv`, lines 256-267 (`csr_hz_i.impl_re_ex`): csr_stall_ex's first term (line 262): an implicit CSR read in EX -- an access of mnxti (cv32e40x_cs_registers.sv 426-439) or of mscratchcswl (462-482) -- while csr_write_in_wb (lines 143-144): any CSR instruction in WB, a pure read included; EX is halted for that cycle
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+| `CLIC` | `1` |
+| `CLIC_ID_WIDTH` | `5` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

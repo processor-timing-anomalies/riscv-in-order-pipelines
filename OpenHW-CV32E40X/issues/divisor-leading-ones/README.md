@@ -18,6 +18,21 @@ pipeline.rst, the div/rem row: 3 to 35 cycles, 'depends on the divider operand v
 
 3 + (leading ones of the divisor - 1) cycles for a negative divisor of div or rem: -1 costs 34, -2 costs 33, 0x80000000 costs 3; 3 + leading zeros otherwise: 0 costs 35, 1 costs 34, 7 costs 32 (divu, remu and a non-negative divisor); measured on the seven divides of the reproducer
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

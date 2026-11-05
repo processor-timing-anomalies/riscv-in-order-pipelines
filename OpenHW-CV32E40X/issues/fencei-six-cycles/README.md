@@ -18,6 +18,21 @@ pipeline.rst, 'Cycle counts per instruction type': fence.i 5 (6 when the target 
 
 a fence.i retires 3 cycles after the instruction before it and the instruction after it retires 4 cycles after the fence.i: 7 cycles from the one before to the one after, 6 beyond back-to-back, where the table's 5 gives 6 in all; measured on three fence.i's in straight-line code, with fencei_flush_ack_i tied high
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

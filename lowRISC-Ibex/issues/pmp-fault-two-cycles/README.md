@@ -22,6 +22,32 @@ with memory.pmp.fault_cycles 2 every refused load and store of the four PMP file
 
 `rtl/ibex_load_store_unit.sv`, lines 436-490, 540-550, 703-709, 762-763 (`pmp_err_q`): IDLE: data_req_o is data_req_out & ~pmp_req_err[PMP_D] (ibex_core.sv 1062), pmp_err_q <= pmp_err; WAIT_GNT: the error counts as the grant (pmp_err_q | data_gnt_i) and the FSM returns to IDLE; the next cycle lsu_resp_valid_o with load_err_o / store_err_o: two cycles from the suppressed request to the error response
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32E` | `0` |
+| `RV32M` | `RV32MSingleCycle` |
+| `RV32B` | `RV32BFull` |
+| `RV32ZC` | `RV32ZcaZcbZcmp` |
+| `BranchTargetALU` | `1` |
+| `WritebackStage` | `1` |
+| `ICache` | `0` |
+| `ICacheECC` | `0` |
+| `ICacheScramble` | `0` |
+| `BranchPredictor` | `0` |
+| `DbgTriggerEn` | `0` |
+| `SecureIbex` | `0` |
+| `PMPEnable` | `1` |
+| `PMPGranularity` | `0` |
+| `PMPNumRegions` | `16` |
+| `MHPMCounterNum` | `10` |
+| `MHPMCounterWidth` | `40` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

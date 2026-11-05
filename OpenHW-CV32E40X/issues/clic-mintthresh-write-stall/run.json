@@ -15,5 +15,15 @@
  "traces": {
   "rtl": 30,
   "spike": 30
- }
+ },
+ "rtl_params": [
+  "RV32=RV32I",
+  "A_EXT=A_NONE",
+  "B_EXT=ZBA_ZBB_ZBS",
+  "M_EXT=M",
+  "X_EXT=0",
+  "NUM_MHPMCOUNTERS=1",
+  "CLIC=1",
+  "CLIC_ID_WIDTH=5"
+ ]
 }

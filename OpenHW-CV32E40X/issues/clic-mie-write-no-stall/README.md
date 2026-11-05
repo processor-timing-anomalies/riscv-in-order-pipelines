@@ -22,6 +22,23 @@ c.lbu, c.lh, c.lhu, c.lw, c.sb, c.sh, c.sw, c.swsp each one behind csrrs x0, mie
 
 `rtl/cv32e40x_cs_registers.sv`, lines 1550-1557 (`csr_irq_enable_write_o`): the clic_irq_en branch (line 1553): csr_irq_enable_write_o is mstatus_we, priv_lvl_we, mintthresh_we or mintstatus_we -- mie_we is in the CLINT branch only; irq_enable_stall (controller_bypass.sv 275-278) holds a load or store in EX for the cycle the writer is in WB
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+| `CLIC` | `1` |
+| `CLIC_ID_WIDTH` | `5` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The programs in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

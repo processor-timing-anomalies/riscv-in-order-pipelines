@@ -22,6 +22,32 @@ act4 I-jalr-00 on ibex-maxperf: 2 of 3,506 retirements differ from Spike in pc_w
 
 `rtl/ibex_ex_block.sv`, lines 88-95, 103 (`branch_target_o`): with BranchTargetALU the target is bt_alu_result[31:0] = bt_a_operand_i + bt_b_operand_i, raw; without it alu_adder_result_ex_o.  ibex_core.sv 2093: rvfi_stage_pc_wdata <= pc_set ? branch_target_ex : pc_if; ibex_if_stage.sv 289: prefetch_addr = {fetch_addr_n[31:1], 1'b0} clears it for the fetch
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32E` | `0` |
+| `RV32M` | `RV32MSingleCycle` |
+| `RV32B` | `RV32BNone` |
+| `RV32ZC` | `RV32ZcaZcbZcmp` |
+| `BranchTargetALU` | `1` |
+| `WritebackStage` | `1` |
+| `ICache` | `0` |
+| `ICacheECC` | `0` |
+| `ICacheScramble` | `0` |
+| `BranchPredictor` | `0` |
+| `DbgTriggerEn` | `0` |
+| `SecureIbex` | `0` |
+| `PMPEnable` | `0` |
+| `PMPGranularity` | `0` |
+| `PMPNumRegions` | `4` |
+| `MHPMCounterNum` | `10` |
+| `MHPMCounterWidth` | `40` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

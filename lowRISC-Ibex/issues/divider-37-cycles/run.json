@@ -15,5 +15,24 @@
  "traces": {
   "rtl": 9870,
   "spike": 9870
- }
+ },
+ "rtl_params": [
+  "RV32E=0",
+  "RV32M=RV32MFast",
+  "RV32B=RV32BNone",
+  "RV32ZC=RV32Zca",
+  "BranchTargetALU=0",
+  "WritebackStage=0",
+  "ICache=0",
+  "ICacheECC=0",
+  "ICacheScramble=0",
+  "BranchPredictor=0",
+  "DbgTriggerEn=0",
+  "SecureIbex=0",
+  "PMPEnable=0",
+  "PMPGranularity=0",
+  "PMPNumRegions=4",
+  "MHPMCounterNum=10",
+  "MHPMCounterWidth=40"
+ ]
 }

@@ -4,7 +4,7 @@ This document lists every timing anomaly we found on the CV32E40X: each place wh
 
 Each anomaly has a **class** (the table below: how the hardware's trigger compares with the cause it exists for), a **cost** in cycles, **whom it concerns** (the RTL's developers, the core's performance, or the documentation), a **status**, and, for most, an **issue directory** under `issues/` with the issue's text and, when a small program reproduces it, that program, the two RVVI traces (the RTL's and the reference's) and the capture's facts; `issues/README.md` says what each directory holds.  The timing specification beside this document (`timing.md`) carries the same anomalies as rows of its section 9, in the context of the rules they break.
 
-Generated from our record on 4 November 2026: 30 anomalies -- 2 in the RTL, 6 on performance, 22 in the documentation.
+Generated from our record on 5 November 2026: 30 anomalies -- 2 in the RTL, 6 on performance, 22 in the documentation.
 
 | class | meaning |
 |---|---|

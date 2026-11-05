@@ -22,6 +22,21 @@ a load or store retires 2 cycles after a csrrs that writes mstatus (c.lbu, c.sb)
 
 `rtl/cv32e40x_controller_bypass.sv`, lines 275-278 (`irq_enable_stall`): EX is stalled while a load or store is in it and a write that may enable an interrupt is in WB ('Stall EX when an interrupt may be enabled from WB while there is a LSU instruction in EX'); without CLIC those writes are of mie and mstatus (cv32e40x_cs_registers.sv:1555)
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The programs in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

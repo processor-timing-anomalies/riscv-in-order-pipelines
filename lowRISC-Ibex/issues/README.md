@@ -23,8 +23,13 @@ table says what each directory holds.
 | [interrupts-in-user-whatever-mie](interrupts-in-user-whatever-mie/) | documentation | In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it | the issue, the program, the two traces, `run.json` |
 | [user-mode-costs-as-machine-mode](user-mode-costs-as-machine-mode/) | documentation | Instructions cost the same cycles in U-mode as in M-mode, unstated | the issue, the program, the two traces, `run.json` |
 | [csr-write-flush-any-csr](csr-write-flush-any-csr/) | performance | Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too | the issue, the program, the two traces, `run.json` |
+| [icache-disabled-is-not-the-prefetch-buffer](icache-disabled-is-not-the-prefetch-buffer/) | documentation | With the cache disabled the fetch stream is the cache's own, not the prefetch buffer's | the issue, the program, the two traces, `run.json` |
+| [icache-fence-i-walk-258-cycles](icache-fence-i-walk-258-cycles/) | documentation | A fence.i on the cached build costs a 258-cycle walk of bus fetches; the table says 1 - N | the issue, the program, the two traces, `run.json` |
+| [icache-reset-walk](icache-reset-walk/) | documentation | The first 258 cycles after reset are an invalidation walk: every fetch a bus request | the issue, the program, the two traces, `run.json` |
+| [icache-fill-buffer-frees-a-cycle-late](icache-fill-buffer-frees-a-cycle-late/) | documentation | A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | the issue, the program, the two traces, `run.json` |
+| [split-access-holds-until-both-halves-accepted](split-access-holds-until-both-halves-accepted/) | documentation | A misaligned access holds ID/EX until both halves are accepted and its first response | the issue, the program, the two traces, `run.json` |
 
-In all, 13 directories: 13 hold a program that reproduces the anomaly and the two traces of its run.
+In all, 18 directories: 18 hold a program that reproduces the anomaly and the two traces of its run.
 <!-- end -->
 
 © 2026 processor-timing-anomalies, Apache License 2.0

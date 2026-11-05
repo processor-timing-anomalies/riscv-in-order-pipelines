@@ -22,6 +22,32 @@ the probe csr-write-flush-any-csr.S on ibex, 1 Nov 2026: one CSR access per bloc
 
 `rtl/ibex_id_stage.sv`, lines 586-593 (`csr_pipe_flush`): csr_pipe_flush is raised for a CSR instruction with a write (csr_op_en_o and CSR_OP_WRITE, SET or CLEAR) of any address but the two of no_flush_csr_addr (mscratch, mepc): the address alone decides, and the controller's special_req_flush_only takes DECODE through FLUSH
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32E` | `0` |
+| `RV32M` | `RV32MFast` |
+| `RV32B` | `RV32BNone` |
+| `RV32ZC` | `RV32Zca` |
+| `BranchTargetALU` | `0` |
+| `WritebackStage` | `0` |
+| `ICache` | `0` |
+| `ICacheECC` | `0` |
+| `ICacheScramble` | `0` |
+| `BranchPredictor` | `0` |
+| `DbgTriggerEn` | `0` |
+| `SecureIbex` | `0` |
+| `PMPEnable` | `0` |
+| `PMPGranularity` | `0` |
+| `PMPNumRegions` | `4` |
+| `MHPMCounterNum` | `10` |
+| `MHPMCounterWidth` | `40` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The program in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the CV32E40X
 
-Generated from our records of the CV32E40X on 4 November 2026, for the RTL at commit `d952cd63bc1b4eb58cd893c28ef8283c781e345e`; the configurations measured: cv32e40x-clic (the CLIC build), cv32e40x-pma (the PMA build), cv32e40x-pma-a (the PMA with A build), cv32e40x-rv32i (the RV32I build), cv32e40x-zbc (the Zbc build).  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the CV32E40X on 5 November 2026, for the RTL at commit `d952cd63bc1b4eb58cd893c28ef8283c781e345e`; the configurations measured: cv32e40x-clic (the CLIC build), cv32e40x-pma (the PMA build), cv32e40x-pma-a (the PMA with A build), cv32e40x-rv32i (the RV32I build), cv32e40x-zbc (the Zbc build).  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the cv32e40x core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -645,21 +645,21 @@ The manual states no latency and no taking stage for interrupts; every row here 
 
 ## 8. What real programs pay on this core: the cycles lost to stalls, by cause
 
-Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 4 retirements before the subject) over 54,208,445 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
+Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 4 retirements before the subject) over 55,005,160 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
 
 | measure | value |
 |---|---|
-| cycles per retirement, the programs' single-cost skeletons (42,356,492 of the 46,867,380 retirements of the certification tests and the benchmarks, 90%) | 42,356,492 retirements, 52,194,991 cycles: CPI 1.232 (IPC 0.81) |
+| cycles per retirement, the programs' single-cost skeletons (42,214,140 of the 46,867,380 retirements of the certification tests and the benchmarks, 90%) | 42,214,140 retirements, 51,773,020 cycles: CPI 1.226 (IPC 0.82) |
 | real code's shapes no generated suite makes | 2.2% of the programs' retirements (by class) |
 
 The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the README beside this document.
 
 What an ideal mechanism would save, as a ceiling and not a design (the profile summary carries the caveats):
 
-| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 52,194,991 single-cost cycles |
+| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 51,773,020 single-cost cycles |
 |---|---:|---:|---:|
-| a perfect branch prediction: the follower of a taken branch at 1 cycle | 2,633,287 | 5,292,469 | 10.1% |
-| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 1,514,798 | 1,601,210 | 3.1% |
+| a perfect branch prediction: the follower of a taken branch at 1 cycle | 2,494,469 | 5,014,833 | 9.7% |
+| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 1,512,815 | 1,599,227 | 3.1% |
 | no load-use bubble | 777,102 | 777,102 | 1.5% |
 | no extra cycle at a pc+2 target | 743,147 | 743,147 | 1.4% |
 | a divider with half the steps | 84,687 | 667,450 | 1.3% |

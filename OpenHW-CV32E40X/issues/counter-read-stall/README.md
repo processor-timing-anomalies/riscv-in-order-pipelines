@@ -22,6 +22,21 @@ csrrs of mcycle or minstret retires 2 cycles after the instruction before it, st
 
 `rtl/cv32e40x_controller_bypass.sv`, lines 269-273 (`minstret_stall`): the stall has a signal and a comment of its own ('Stall (EX) due to performance counter read'), outside the three CSR stall cases the file lists at lines 241-246: it is not the implicit CSR write of the Hazards list's line 120
 
+## The core's configuration
+
+The RTL was built with these parameters of its top module (the names and values are the RTL's own; the build named under "Found while running" is what they define):
+
+| parameter | value |
+|---|---|
+| `RV32` | `RV32I` |
+| `A_EXT` | `A_NONE` |
+| `B_EXT` | `ZBA_ZBB_ZBS` |
+| `M_EXT` | `M` |
+| `X_EXT` | `0` |
+| `NUM_MHPMCOUNTERS` | `1` |
+
+The instruction and data buses granted every request in its own cycle and answered it in the next: no wait states.
+
 ## To reproduce
 
 The programs in this directory, built with the RISC-V GNU toolchain and run on Spike (`env/` carries the few lines of start-up and the linker script it needs; the RTL traces here were captured on the core's RTL under Verilator with our own testbench, which is not published):

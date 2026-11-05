@@ -3,57 +3,61 @@
 <!-- generated: core -->
 | | |
 |---|---|
-| core | Ibex, lowRISC: a 2-stage in-order RV32 core |
+| core | Ibex, lowRISC: a configurable in-order RV32 core, 2-stage in its default build and 3-stage with the writeback stage; measured here in four builds (the default, the maxperf build, maxperf with B full and PMP, and that with the instruction cache), each with its own page below |
 | RTL | [lowRISC/ibex](https://github.com/lowRISC/ibex) at commit [c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa](https://github.com/lowRISC/ibex/tree/c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa) |
 | documentation | the documentation in that repository at that commit (`doc/`), its pipeline details page above all |
 | base build | RV32IMC (Zca) with Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MFast RV32B=RV32BNone RV32ZC=RV32Zca BranchTargetALU=0 WritebackStage=0 ICache=0 ICacheECC=0 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=0 PMPGranularity=0 PMPNumRegions=4 MHPMCounterNum=10 MHPMCounterWidth=40`) |
 | the maxperf build with B full, PMP and the instruction cache | RV32IMC (Zca, Zcb, Zcmp) with B full (Zba, Zbb, Zbs, Zbc, Zbkb, Zbkc, Zbkx), PMP (16 regions, Smepmp), the 4 kB two-way instruction cache with ECC, Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MSingleCycle RV32B=RV32BFull RV32ZC=RV32ZcaZcbZcmp BranchTargetALU=1 WritebackStage=1 ICache=1 ICacheECC=1 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=1 PMPGranularity=0 PMPNumRegions=16 MHPMCounterNum=10 MHPMCounterWidth=40`) |
-| the maxperf build | RV32IMC (Zca, Zcb; Zcmp built, untested) with Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MSingleCycle RV32B=RV32BNone RV32ZC=RV32ZcaZcbZcmp BranchTargetALU=1 WritebackStage=1 ICache=0 ICacheECC=0 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=0 PMPGranularity=0 PMPNumRegions=4 MHPMCounterNum=10 MHPMCounterWidth=40`) |
-| the maxperf build with B full and PMP | RV32IMC (Zca, Zcb; Zcmp built, untested) with B full (Zba, Zbb, Zbs, Zbc, Zbkb, Zbkc, Zbkx), PMP (16 regions, Smepmp), Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MSingleCycle RV32B=RV32BFull RV32ZC=RV32ZcaZcbZcmp BranchTargetALU=1 WritebackStage=1 ICache=0 ICacheECC=0 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=1 PMPGranularity=0 PMPNumRegions=16 MHPMCounterNum=10 MHPMCounterWidth=40`) |
+| the maxperf build | RV32IMC (Zca, Zcb, Zcmp) with Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MSingleCycle RV32B=RV32BNone RV32ZC=RV32ZcaZcbZcmp BranchTargetALU=1 WritebackStage=1 ICache=0 ICacheECC=0 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=0 PMPGranularity=0 PMPNumRegions=4 MHPMCounterNum=10 MHPMCounterWidth=40`) |
+| the maxperf build with B full and PMP | RV32IMC (Zca, Zcb, Zcmp) with B full (Zba, Zbb, Zbs, Zbc, Zbkb, Zbkc, Zbkx), PMP (16 regions, Smepmp), Zicsr, Zifencei and the counters (`RV32E=0 RV32M=RV32MSingleCycle RV32B=RV32BFull RV32ZC=RV32ZcaZcbZcmp BranchTargetALU=1 WritebackStage=1 ICache=0 ICacheECC=0 ICacheScramble=0 BranchPredictor=0 DbgTriggerEn=0 SecureIbex=0 PMPEnable=1 PMPGranularity=0 PMPNumRegions=16 MHPMCounterNum=10 MHPMCounterWidth=40`) |
 <!-- end -->
 
-One RTL, two pipelines.  Ibex's parameters select the pipeline itself, not only the extensions, so the RTL was built and
-measured as two builds, each with a timing specification of its own.  The base build is lowRISC's `small` configuration:
-two stages, instruction fetch and a combined decode-execute stage, with the register file read and written in that one
-stage, a prefetch buffer in front of it, the fast multiplier (3 cycles for `mul`, 4 for `mulh`) and no branch target ALU.
-The maxperf build is lowRISC's `maxperf` configuration: a third stage, writeback, so that a load's data lands a stage later
-and the instruction that reads it stalls instead of the load; the branch target ALU, which makes jumps and taken branches a
-cycle shorter; the single-cycle multiplier; and Zcb (Zcmp is in the RTL and untested here, as no released assembler of ours
-emits it yet).  Both builds carry ten performance counters where lowRISC's named configurations carry none, so that the
-counters can be read; the counters do not change the pipeline.
+One RTL, two pipelines, four builds.  Ibex's parameters select the pipeline itself, not only the extensions, so the RTL
+was built and measured as four builds, each with a timing specification of its own.  The base build is lowRISC's `small`
+configuration: two stages, instruction fetch and a combined decode-execute stage, with the register file read and written
+in that one stage, a prefetch buffer in front of it, the fast multiplier (3 cycles for `mul`, 4 for `mulh`) and no branch
+target ALU.  The maxperf build is lowRISC's `maxperf` configuration: a third stage, writeback, so that a load's data lands
+a stage later and the instruction that reads it stalls instead of the load; the branch target ALU, which makes jumps and
+taken branches a cycle shorter; the single-cycle multiplier; and Zcb and Zcmp.  The third build adds to maxperf the full
+bit-manipulation set and the PMP with sixteen regions and Smepmp (the `maxperf-pmp-bmfull` configuration), and the fourth
+adds the 4 kB two-way instruction cache with ECC (`maxperf-pmp-bmfull-icache`), which replaces the prefetch buffer in
+front of the fetch stage.  All four carry ten performance counters where lowRISC's named configurations carry none, so
+that the counters can be read; the counters do not change the pipeline.
 
 The documentation describes one of the two pipelines.  Its pipeline details page gives a stall table per instruction class
-and says that it applies to the two-stage pipeline, the writeback stage's effects being "not yet documented".  So the two
+and says that it applies to the two-stage pipeline, the writeback stage's effects being "not yet documented".  So the
 specifications differ in kind: the base build's ([timing.md](timing.md)) was written from the manual's statements and each
 statement was then checked against the RTL; the maxperf build's ([timing-maxperf.md](timing-maxperf.md)) was written from
-the RTL source, every statement graded `read` and cited to a file and lines of the RTL, since no document states it.  The
-anomalies below name the build they were found on.
+the RTL source, every statement graded `read` and cited to a file and lines of the RTL, since no document states it; the
+PMP build's ([timing-pmp.md](timing-pmp.md)) and the cache build's ([timing-icache.md](timing-icache.md)) extend the
+maxperf specification with what the PMP and the cache add, from the manual's PMP and cache pages and the RTL where those
+pages stop.  The anomalies below name the build they were found on.
 
 ## What we found
 
 <!-- generated: found -->
 **Comparing the RTL against the timing its documentation promises, on the base build, the maxperf build with B full, PMP and the instruction cache, the maxperf build and the maxperf build with B full and PMP, we
-found 13 anomalies: 2 in the RTL, 1 on performance, 10 in the documentation.**  13 of them have an issue directory: 13 hold a program that reproduces the anomaly and the two traces of its run.
+found 18 anomalies: 2 in the RTL, 1 on performance, 15 in the documentation.**  18 of them have an issue directory: 18 hold a program that reproduces the anomaly and the two traces of its run.
 
 | | |
 |---|---|
 | RTL, 2 | The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU; A misaligned store the PMP refuses still writes its second half |
 | performance, 1 | stalls that fire wider than their cause: a cycle paid in cases that have no reason to pay it |
-| documentation, 10 | places where the manual is silent, behind the hardware, or wrong about a stall or a cost |
+| documentation, 15 | places where the manual is silent, behind the hardware, or wrong about a stall or a cost |
 
 Everywhere else the core's timing was as predicted.  Our predictions for this core, built from its documentation and
 corrected by the issues above, agreed with the RTL on every other instruction:
 
 | | |
 |---|---|
-| the focused test suites | 5,503 tests (4,994 generated in 7 suites, the RISC-V architecture certification tests and a smoke program), 24,471,592 instruction intervals compared on the base build and the maxperf build and the maxperf build with B full and PMP, 0 disagreeing |
+| the focused test suites | 7,860 tests (7,181 generated in 7 suites, the RISC-V architecture certification tests and a smoke program), 36,221,132 instruction intervals compared on the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP, 0 disagreeing |
 | the benchmarks | 107 programs (CoreMark, Dhrystone, Embench-IoT, Mälardalen, riscv-tests, TACLeBench), 41,100,262 instruction intervals, 0 disagreeing |
 | the search beyond the suites | not yet run on this core |
-| the documentation's own timing statements | 18 of 18 proved on the RTL (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
+| the documentation's own timing statements | 18 of 18 proved on the RTL (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
 <!-- end -->
 
 The documentation anomalies are of two kinds, counted in the table above.  Gaps, a cost the manual states without its
-count or does not state at all, are the first four below.  Rules the manual states that the hardware does not follow as
+count or does not state at all, are the four below and the five of the instruction cache after them.  Rules the manual states that the hardware does not follow as
 written came with the PMP and user-mode rounds: the PMP CSRs trap as illegal instructions on a build without PMP where
 the manual says they read as zero; the manual's rule that a region may be writable without being readable holds only
 while `mseccfg.MML` is clear; and an interrupt in user mode is taken whatever `mstatus.MIE` says, where the manual's
@@ -63,9 +67,18 @@ division or remainder with a non-zero divisor takes 37 cycles, the count the dec
 table's "1 or 37" read under its own rule would make 38.  A trap entry and an `mret` each cost one cycle more than a jump,
 the redirect being made in a flush state the cycle after the instruction's own; the manual gives no count for either.  An
 interrupt's entry and a `wfi`'s wake have no stated latency; both were measured and are now rows of the specification.
-The one RTL anomaly is in the trace port, not in execution: with the branch target ALU on (the maxperf build), the RVFI's
-next-pc value of a `jalr` whose target is odd keeps bit 0, where the fetch clears it; a trace consumer that compares the
-next pc sees a mismatch on every such jump.
+The instruction cache build added five gaps (4 November 2026): after reset and after every `fence.i` the cache walks its
+256 sets for 258 cycles, during which no lookup hits and every fetch goes to the bus, where the manual's cycle table gives
+the instruction fence as "1 - N" and says nothing of the walk after reset; with the cache disabled the fetch stream is the
+cache's own (four fill buffers requesting a line at a time) and not the prefetch buffer's, so disabling the cache does not
+restore the uncached build's timing under instruction-side waits; a fill buffer frees the cycle after its last word, so a
+lookup that needs it is granted a cycle late; and a misaligned access holds the pipeline until both halves are accepted
+and the first half's response is on the wire, longer than the manual's "at least two cycles" under data-side waits.
+The two RTL anomalies are a trace-port fault and a memory-write fault.  With the branch target ALU on (the maxperf build),
+the RVFI's next-pc value of a `jalr` whose target is odd keeps bit 0, where the fetch clears it; a trace consumer that
+compares the next pc sees a mismatch on every such jump.  On the PMP build, a misaligned store whose first half the PMP
+refuses still writes its second half to memory before the fault is taken, so the faulting store leaves half its data
+behind, where the architecture leaves the word untouched.
 
 ## What is in this repository
 
@@ -79,16 +92,16 @@ next pc sees a mismatch on every such jump.
 ## The numbers
 
 <!-- generated: numbers -->
-As of the regression recorded on 4 November 2026, at commit `448464c` of our tree (the commit that recorded it); the test and interval counts are
-summed from the per-test tables of the records of the base build and the maxperf build and the maxperf build with B full and PMP.  The maxperf build with B full, PMP and the instruction cache has no record yet, so its runs are not in these numbers.
+As of the regression recorded on 5 November 2026, at commit `be338de` of our tree (the commit that recorded it); the test and interval counts are
+summed from the per-test tables of the records of the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP.
 
 | | |
 |---|---|
-| statements of the documentation, each proved against the RTL | 18 of 18 (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
-| instruction intervals compared, RTL against the documented timing | 24,471,592 over 7 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
+| statements of the documentation, each proved against the RTL | 18 of 18 (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
+| instruction intervals compared, RTL against the documented timing | 36,221,132 over 7 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
 | instruction sequences searched beyond the suites | not yet run on this core |
-| anomalies | 13: 10 where the documentation is behind the hardware, 1 where a stall fires wider than its cause, 2 not a timing matter |
-| issue directories | 13: 10 for the documentation, 1 on performance, 2 on the RTL |
+| anomalies | 18: 15 where the documentation is behind the hardware, 1 where a stall fires wider than its cause, 2 not a timing matter |
+| issue directories | 18: 15 for the documentation, 1 on performance, 2 on the RTL |
 | injected timing and functional mutation faults the programs catch | not yet run on this core |
 | instruction shapes of real programs that the generated suites also exercise | 78.3% of their retirements; the remaining 21.7% are shapes no suite makes yet |
 | cycles per instruction over the benchmarks' timed parts | CPI 1.517, IPC 0.659, over 41,100,369 instructions in 107 programs (per suite in the runs table below) |
@@ -100,10 +113,10 @@ summed from the per-test tables of the records of the base build and the maxperf
 | our test suites | tests | passed | skipped | intervals compared | disagreeing |
 |---|---:|---:|---:|---:|---:|
 | the base build: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 1,424 | 1,342 | 82 | 5,401,802 | 0 |
-| the maxperf build with B full, PMP and the instruction cache: not yet recorded | - | - | - | - | - |
+| the maxperf build with B full, PMP and the instruction cache: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 2,357 | 2,330 | 27 | 11,749,540 | 0 |
 | the maxperf build: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 1,715 | 1,639 | 76 | 7,272,934 | 0 |
 | the maxperf build with B full and PMP: 7 generated suites, the RISC-V architecture certification tests and a smoke program | 2,364 | 2,337 | 27 | 11,796,856 | 0 |
-| **all** | **5,503** | **5,318** | **185** | **24,471,592** | **0** |
+| **all** | **7,860** | **7,648** | **212** | **36,221,132** | **0** |
 
 A skipped test is one the core cannot run as built (an extension it lacks, a case the generator could not place); it is counted, not hidden.
 
@@ -130,19 +143,20 @@ What "no timing anomaly left" rests on, in eight parts, each with its state:
 | the documented statements, each proved | closed |
 | everything generated, compared against the documented timing | closed |
 | the RTL's own stall and flush mechanisms, read from its source: each exercised by a test or named unreachable with its reason | closed, except 7 terms not yet exercised (`data_ind_timing_i`, `INSTR_EXPANDED_COMMIT`, `icache_enable_i`, `instr_intg_err`, `irq_nm_int`, `ic_scr_key_valid_i`, `illegal_csr`), each awaiting a feature of ours; the specification's section 10 says which |
-| bus timing under a schedule | the scheduled suite: 2,626,054 intervals, 0 disagreeing; the survey does not yet read the schedule |
+| bus timing under a schedule | the scheduled suite: 3,504,118 intervals, 0 disagreeing; the survey does not yet read the schedule |
 | state interactions: CSR side effects, modes, reserved forms | open: the search has not run on this core yet |
 | real programs' shapes, covered by the suites | 78.3% covered; the rest open |
 | detection power: injected timing and functional mutation faults | open: no mutation campaign on this core yet |
-| timing conditions in the RTL that the manual says nothing about, each a question answered by reading the source and measuring | 28 questions (6 on the base build, 8 on the maxperf build with B full, PMP and the instruction cache, 9 on the maxperf build, 5 on the maxperf build with B full and PMP); 8 answered and now stated in the specification; 20 open: `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry` (the base build); `fetch_hit`, `fetch_miss_after_redirect`, `fetch_miss_sequential`, `fetch_fill_wrap_starve`, `fetch_inval_window`, `fetch_redirect_behind_stale_fill`, `fetch_disabled_stream`, `fetch_ecc_error_refetch` (the maxperf build with B full, PMP and the instruction cache); `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry`, `zcmp_commit_irq_hold` (the maxperf build); `pmp_fault_lsu_misaligned_first`, `pmp_fault_lsu_misaligned_second`, `pmp_fault_zcmp_uop` (the maxperf build with B full and PMP) |
+| timing conditions in the RTL that the manual says nothing about, each a question answered by reading the source and measuring | 28 questions (6 on the base build, 8 on the maxperf build with B full, PMP and the instruction cache, 9 on the maxperf build, 5 on the maxperf build with B full and PMP); 15 answered and now stated in the specification; 13 open: `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry` (the base build); `fetch_ecc_error_refetch` (the maxperf build with B full, PMP and the instruction cache); `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry`, `zcmp_commit_irq_hold` (the maxperf build); `pmp_fault_lsu_misaligned_first`, `pmp_fault_lsu_misaligned_second`, `pmp_fault_zcmp_uop` (the maxperf build with B full and PMP) |
 <!-- end -->
 
 What is not here yet, and is planned: the benchmark programs on the PMP build (they are in the tables above for the
 small and the maxperf builds since 30 October 2026); the mutation campaign, which proves the suites see the faults they
 claim to see; and the search beyond the suites.  Each appears in the tables above with its first recorded run.  The
 PMP build (the maxperf pipeline with physical memory protection and the full bit-manipulation set) is measured since
-31 October 2026, in machine mode and, since 1 November, in user mode; lowRISC's `opentitan` configuration adds the
-instruction cache and the security features and is the next build to be measured.
+31 October 2026, in machine mode and, since 1 November, in user mode; the instruction cache build (the PMP build with the
+4 kB two-way cache and its ECC) since 4 November 2026, every test run with the cache on; lowRISC's `opentitan`
+configuration adds the cache's scrambling and the security features and is the next build to be measured.
 
 ## How to read an issue
 
