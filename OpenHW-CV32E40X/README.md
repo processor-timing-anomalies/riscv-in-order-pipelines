@@ -22,20 +22,20 @@ base's bit-manipulation set (`B_EXT=ZBA_ZBB_ZBC_ZBS`).  Every issue names the co
 
 <!-- generated: found -->
 **Comparing the RTL against the timing its documentation promises, on the base build and the 5 configurations, we
-found 30 anomalies: 2 in the RTL, 6 on performance, 22 in the documentation.**  28 of them have an issue directory: 21 hold a program that reproduces the anomaly and the two traces of its run; 7 (`mem-address-phase`, `mem-late-data-forward`, `mem-pma-split-first-half`, `mem-response-frees-slot`, `mem-responses-in-order`, `mem-split-second-half`, `mem-wbuf-fence-drain`) hold the issue text alone, the anomaly read in the RTL source or seen in a run no small program repeats yet.  The other 2 (`csr-rows-unnamed`, `clic-minhv-after-restart`) have no directory; the findings page states each.
+found 37 anomalies: 2 in the RTL, 9 on performance, 26 in the documentation.**  34 of them have an issue directory: 27 hold a program that reproduces the anomaly and the two traces of its run; 7 (`mem-address-phase`, `mem-late-data-forward`, `mem-pma-split-first-half`, `mem-response-frees-slot`, `mem-responses-in-order`, `mem-split-second-half`, `mem-wbuf-fence-drain`) hold the issue text alone, the anomaly read in the RTL source or seen in a run no small program repeats yet.  The other 3 (`jvt-mode-warl-zero-vs-udb-trap`, `mtvec-mode-2-reserved-keeps-legal`, `mstatus-mpp-hardwired-3`) have no directory; the findings page states each.
 
 | | |
 |---|---|
 | RTL, 2 | An interrupt entry's CSR writes (mstatus, mepc, mcause) are not reported on RVFI; mcause.minhv stays set after an mret restarts a faulted CLIC pointer fetch successfully |
-| performance, 6 | stalls that fire wider than their cause: a cycle paid in cases that have no reason to pay it |
-| documentation, 22 | places where the manual is silent, behind the hardware, or wrong about a stall or a cost |
+| performance, 9 | stalls that fire wider than their cause: a cycle paid in cases that have no reason to pay it |
+| documentation, 26 | places where the manual is silent, behind the hardware, or wrong about a stall or a cost |
 
 Everywhere else the core's timing was as predicted.  Our predictions for this core, built from its documentation and
 corrected by the issues above, agreed with the RTL on every other instruction:
 
 | | |
 |---|---|
-| the focused test suites | 4,470 tests (4,301 generated in 7 suites, the RISC-V architecture certification tests and a smoke program), 8,436,463 instruction intervals compared on the base build, 0 disagreeing |
+| the focused test suites | 4,543 tests (4,373 generated in 9 suites, the RISC-V architecture certification tests and a smoke program), 8,506,116 instruction intervals compared on the base build, 0 disagreeing |
 | the benchmarks | 105 programs (Dhrystone, CoreMark, riscv-tests, Embench-IoT, Mälardalen, TACLeBench), 66,570,521 instruction intervals, 0 disagreeing |
 | the search beyond the suites | 463,409 distinct instruction shapes, 0 disagreeing |
 | the documentation's own timing statements | 19 of 19 proved on the RTL (the rows of the timing specification's sections 4.2 and 4.3) |
@@ -52,16 +52,16 @@ corrected by the issues above, agreed with the RTL on every other instruction:
 ## The numbers
 
 <!-- generated: numbers -->
-As of the regression recorded on 1 November 2026, at commit `d98bca8` of our tree (the commit that recorded it); the test and interval counts are
+As of the regression recorded on 9 November 2026, at commit `dfdfcc8` of our tree (the commit that recorded it); the test and interval counts are
 summed from that record's per-test table.
 
 | | |
 |---|---|
 | statements of the documentation, each proved against the RTL | 19 of 19 (the rows of the timing specification's sections 4.2 and 4.3) |
-| instruction intervals compared, RTL against the documented timing | 8,436,463 over 7 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
+| instruction intervals compared, RTL against the documented timing | 8,506,116 over 9 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
 | instruction sequences searched beyond the suites | 463,409 distinct shapes, 0 disagreeing |
-| anomalies | 30: 20 where the documentation is behind the hardware, 6 where a stall fires wider than its cause, 4 not a timing matter |
-| issue directories | 28: 21 for the documentation, 6 on performance, 1 on the RTL |
+| anomalies | 37: 21 where the documentation is behind the hardware, 9 where a stall fires wider than its cause, 4 not a timing matter |
+| issue directories | 34: 23 for the documentation, 9 on performance, 2 on the RTL |
 | injected timing and functional mutation faults the programs catch | 46 of 49 caught; the 3 survivors equivalent to the original, each explained |
 | instruction shapes of real programs that the generated suites also exercise | 97.8% of their retirements; the remaining 2.2% are shapes no suite makes yet |
 | cycles per instruction over the benchmarks' timed parts | CPI 1.233, IPC 0.811, over 59,646,454 instructions in 105 programs (per suite in the runs table below) |
@@ -72,7 +72,7 @@ summed from that record's per-test table.
 <!-- generated: runs -->
 | our test suites | tests | passed | skipped | intervals compared | disagreeing |
 |---|---:|---:|---:|---:|---:|
-| 7 generated suites, the RISC-V architecture certification tests and a smoke program | 4,470 | 2,025 | 2,445 | 8,436,463 | 0 |
+| 9 generated suites, the RISC-V architecture certification tests and a smoke program | 4,543 | 2,081 | 2,462 | 8,506,116 | 0 |
 
 A skipped test is one the core cannot run as built (an extension it lacks, a case the generator could not place); it is counted, not hidden.
 

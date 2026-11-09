@@ -8,11 +8,11 @@
 
 ## Issue
 
-a fill buffer's done state is registered: a word arriving or a beat popped in cycle c makes the buffer done in c + 1 and free from c + 2, so a lookup that needs that buffer is granted one cycle later than a buffer freed at once would allow.  Nothing in icache.rst describes when a buffer frees.
+a fill buffer's done state is registered: a word arriving or a beat popped in cycle c makes the buffer done in c + 1 and free from c + 2, so a lookup that needs that buffer is granted one cycle later than a buffer freed at once would allow.  icache.rst says a buffer is released once all its actions are complete (171) but not in which cycle.
 
 ## What the documentation says
 
-icache.rst 60-75 (the fill buffers), no word on when a buffer frees
+icache.rst 158-174 (the fill buffers): line 171 says a buffer is released 'once all required actions are complete', with no cycle
 
 ## What the RTL does
 
@@ -24,7 +24,7 @@ The run delayed the instruction bus: every word's grant was withheld one cycle. 
 
 ## From the RTL source (read, not measured)
 
-`rtl/ibex_icache.sv`, lines 731-737 (`fill_done, fill_out_done, fill_rvd_done`): fill_done is registered from the done conditions, so the buffer is busy for the cycle after its last pop or arrival
+`rtl/ibex_icache.sv`, lines 734-741 (`fill_done, fill_out_done, fill_rvd_done`): fill_done is combinational from registered terms (fill_rvd_cnt_q, fill_out_cnt_q, fill_ram_done_q), so the buffer is busy for the cycle after its last pop or arrival
 
 ## The core's configuration
 

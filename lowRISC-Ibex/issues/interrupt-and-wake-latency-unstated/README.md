@@ -12,7 +12,7 @@ the documentation gives no cycle count for an interrupt's entry nor for a wfi's 
 
 ## What the documentation says
 
-exceptions_interrupts.rst describes the vector jump (lines 9-13, 28-62) and the enables without cycles; integration.rst 483-487 describes core_sleep_o without the states or their count; pipeline_details.rst's table has no row for an interrupt or a wfi
+exception_interrupts.rst describes the vector jump (lines 9-13, 28-62) and the enables without cycles; integration.rst 483-487 describes core_sleep_o without the states or their count; pipeline_details.rst's table has no row for an interrupt or a wfi
 
 ## What the RTL does
 

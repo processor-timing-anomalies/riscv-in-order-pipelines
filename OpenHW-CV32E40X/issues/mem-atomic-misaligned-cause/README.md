@@ -7,11 +7,11 @@
 
 ## Issue
 
-on cv32e40x-pma-a (A_EXT=A), an lr.w, sc.w or amoadd.w whose address is not word-aligned (tdata + 2, main memory) traps with mcause 5 (lr.w) or 7 (sc.w, the AMO): the access faults; the exception table (exceptions_interrupts.rst) says a non-naturally aligned Load-Reserved address raises 'Load address misaligned' (4) and a non-naturally aligned Store-Conditional / AMO address 'Store/AMO address misaligned' (6).  No request goes on the bus; Spike raises the same access faults, so the two references agree and only the document differs.
+on cv32e40x-pma-a (A_EXT=A), an lr.w, sc.w or amoadd.w whose address is not word-aligned (tdata + 2, main memory) traps with mcause 5 (lr.w) or 7 (sc.w, the AMO): the access faults; the exception table (exceptions_interrupts.rst) says a non-naturally aligned Load-Reserved address raises 'Load address misaligned' (4) and a non-naturally aligned Store-Conditional / AMO address 'Store/AMO address misaligned' (6).  No request goes on the bus; no EXC_CAUSE_*_MISALIGNED is selected anywhere in the RTL.  What the reference raises is unchecked here (the corner catalog declares mcause against the reference's misaligned cause, 6 Nov 2026).
 
 ## What the documentation says
 
-exceptions_interrupts.rst 30 and 36 (the exception table): code 4 'Load address misaligned' for a 'Non-naturally aligned Load-Reserved address', code 6 'Store/AMO address misaligned' for a 'Non-naturally aligned Store-Conditional / AMO address'; codes 5 and 7 list only the I/O-region and no-atomic-support cases.  load_store_unit.rst 56: 'Misaligned transactions (by non-atomics instructions) are supported in hardware for Main memory regions'; pma.rst 60-65 says nothing on alignment
+exceptions_interrupts.rst 30 and 36 (the exception table): code 4 'Load address misaligned' for a 'Non-naturally aligned Load-Reserved address', code 6 'Store/AMO address misaligned' for a 'Non-naturally aligned Store-Conditional / AMO address'; codes 5 and 7 list only the I/O-region and no-atomic-support cases; the note under the table (71-72) repeats that the address misaligned exceptions 4 and 6 are triggered when Load-Reserved, Store-Conditional or AMO instructions use non-naturally aligned addresses and the access is not blocked by a higher-priority PMA access fault.  load_store_unit.rst 56: 'Misaligned transactions (by non-atomics instructions) are supported in hardware for Main memory regions'; pma.rst 60-65 says nothing on alignment
 
 ## What the RTL does
 

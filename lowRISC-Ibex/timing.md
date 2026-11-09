@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the Ibex
 
-Generated from our records of the Ibex on 5 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the Ibex on 9 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the ibex core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -471,7 +471,7 @@ Conditions: the bus schedule a test names.  The manual's cycle table is the spec
 | data: wait_stage | IDEX | load_store_unit.rst 8-10 | stated |
 | data: response_stage | IDEX | load_store_unit.rst 8-10 | stated |
 | data: split_hold | first_response | load_store_unit.rst 8-10 | stated |
-| fetch | outstanding 2; buffer_words 3 | instruction_fetch.rst 15-20 | stated |
+| fetch | model prefetch-buffer; outstanding 2; buffer_words 3 | instruction_fetch.rst 15-20 | stated |
 | regions |  | this configuration has no PMP and Ibex has no PMA: one attribution for the whole address space | inferred |
 | misaligned | split | load_store_unit.rst 83-90 | stated |
 
@@ -579,6 +579,13 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 | The first 258 cycles after reset are an invalidation walk: every fetch a bus request | document | intent | 258 cycles at the start of every run at the bus's miss cost; a short program's cycles per instruction on the cached build say more about the walk than the cache | ibex-icache | confirmed; to file | [issues/icache-reset-walk/](issues/icache-reset-walk/) |
 | A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | document | intent | one cycle on a lookup that waits for a buffer to free, under instruction-side wait states | ibex-icache | confirmed; to file | [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/) |
 | A misaligned access holds ID/EX until both halves are accepted and its first response | document | intent | under data-side wait states, the cycles of the second half's grant and the first half's response, on every misaligned access | ibex-icache | confirmed; to file | [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/) |
+| mcause-read-only-but-written | document | - | - | ibex | clarified; no issue | - |
+| mtvec-mode-2-reserved-reads-vectored | document | - | - | ibex | clarified; no issue | - |
+| mstatus-mpp-2-reads-machine | document | - | - | ibex | closed; no issue | - |
+| load-use-hold-unstated | document | - | - | ibex-maxperf | clarified; no issue | - |
+| multdiv-behind-load-waits-load-use-first | document | - | - | ibex-maxperf | clarified; no issue | - |
+| Three implemented CSRs missing from the CSR table | document | - | - | ibex | clarified; no issue | - |
+| An unsupported MPP value is kept as User mode, not Machine mode | rtl | function | no cycles; software that writes an unsupported value to mstatus.MPP and then executes mret would continue in User mode, without access to the machine-mode CSRs, | ibex-maxperf | open; to file | [issues/mpp-unsupported-reads-user/](issues/mpp-unsupported-reads-user/) |
 
 ## 10. What the base build's rows leave to a configuration, and what no test reaches
 
@@ -617,7 +624,7 @@ Every stall and flush term in the RTL source that the base build's own rows do n
 
 | measure | value |
 |---|---|
-| findings in the record | 18 (15 document, 2 rtl, 1 performance) |
+| findings in the record | 25 (21 document, 3 rtl, 1 performance) |
 
 Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
 

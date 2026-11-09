@@ -8,11 +8,11 @@
 
 ## Issue
 
-a load or store whose word-aligned address the PMP denies is held two cycles in the LSU and then faults from the writeback stage, without any bus request: cycle 0 the request is suppressed and pmp_err_q set, cycle 1 the error stands in for the grant, cycle 2 the response with load_err_o / store_err_o.  The manual says the request proceeds 'as if it was granted externally' and the error is 'consumed by the core when the data would have been consumed', which on a zero-wait memory suggests one cycle, the response's; it is two, one more than the memory's own response would have taken.
+a load or store whose word-aligned address the PMP denies is held two cycles in the LSU and then faults from the writeback stage, without any bus request: cycle 0 the request is suppressed and pmp_err_q set, cycle 1 the error stands in for the grant, cycle 2 the response with load_err_o / store_err_o.  The manual says the units 'progress with their request as if it was granted externally' and the error 'is registered and consumed by the core when the data would have been consumed' (pmp.rst 31-32), which on a zero-wait memory suggests one cycle, the response's; it is two, one more than the memory's own response would have taken.
 
 ## What the documentation says
 
-pmp.rst, 'PMP Integration': the check gates the LSU's external request; 'the request proceeds as if it was granted externally; the error is consumed by the core when the data would have been consumed'; no cycle count anywhere in the manual
+pmp.rst, 'PMP Integration': the check gates the LSU's external request; (lines 31-32) 'the instruction fetch unit and load-store unit progress with their request as if it was granted externally. The PMP error is registered and consumed by the core when the data would have been consumed.'; no cycle count anywhere in the manual
 
 ## What the RTL does
 

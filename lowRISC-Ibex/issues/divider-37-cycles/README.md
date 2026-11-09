@@ -8,11 +8,11 @@
 
 ## Issue
 
-a div, divu, rem or remu with a non-zero divisor holds the pipeline 37 cycles; the pipeline table's row 'Division, Remainder: 1 or 37' is a count of cycles, not of the stall cycles its rule 'when an instruction stalls for X cycles X + 1 cycles pass' would make it, while the decode-execute page says 37 cycles outright: the two pages read together give 38, the core takes 37.
+a div, divu, rem or remu with a non-zero divisor holds the pipeline 37 cycles; the pipeline table's Division and Remainder rows ('1 or 37') give the 37 as a count of cycles, not of the stall cycles its rule 'when an instruction stalls for X cycles X + 1 cycles pass' would make it (the '1' for a divide by zero does follow the rule: 1 stall cycle, 2 cycles, as the RTL takes), while the decode-execute page says 37 cycles outright: the two pages read together give 38, the core takes 37.
 
 ## What the documentation says
 
-pipeline_details.rst, the table 'Multi- and Single-Cycle Instructions': 'Division / Remainder | 1 or 37 | 1 stall cycle if divide by 0, otherwise full long division', under the rule at line 35, 'when an instruction stalls for X cycles X + 1 cycles pass before a new instruction enters the ID/EX stage'; instruction_decode_execute.rst line 137: 'it takes 37 cycles to compute (though only requires 2 cycles when there is a divide by 0)'
+pipeline_details.rst, the table 'Multi- and Single-Cycle Instructions': the rows 'Division' and 'Remainder' (lines 68-70): cycles '1 or 37', description '1 stall cycle if divide by 0, otherwise full long division.', under the rule at line 35, 'when an instruction stalls for X cycles X + 1 cycles pass before a new instruction enters the ID/EX stage'; instruction_decode_execute.rst line 137: 'it takes 37 cycles to compute (though only requires 2 cycles when there is a divide by 0)'
 
 ## What the RTL does
 

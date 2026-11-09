@@ -1,4 +1,4 @@
-# jvt write: the table's 4 cycles are a flush of the next instruction
+# jvt write: a flush of the next instruction costing 5 cycles, not the table's 4
 
 - Title: jvt-write-flush
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
@@ -8,7 +8,7 @@
 
 ## Issue
 
-the cycle-count table gives a CSR access 4 cycles for jvt; on the RTL a write of jvt retires in one cycle and the instructions behind it are flushed and refetched, so the next instruction retires 5 cycles after the write (1 + 4 is the table's 4 over the pair), and an interrupt pending in the cycle after the write's retirement is taken one cycle later than after any other CSR write; the document states neither the flush nor the interrupt's cycle, and a read of jvt costs 1.
+the cycle-count table gives a CSR access 4 cycles for jvt; on the RTL a write of jvt retires in one cycle and the instructions behind it are flushed and refetched, so the next instruction retires 5 cycles after the write (6 cycles from the instruction before the write to the one after it, where the table's 4 gives 5 in all, counted as the table's fence.i row is: a cost of 5, one more than the table's 4), and an interrupt pending in the cycle after the write's retirement is taken one cycle later than after any other CSR write; the document states neither the flush nor the interrupt's cycle, and a read of jvt costs 1.
 
 ## What the documentation says
 

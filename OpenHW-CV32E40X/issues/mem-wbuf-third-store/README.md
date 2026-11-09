@@ -1,4 +1,4 @@
-# A bufferable store whose grant is withheld, third behind a mulh, stalls one cycle
+# A store the write buffer could take still waits while two transfers are outstanding
 
 - Title: mem-wbuf-third-store
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
@@ -8,11 +8,11 @@
 
 ## Issue
 
-on cv32e40x-pma, three bufferable stores in a row behind a 4-cycle mulh -- the first with its grant withheld one cycle, the second granted at once, the third (sb) with its grant withheld two cycles -- the third retires one cycle later than a store the write buffer absorbs (+2 against the +1 of the write-buffer rule), and the load behind it one cycle earlier than predicted (+6 against +7); the same block on cv32e40x, where no store is bufferable, is at 0 differ.
+on a configuration with a bufferable region, a bufferable store waits in EX while two transactions are outstanding on the data interface, even when the write buffer is empty: a store the buffer has passed on counts against the two-transaction limit until its response, so three stores in a row with a withheld grant make the third wait a cycle.
 
 ## What the documentation says
 
-load_store_unit.rst Write buffer (142-160): the buffer, when not full, lets the core proceed without waiting for data_gnt_i and data_rvalid_i of a bufferable transfer; nothing on what happens to the third of three stores when the buffer has just emptied, nor on the early response's timing (the response filter, rtl/cv32e40x_lsu_response_filter.sv, is not in the manual)
+load_store_unit.rst 74-75 (up to two outstanding), 148 (the buffer, when not full, lets the core proceed), 152 (gnt and rvalid still signaled for bufferable transfers) and the Multiple Outstanding figure (120-125): together they give the cycle, but no sentence says that a buffered store counts against the limit, so an empty buffer does not let a store through when two are open
 
 ## What the RTL does
 
@@ -20,7 +20,7 @@ hzs-shape-01-zmmul-00 on cv32e40x-pma, 12 Oct 2026, block 60 (shape s3_mem14_mem
 
 ## From the RTL source (read, not measured)
 
-`rtl/cv32e40x_lsu_response_filter.sv`, lines 109-110, 158-160 (`bus_cnt_q, ready_o, resp_valid_o`): the filter sits between the MPU and the write buffer (cv32e40x_load_store_unit.sv 873-899); bus_cnt_q counts a transfer from the buffer taking it (bus_trans_accepted = ready_i && valid_o, ready_i the buffer's ready) to its response (resp_valid_i), so a transfer the buffer holds counts as outstanding; ready_o = ready_i && bus_cnt_q < DEPTH (2) holds the core's next transfer, bufferable or not, while two are open; resp_valid_o = bus_resp_is_bufferable ? core_resp_is_bufferable : resp_valid_i gives a bufferable store its response the cycle the buffer takes it when the oldest open transfer is bufferable -- traced cycle by cycle (the rtl field)
+`rtl/cv32e40x_lsu_response_filter.sv`, lines 116-117, 158, 165 (`bus_cnt_q, ready_o, resp_valid_o`): the filter sits between the MPU and the write buffer (cv32e40x_load_store_unit.sv 873-899); bus_cnt_q counts a transfer from the buffer taking it (bus_trans_accepted = ready_i && valid_o, ready_i the buffer's ready) to its response (resp_valid_i), so a transfer the buffer holds counts as outstanding; ready_o = ready_i && bus_cnt_q < DEPTH (2) holds the core's next transfer, bufferable or not, while two are open; resp_valid_o = bus_resp_is_bufferable ? core_resp_is_bufferable : resp_valid_i gives a bufferable store its response the cycle after the buffer takes it (outstanding_q and bus_cnt_q are registered) when the oldest open transfer is bufferable -- traced cycle by cycle (the rtl field)
 
 ## The core's configuration
 

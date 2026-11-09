@@ -8,11 +8,11 @@
 
 ## Issue
 
-cs_registers.rst says a pmpcfg byte with W = 1 and R = 0 'will be treated by the core as Read/Write permission = 0'; the RTL stores W = 0 in that case (R stays as written) while MML is clear, and with MML set stores the byte as written, since Smepmp gives W = 1, R = 0 the shared-region meanings (a locked region executable by both modes, an unlocked one readable by U and writable by M).  The sentence is the pre-Smepmp rule and says nothing of MML.
+cs_registers.rst says a pmpcfg byte with W = 1 and R = 0 'will be treated by the core as Read/Write permission = 0' (cs_registers.rst 357: 'Note that the combination of Write permission = 1, Read permission = 0 is reserved, and will be treated by the core as Read/Write permission = 0.'); the RTL stores W = 0 in that case (R stays as written) while MML is clear, and with MML set stores the byte as written (except that, with MML set and RLB clear, a write that would add a locked M-mode-executable configuration, a locked W = 1, R = 0 among them, is suppressed outright: is_mml_m_exec_cfg, ibex_cs_registers.sv 164-170, and pmp_cfg_wr_suppress, 1465-1467), since Smepmp gives W = 1, R = 0 the shared-region meanings (a locked region executable by both modes, an unlocked one readable by U and writable by M).  The sentence is the pre-Smepmp rule and says nothing of MML.
 
 ## What the documentation says
 
-cs_registers.rst, pmpcfgx: 'W = 1, R = 0 ... will be treated by the core as Read/Write permission = 0'; pmp.rst 'PMP Enhancements': Smepmp always included
+cs_registers.rst, pmpcfgx: line 357, 'Note that the combination of Write permission = 1, Read permission = 0 is reserved, and will be treated by the core as Read/Write permission = 0.'; pmp.rst 'PMP Enhancements' (lines 48-52): Smepmp always included, its configurations named as superseding the old ones ('These new configurations supersede the original ones'), though cs_registers.rst 357 itself names no MML case
 
 ## What the RTL does
 
@@ -20,7 +20,7 @@ the four PMP files on ibex-pmp, 31 Oct 2026: under MML a region written W = 1, R
 
 ## From the RTL source (read, not measured)
 
-`rtl/ibex_cs_registers.sv`, lines 1442 (`pmp_cfg_wdata`): the W bit is kept only with R set or mseccfg.mml set; R is stored as written
+`rtl/ibex_cs_registers.sv`, lines 1442 (`pmp_cfg_wdata`): the W bit is kept only with R set or mseccfg.mml set; R is stored as written; with MML set and RLB clear a write of a locked M-mode-executable configuration (a locked W = 1, R = 0 among them) is suppressed (pmp_cfg_wr_suppress, 1465-1467; is_mml_m_exec_cfg, 164-170)
 
 ## The core's configuration
 

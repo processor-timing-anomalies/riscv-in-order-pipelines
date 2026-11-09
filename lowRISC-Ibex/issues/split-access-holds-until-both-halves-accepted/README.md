@@ -8,7 +8,7 @@
 
 ## Issue
 
-load_store_unit.rst says a misaligned access is split into two and needs at least two cycles.  Under a bus schedule that withholds a grant or a response, the hold is longer and has a shape: ID/EX is held until the second half's request is accepted and the first half's response is on the wire (the LSU's WAIT_RVALID_MIS and GNTS_DONE states), so the fixed misaligned occupancy the specification carried is wrong under waits.  On every Ibex build.
+load_store_unit.rst says a misaligned access is split into two and needs at least two cycles.  Under a bus schedule that withholds a grant or a response, the hold is longer and has a shape: ID/EX is held until the second half's request is accepted and the first half's response is on the wire (the LSU's WAIT_RVALID_MIS and GNTS_DONE states), so the fixed misaligned occupancy the specification carried is wrong under waits.  On the builds with the writeback stage (ibex-maxperf, ibex-pmp, ibex-icache).  On the two-stage build (ibex) ID/EX is held longer still, until the second half's response (stall_mem, ibex_id_stage.sv 1141-1143; lsu_resp_valid_o only in IDLE, the LSU 709).
 
 ## What the documentation says
 
@@ -24,7 +24,7 @@ The run delayed the data bus: every request's grant was withheld one cycle.  The
 
 ## From the RTL source (read, not measured)
 
-`rtl/ibex_load_store_unit.sv`, lines WAIT_RVALID_MIS, GNTS_DONE (`ls_fsm_cs, addr_incr_req_o`): the LSU holds the stage through the second half's request and the first half's response
+`rtl/ibex_load_store_unit.sv`, lines 509-538, 553-571 (`ls_fsm_cs, addr_incr_req_o`): the LSU holds the stage through the second half's request and the first half's response (WAIT_RVALID_MIS at 509-538, WAIT_RVALID_MIS_GNTS_DONE at 553-571)
 
 ## The core's configuration
 

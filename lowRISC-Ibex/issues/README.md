@@ -28,8 +28,9 @@ table says what each directory holds.
 | [icache-reset-walk](icache-reset-walk/) | documentation | The first 258 cycles after reset are an invalidation walk: every fetch a bus request | the issue, the program, the two traces, `run.json` |
 | [icache-fill-buffer-frees-a-cycle-late](icache-fill-buffer-frees-a-cycle-late/) | documentation | A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | the issue, the program, the two traces, `run.json` |
 | [split-access-holds-until-both-halves-accepted](split-access-holds-until-both-halves-accepted/) | documentation | A misaligned access holds ID/EX until both halves are accepted and its first response | the issue, the program, the two traces, `run.json` |
+| [mpp-unsupported-reads-user](mpp-unsupported-reads-user/) | RTL | An unsupported MPP value is kept as User mode, not Machine mode | the issue, the program, the two traces, `run.json` |
 
-In all, 18 directories: 18 hold a program that reproduces the anomaly and the two traces of its run.
+In all, 19 directories: 19 hold a program that reproduces the anomaly and the two traces of its run.  The other 6 (`mcause-read-only-but-written`, `mtvec-mode-2-reserved-reads-vectored`, `mstatus-mpp-2-reads-machine`, `load-use-hold-unstated`, `multdiv-behind-load-waits-load-use-first`, `unlisted-csrs-read-zero`) have no directory; the findings page states each.
 <!-- end -->
 
 © 2026 processor-timing-anomalies, Apache License 2.0

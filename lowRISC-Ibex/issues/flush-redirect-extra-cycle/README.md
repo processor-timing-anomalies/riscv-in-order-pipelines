@@ -12,7 +12,7 @@ an exception's handler and an mret's return start executing 3 cycles after the t
 
 ## What the documentation says
 
-pipeline_details.rst's table has no row for a trap entry or mret; exceptions_interrupts.rst lines 9-13 describe the jump to the vector and the return through mepc without cycles
+pipeline_details.rst's table has no row for a trap entry or mret; exception_interrupts.rst lines 9-13 describe the jump to the vector and the return through mepc without cycles
 
 ## What the RTL does
 

@@ -8,11 +8,11 @@
 
 ## Issue
 
-pmp.rst says that with PMPEnable = 0 'all PMP registers read as zero (regardless of PMP CSR writes)'; the RTL makes every access to pmpcfg0-3, pmpaddr0-15, mseccfg and mseccfgh an illegal instruction on such a build (ibex and ibex-maxperf here).  The two differ for software that probes the registers: a read traps instead of returning 0.
+pmp.rst 19 says that with PMPEnable zero 'the PMP module is not instantiated and all PMP registers read as zero (regardless of the value of PMPNumRegions)'; the RTL makes every access to pmpcfg0-3 and pmpaddr0-15 an illegal instruction on such a build (ibex and ibex-maxperf here), so software that probes the registers traps instead of reading 0.  For mseccfg and mseccfgh the manual agrees with the RTL (cs_registers.rst 395: any access without PMP traps); the disagreement is the pmpcfg and pmpaddr registers'.
 
 ## What the documentation says
 
-pmp.rst, line 19: 'If PMPEnable is set to 0, all PMP registers read as zero (regardless of PMP CSR writes)'  The sentence the manual should carry: with PMPEnable = 0 the PMP CSRs are not implemented and any access of them raises an illegal-instruction exception.
+pmp.rst 19: 'When PMPEnable is zero, the PMP module is not instantiated and all PMP registers read as zero (regardless of the value of PMPNumRegions)'; cs_registers.rst 395: 'Any access to mseccfg or mseccfgh when using an Ibex configuration without PMP (PMPEnable is 0) will trigger an illegal instruction exception'.  The sentence the manual should carry: with PMPEnable = 0 the PMP CSRs are not implemented and any access of them raises an illegal-instruction exception, as it already says for mseccfg
 
 ## What the RTL does
 
@@ -20,7 +20,7 @@ ibex_cs_registers.sv: the PMP CSR addresses are legal only with PMPEnable; witho
 
 ## From the RTL source (read, not measured)
 
-`rtl/ibex_cs_registers.sv`, lines 501-517, 705-713 (`illegal_csr`): the pmpcfg / pmpaddr / mseccfg cases of the CSR address decode are under `if (PMPEnable)`; the else branch sets illegal_csr for them, and illegal_csr_insn_o raises the illegal instruction exception
+`rtl/ibex_cs_registers.sv`, lines 501-517, 705-713 (`illegal_csr`): pmpcfg0-3 and pmpaddr0-15 set illegal_csr when !PMPEnable (705-713, a check after the address case); mseccfg and mseccfgh are decoded under if (PMPEnable) with the else branch illegal (501-519), and illegal_csr_insn_o raises the illegal instruction exception
 
 ## The core's configuration
 

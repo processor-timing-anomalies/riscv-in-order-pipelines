@@ -4,7 +4,7 @@ This document lists every timing anomaly we found on the Ibex: each place where 
 
 Each anomaly has a **class** (the table below: how the hardware's trigger compares with the cause it exists for), a **cost** in cycles, **whom it concerns** (the RTL's developers, the core's performance, or the documentation), a **status**, and, for most, an **issue directory** under `issues/` with the issue's text and, when a small program reproduces it, that program, the two RVVI traces (the RTL's and the reference's) and the capture's facts; `issues/README.md` says what each directory holds.  The timing specification beside this document (`timing.md`) carries the same anomalies as rows of its section 9, in the context of the rules they break.
 
-Generated from our record on 5 November 2026: 18 anomalies -- 2 in the RTL, 1 on performance, 15 in the documentation.
+Generated from our record on 9 November 2026: 25 anomalies -- 3 in the RTL, 1 on performance, 21 in the documentation.
 
 | class | meaning |
 |---|---|
@@ -20,6 +20,7 @@ Generated from our record on 5 November 2026: 18 anomalies -- 2 in the RTL, 1 on
 - [For the RTL's developers](#for-the-rtls-developers)
   - [rvfi-jalr-target-bit0-btalu](#rvfi-jalr-target-bit0-btalu-the-rvfis-pc_wdata-of-an-odd-jalr-target-keeps-bit-0-under-the-branch-target-alu): The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU
   - [pmp-misaligned-store-second-half-written](#pmp-misaligned-store-second-half-written-a-misaligned-store-the-pmp-refuses-still-writes-its-second-half): A misaligned store the PMP refuses still writes its second half
+  - [mpp-unsupported-reads-user](#mpp-unsupported-reads-user-an-unsupported-mpp-value-is-kept-as-user-mode-not-machine-mode): An unsupported MPP value is kept as User mode, not Machine mode
 - [Performance: a cycle paid without a cause](#performance-a-cycle-paid-without-a-cause)
   - [csr-write-flush-any-csr](#csr-write-flush-any-csr-any-csr-write-but-mscratch-and-mepc-flushes-the-pipeline-harmless-ones-too): Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too
 - [For the documentation](#for-the-documentation)
@@ -38,6 +39,12 @@ Generated from our record on 5 November 2026: 18 anomalies -- 2 in the RTL, 1 on
   - [icache-reset-walk](#icache-reset-walk-the-first-258-cycles-after-reset-are-an-invalidation-walk-every-fetch-a-bus-request): The first 258 cycles after reset are an invalidation walk: every fetch a bus request
   - [icache-fill-buffer-frees-a-cycle-late](#icache-fill-buffer-frees-a-cycle-late-a-fill-buffer-frees-the-cycle-after-its-last-word-so-the-next-lookup-waits-a-cycle): A fill buffer frees the cycle after its last word, so the next lookup waits a cycle
   - [split-access-holds-until-both-halves-accepted](#split-access-holds-until-both-halves-accepted-a-misaligned-access-holds-idex-until-both-halves-are-accepted-and-its-first-response): A misaligned access holds ID/EX until both halves are accepted and its first response
+  - [mcause-read-only-but-written](#mcause-read-only-but-written-mcause-read-only-but-written): mcause-read-only-but-written
+  - [mtvec-mode-2-reserved-reads-vectored](#mtvec-mode-2-reserved-reads-vectored-mtvec-mode-2-reserved-reads-vectored): mtvec-mode-2-reserved-reads-vectored
+  - [mstatus-mpp-2-reads-machine](#mstatus-mpp-2-reads-machine-mstatus-mpp-2-reads-machine): mstatus-mpp-2-reads-machine
+  - [load-use-hold-unstated](#load-use-hold-unstated-load-use-hold-unstated): load-use-hold-unstated
+  - [multdiv-behind-load-waits-load-use-first](#multdiv-behind-load-waits-load-use-first-multdiv-behind-load-waits-load-use-first): multdiv-behind-load-waits-load-use-first
+  - [unlisted-csrs-read-zero](#unlisted-csrs-read-zero-three-implemented-csrs-missing-from-the-csr-table): Three implemented CSRs missing from the CSR table
 
 ## All of them
 
@@ -45,6 +52,7 @@ Generated from our record on 5 November 2026: 18 anomalies -- 2 in the RTL, 1 on
 |---|---|---|---|---|---|---|
 | The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU | rtl | function | none in execution; a trace consumer that trusts rvfi_pc_wdata (a cosimulation comparing the next pc, as ours) sees a mismatch on every odd-target jalr under BranchTargetALU = 1 | ibex-maxperf | open; to file | [issues/rvfi-jalr-target-bit0-btalu/](issues/rvfi-jalr-target-bit0-btalu/) |
 | A misaligned store the PMP refuses still writes its second half | rtl | function | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
+| An unsupported MPP value is kept as User mode, not Machine mode | rtl | function | no cycles; software that writes an unsupported value to mstatus.MPP and then executes mret would continue in User mode, without access to the machine-mode CSRs, where the manual promises Machine mode (the mret itself not run) | ibex-maxperf | open; to file | [issues/mpp-unsupported-reads-user/](issues/mpp-unsupported-reads-user/) |
 | Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too | performance | over-wide | two cycles on every write of a CSR that changes nothing in flight: the counters and their inhibit, the event selectors, mtval, mcause, mcounteren; a trap handler that writes mcause or mtval pays it, and a counter-reading loop that resets a counter | ibex | clarified; to file | [issues/csr-write-flush-any-csr/](issues/csr-write-flush-any-csr/) |
 | A CSR write's flush costs two cycles; the manual gives no count | document | intent | two cycles on the instruction after a CSR write (csrrw, csrrs, csrrc and the immediate forms) of any CSR but mscratch and mepc, where the table's wording suggests one | ibex | clarified; to file | [issues/csr-write-flush-two-cycles/](issues/csr-write-flush-two-cycles/) |
 | The division row's '1 or 37' counts cycles, not the stalls its rule means | document | intent | none: one cycle on every division and remainder with a non-zero divisor, as a count the two pages disagree on (37 against 38), not a stall the core pays or saves | ibex | clarified; to file | [issues/divider-37-cycles/](issues/divider-37-cycles/) |
@@ -61,6 +69,12 @@ Generated from our record on 5 November 2026: 18 anomalies -- 2 in the RTL, 1 on
 | The first 258 cycles after reset are an invalidation walk: every fetch a bus request | document | intent | 258 cycles at the start of every run at the bus's miss cost; a short program's cycles per instruction on the cached build say more about the walk than the cache (caches-PLAN decision 17) | ibex-icache | confirmed; to file | [issues/icache-reset-walk/](issues/icache-reset-walk/) |
 | A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | document | intent | one cycle on a lookup that waits for a buffer to free, under instruction-side wait states | ibex-icache | confirmed; to file | [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/) |
 | A misaligned access holds ID/EX until both halves are accepted and its first response | document | intent | under data-side wait states, the cycles of the second half's grant and the first half's response, on every misaligned access | ibex-icache | confirmed; to file | [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/) |
+| mcause-read-only-but-written | document | - | - | ibex | clarified; no issue directory | - |
+| mtvec-mode-2-reserved-reads-vectored | document | - | - | ibex | clarified; no issue directory | - |
+| mstatus-mpp-2-reads-machine | document | - | - | ibex | closed; no issue directory | - |
+| load-use-hold-unstated | document | - | - | ibex-maxperf | clarified; no issue directory | - |
+| multdiv-behind-load-waits-load-use-first | document | - | - | ibex-maxperf | clarified; no issue directory | - |
+| Three implemented CSRs missing from the CSR table | document | - | - | ibex | clarified; no issue directory | - |
 
 ## For the RTL's developers
 
@@ -96,6 +110,22 @@ a misaligned store splits into two word-aligned transactions, each checked by th
 
 **From the RTL source (read, not measured).**  `rtl/ibex_load_store_unit.sv`, lines 495-530 (`pmp_err_d`): WAIT_GNT_MIS with pmp_err_q: no request, WAIT_RVALID_MIS; there the second half's request goes out (data_req_o with addr_incr_req_o) unless its own check (pmp_err) refuses it; the first half's error is kept in pmp_err_q and the access faults when both halves are done
 
+### [mpp-unsupported-reads-user](issues/mpp-unsupported-reads-user/): An unsupported MPP value is kept as User mode, not Machine mode
+
+- Class: function -- not a timing finding: a value, a fault or a sequence
+- Cost: no cycles; software that writes an unsupported value to mstatus.MPP and then executes mret would continue in User mode, without access to the machine-mode CSRs, where the manual promises Machine mode (the mret itself not run)
+- Found on: ibex-maxperf
+- Status: open; to file
+- Issue directory: [issues/mpp-unsupported-reads-user/](issues/mpp-unsupported-reads-user/)
+
+a write of the reserved value 2 to mstatus.MPP reads back 0 (User mode), where cs_registers.rst says 'Any write to mstatus.MPP of an unsupported value will be interpreted as Machine Mode' and no other part of the manual says otherwise: the core keeps an unsupported MPP value as User mode, the opposite of the manual's sentence, so an mret after such a write would return to User mode where the manual says Machine mode.
+
+**What the documentation says.**  cs_registers.rst 168-169: 'Only Machine Mode and User Mode are supported. Any write to ``mstatus``.MPP of an unsupported value will be interpreted as Machine Mode.'; the CSR table marks mstatus WARL (15) without naming the legal value, and exception_interrupts.rst 25: 'On execution of an MRET instruction, the core will return to the Privilege Mode stored in ``mstatus``.MPP.'
+
+**What the RTL does.**  repro.S on ibex-maxperf, 6 Nov 2026: MPP cleared (csrc mstatus, 0x1800), then csrrs mstatus with 0x1000 (MPP = 2), then csrr mstatus 3 cycles later: mstatus reads 0x00000080, MPP = 0 (User mode), and Spike reads the same; the write itself leaves mstatus 0x00000080 in the trace, and the restoring write of MPP = 3 leaves it 0x00001880
+
+**From the RTL source (read, not measured).**  `rtl/ibex_cs_registers.sv`, lines 781-784 (`mstatus_d.mpp`): '// Convert illegal values to U-mode': if ((mstatus_d.mpp != PRIV_LVL_M) && (mstatus_d.mpp != PRIV_LVL_U)) mstatus_d.mpp = PRIV_LVL_U
+
 ## Performance: a cycle paid without a cause
 
 ### [csr-write-flush-any-csr](issues/csr-write-flush-any-csr/): Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too
@@ -108,7 +138,7 @@ a misaligned store splits into two word-aligned transactions, each checked by th
 
 a CSR write of any CSR but mscratch and mepc flushes the pipeline, two cycles on the instruction behind it, whatever the CSR: a write of mcycle, minstret, mcountinhibit, mhpmevent3, mtval, mcause or mcounteren costs the same two cycles as a write of mstatus or mtvec, though it changes nothing an instruction already in flight could depend on.  The exemption list is two CSRs; a list of the CSRs whose write must flush would be the smaller set.
 
-**What the documentation says.**  pipeline_details.rst, the pipeline table: a CSR write 'flushes the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency' (the count and the CSR set unsaid: the entry csr-write-flush-two-cycles, for the documentation)
+**What the documentation says.**  pipeline_details.rst, the pipeline table's CSR Access cell (46-51): 'Note that most CSR writes flush the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency. This is mainly to ensure ePMP updates are taken into account for the next instruction fetch check. Writes to mscratch and mepc are exempt and do not flush the pipeline.' The rule and its stated reason are there; a write that cannot affect a fetch check (the counters, mtval, mcause, mcounteren) pays the flush all the same
 
 **What the RTL does.**  the probe csr-write-flush-any-csr.S on ibex, 1 Nov 2026: one CSR access per block with three independent addi behind it; behind csrrw x0, mscratch the first addi retires 1 cycle after the write; behind csrrw x0 of mcycle, minstret, mcountinhibit, mhpmevent3, mtval, mcause or mcounteren it retires 3 cycles after it, every one; behind csrrs x0, csrrsi 0 and csrrc x0 of mstatus or mie, and a csrr of mscratch, 1 cycle.  Spike and the RTL agree on every compared value; the same on the three-stage builds ibex-maxperf and ibex-pmp, whose generated CSR-write tests pay the same two cycles
 
@@ -124,11 +154,11 @@ a CSR write of any CSR but mscratch and mepc flushes the pipeline, two cycles on
 - Status: clarified; to file
 - Issue directory: [issues/csr-write-flush-two-cycles/](issues/csr-write-flush-two-cycles/)
 
-the instruction after a CSR write of any CSR but mscratch and mepc retires 3 cycles after it, two more than after a one-cycle instruction: the pipeline table says such a write 'flushes the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency' without the count, and the count is two (the flush, then the refetch), not the one that 'a fetch-latency' suggests; it is also every CSR but the two named, the counters and the read-only ones included.
+the instruction after a CSR write of any CSR but mscratch and mepc retires 3 cycles after it, two more than after a one-cycle instruction: the pipeline table (pipeline_details.rst 46-48) says of such a write 'Note that most CSR *writes* flush the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency' without the count, and the count is two (the controller's FLUSH cycle, then the reload of the IF/ID register; no new fetch address is set for a CSR flush, ibex_controller.sv 819-823, 955-971), not the one that 'an additional fetch-latency' suggests; it is also every CSR but the two named, the counters included; a write to a read-only CSR (address bits 11:10 = 11) is an illegal instruction instead (ibex_cs_registers.sv 402).
 
 **What the documentation says.**  pipeline_details.rst, the table row 'CSR Access | 0 | ... Note that most CSR writes flush the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency.  This is mainly to ensure ePMP updates are taken into account for the next instruction fetch check.  Writes to mscratch and mepc are exempt and do not flush the pipeline'
 
-**What the RTL does.**  a csrrw of mtvec, mie, mcause or mtval, or a csrrs/csrrc/csrrwi/csrrsi/csrrci of them, retires 1 cycle after the instruction before it, and the instruction after it 3 cycles later (its fetch restarted after a one-cycle flush); our model written from the table predicted 2
+**What the RTL does.**  a csrrw of mtvec, mie, mcause or mtval, or a csrrs/csrrc/csrrwi/csrrsi/csrrci of them, retires 1 cycle after the instruction before it, and the instruction after it 3 cycles later (after a one-cycle FLUSH and the IF/ID reload); our model written from the table predicted 2
 
 **From the RTL source (read, not measured).**  `rtl/ibex_id_stage.sv`, lines 586-593 (`csr_pipe_flush`): every CSR write except of mscratch and mepc (no_flush_csr_addr) raises csr_pipe_flush, a special request the controller answers with its FLUSH state (one cycle: IF halted, ID flushed) before DECODE reloads the IF/ID register: two cycles before the next instruction executes
 
@@ -140,9 +170,9 @@ the instruction after a CSR write of any CSR but mscratch and mepc retires 3 cyc
 - Status: clarified; to file
 - Issue directory: [issues/divider-37-cycles/](issues/divider-37-cycles/)
 
-a div, divu, rem or remu with a non-zero divisor holds the pipeline 37 cycles; the pipeline table's row 'Division, Remainder: 1 or 37' is a count of cycles, not of the stall cycles its rule 'when an instruction stalls for X cycles X + 1 cycles pass' would make it, while the decode-execute page says 37 cycles outright: the two pages read together give 38, the core takes 37.
+a div, divu, rem or remu with a non-zero divisor holds the pipeline 37 cycles; the pipeline table's Division and Remainder rows ('1 or 37') give the 37 as a count of cycles, not of the stall cycles its rule 'when an instruction stalls for X cycles X + 1 cycles pass' would make it (the '1' for a divide by zero does follow the rule: 1 stall cycle, 2 cycles, as the RTL takes), while the decode-execute page says 37 cycles outright: the two pages read together give 38, the core takes 37.
 
-**What the documentation says.**  pipeline_details.rst, the table 'Multi- and Single-Cycle Instructions': 'Division / Remainder | 1 or 37 | 1 stall cycle if divide by 0, otherwise full long division', under the rule at line 35, 'when an instruction stalls for X cycles X + 1 cycles pass before a new instruction enters the ID/EX stage'; instruction_decode_execute.rst line 137: 'it takes 37 cycles to compute (though only requires 2 cycles when there is a divide by 0)'
+**What the documentation says.**  pipeline_details.rst, the table 'Multi- and Single-Cycle Instructions': the rows 'Division' and 'Remainder' (lines 68-70): cycles '1 or 37', description '1 stall cycle if divide by 0, otherwise full long division.', under the rule at line 35, 'when an instruction stalls for X cycles X + 1 cycles pass before a new instruction enters the ID/EX stage'; instruction_decode_execute.rst line 137: 'it takes 37 cycles to compute (though only requires 2 cycles when there is a divide by 0)'
 
 **What the RTL does.**  the instruction behind a div with a non-zero divisor retires 37 cycles after it (380 of 412 such pairs in the add blocks, every mnemonic alike), 2 after a divide by zero; our model written from the table's rule predicted 38
 
@@ -158,7 +188,7 @@ a div, divu, rem or remu with a non-zero divisor holds the pipeline 37 cycles; t
 
 an exception's handler and an mret's return start executing 3 cycles after the trapping instruction or the mret, one cycle later than a jump's target, because the redirect is made in a flush state the cycle after the instruction's own; the documentation gives no cycle count for traps or mret.
 
-**What the documentation says.**  pipeline_details.rst's table has no row for a trap entry or mret; exceptions_interrupts.rst lines 9-13 describe the jump to the vector and the return through mepc without cycles
+**What the documentation says.**  pipeline_details.rst's table has no row for a trap entry or mret; exception_interrupts.rst lines 9-13 describe the jump to the vector and the return through mepc without cycles
 
 **What the RTL does.**  an ecall's handler's first instruction retires 4 cycles after the ecall's record and an mret's target 3 cycles after the mret (hz-I-add-zicsr-00, the jal subjects' trap blocks: +4 against our model's +3, six of six); a jump's target follows in 2
 
@@ -174,7 +204,7 @@ an exception's handler and an mret's return start executing 3 cycles after the t
 
 the documentation gives no cycle count for an interrupt's entry nor for a wfi's wake, where a core's manual can give both, an entry latency and a wake latency in cycles: on the small configuration the handler's first instruction retires 5 cycles after the instruction that was in ID/EX when the request arrived (its own 2-cycle vector jal included), 6 after a flushing CSR write, and a wfi costs the instruction behind it 4 cycles when the line is already up (FLUSH, WAIT_SLEEP, SLEEP, FIRST_FETCH), the stream resuming 2 cycles after a later rise.
 
-**What the documentation says.**  exceptions_interrupts.rst describes the vector jump (lines 9-13, 28-62) and the enables without cycles; integration.rst 483-487 describes core_sleep_o without the states or their count; pipeline_details.rst's table has no row for an interrupt or a wfi
+**What the documentation says.**  exception_interrupts.rst describes the vector jump (lines 9-13, 28-62) and the enables without cycles; integration.rst 483-487 describes core_sleep_o without the states or their count; pipeline_details.rst's table has no row for an interrupt or a wfi
 
 **What the RTL does.**  hze-alu_nosrc-00 (29 Oct 2026, the event suite): the SET store's RVFI at 61, the vector table's jal at 66 (+5), on every subject class alike; hze-wfi-00: wfi +1 after the store, the csrrsi behind it +5, the handler's jal +6 after the csrrsi (its flush first); the withdrawn file's koff 1: the next instruction 3 cycles after the store, no handler, Spike alike
 
@@ -188,9 +218,9 @@ the documentation gives no cycle count for an interrupt's entry nor for a wfi's 
 - Status: clarified; to file
 - Issue directory: [issues/pmp-fault-two-cycles/](issues/pmp-fault-two-cycles/)
 
-a load or store whose word-aligned address the PMP denies is held two cycles in the LSU and then faults from the writeback stage, without any bus request: cycle 0 the request is suppressed and pmp_err_q set, cycle 1 the error stands in for the grant, cycle 2 the response with load_err_o / store_err_o.  The manual says the request proceeds 'as if it was granted externally' and the error is 'consumed by the core when the data would have been consumed', which on a zero-wait memory suggests one cycle, the response's; it is two, one more than the memory's own response would have taken.
+a load or store whose word-aligned address the PMP denies is held two cycles in the LSU and then faults from the writeback stage, without any bus request: cycle 0 the request is suppressed and pmp_err_q set, cycle 1 the error stands in for the grant, cycle 2 the response with load_err_o / store_err_o.  The manual says the units 'progress with their request as if it was granted externally' and the error 'is registered and consumed by the core when the data would have been consumed' (pmp.rst 31-32), which on a zero-wait memory suggests one cycle, the response's; it is two, one more than the memory's own response would have taken.
 
-**What the documentation says.**  pmp.rst, 'PMP Integration': the check gates the LSU's external request; 'the request proceeds as if it was granted externally; the error is consumed by the core when the data would have been consumed'; no cycle count anywhere in the manual
+**What the documentation says.**  pmp.rst, 'PMP Integration': the check gates the LSU's external request; (lines 31-32) 'the instruction fetch unit and load-store unit progress with their request as if it was granted externally. The PMP error is registered and consumed by the core when the data would have been consumed.'; no cycle count anywhere in the manual
 
 **What the RTL does.**  with memory.pmp.fault_cycles 2 every refused load and store of the four PMP files retires where the RTL does (0 differ); with the memory's one cycle our model was one short on each (the first run of 31 Oct 2026, 01:08: 21 of 21 refused accesses)
 
@@ -204,13 +234,13 @@ a load or store whose word-aligned address the PMP denies is held two cycles in 
 - Status: clarified; to file
 - Issue directory: [issues/pmp-fault-wb-entry-four-cycles/](issues/pmp-fault-wb-entry-four-cycles/)
 
-the handler's first instruction retires 4 cycles after the trap entry of a load or store the PMP refused (the exception raised from WB by exc_req_lsu), where an ecall's or an illegal instruction's handler (raised from ID/EX) retires 3 cycles after its trap entry: the response reaches WB, the controller goes to FLUSH the cycle after, the handler is fetched from it.  The manual names the WB path for load and store errors but gives no cycles for either path.
+the handler's first instruction retires 4 cycles after the trap entry of a load or store the PMP refused (the exception raised from WB by exc_req_lsu), where an ecall's or an illegal instruction's handler (raised from ID/EX) retires 3 cycles after its trap entry: the error response arrives a cycle after the load or store has left ID/EX, the controller goes to FLUSH in the cycle it raises the exception (as it does for an exception raised in ID/EX), and the handler is fetched from it; measured on ibex-pmp, where the branch target ALU makes the vector's jal one cycle.  The manual names neither path (exception_interrupts.rst and load_store_unit.rst say nothing of it, and pipeline_details.rst 28-29 says the writeback stage's effects are not yet documented) and gives no cycles for either; only the RTL's comments name the writeback path.
 
-**What the documentation says.**  exception_interrupts.rst, 'Exceptions': the load and store access faults with their mcause; pipeline_details.rst: no row for a trap's entry; ibex_controller.sv's own comment (276-277): exceptions from the Writeback stage take priority over those from the ID/EX stage
+**What the documentation says.**  exception_interrupts.rst, 'Exceptions': the load and store access faults with their mcause, nothing on the stage that raises them; pipeline_details.rst 28-29: 'The details of its impact are not yet documented here' (the writeback stage); the RTL's comments name the path: ibex_controller.sv 283-284 ('exc_req_lsu which can come from the Writeback stage with no instr_valid_i from the ID stage') and 312-314 (with the writeback stage store/load errors occur on the instruction in writeback and take priority)
 
 **What the RTL does.**  21 of 21 refused loads and stores of hzpmp-pmp-00 on the first run (31 Oct 2026, 01:08): RTL +4 from the trap entry to the handler's jal, our model's ID/EX rule +3; the one fetch fault of the file (raised at issue in ID/EX) +3 on both
 
-**From the RTL source (read, not measured).**  `rtl/ibex_controller.sv`, lines 276-277, 283-294, 315-322, 819-836 (`exc_req_lsu`): exc_req_lsu = store_err_i | load_err_i, 'from the Writeback stage with no instruction valid': it takes the controller to FLUSH in the cycle after the response, where an ID/EX exception (exc_req_d) does so in the instruction's own cycle; the handler's fetch follows FLUSH in both
+**From the RTL source (read, not measured).**  `rtl/ibex_controller.sv`, lines 283-284, 291, 312-314, 679-680, 819-836 (`exc_req_lsu`): exc_req_lsu = store_err_i | load_err_i, 'from the Writeback stage with no instr_valid_i from the ID stage' (283-284): both paths decide FLUSH in the cycle they raise the exception (exc_req_lsu here, exc_req_d for an ID/EX exception); the extra cycle is the error response arriving a cycle after the load or store leaves ID/EX; the handler's fetch follows FLUSH in both
 
 ### [pmp-disabled-csrs-illegal](issues/pmp-disabled-csrs-illegal/): With PMPEnable 0 the PMP CSRs trap as illegal, not read as zero
 
@@ -220,13 +250,13 @@ the handler's first instruction retires 4 cycles after the trap entry of a load 
 - Status: clarified; to file
 - Issue directory: [issues/pmp-disabled-csrs-illegal/](issues/pmp-disabled-csrs-illegal/)
 
-pmp.rst says that with PMPEnable = 0 'all PMP registers read as zero (regardless of PMP CSR writes)'; the RTL makes every access to pmpcfg0-3, pmpaddr0-15, mseccfg and mseccfgh an illegal instruction on such a build (ibex and ibex-maxperf here).  The two differ for software that probes the registers: a read traps instead of returning 0.
+pmp.rst 19 says that with PMPEnable zero 'the PMP module is not instantiated and all PMP registers read as zero (regardless of the value of PMPNumRegions)'; the RTL makes every access to pmpcfg0-3 and pmpaddr0-15 an illegal instruction on such a build (ibex and ibex-maxperf here), so software that probes the registers traps instead of reading 0.  For mseccfg and mseccfgh the manual agrees with the RTL (cs_registers.rst 395: any access without PMP traps); the disagreement is the pmpcfg and pmpaddr registers'.
 
-**What the documentation says.**  pmp.rst, line 19: 'If PMPEnable is set to 0, all PMP registers read as zero (regardless of PMP CSR writes)'  The sentence the manual should carry: with PMPEnable = 0 the PMP CSRs are not implemented and any access of them raises an illegal-instruction exception.
+**What the documentation says.**  pmp.rst 19: 'When PMPEnable is zero, the PMP module is not instantiated and all PMP registers read as zero (regardless of the value of PMPNumRegions)'; cs_registers.rst 395: 'Any access to mseccfg or mseccfgh when using an Ibex configuration without PMP (PMPEnable is 0) will trigger an illegal instruction exception'.  The sentence the manual should carry: with PMPEnable = 0 the PMP CSRs are not implemented and any access of them raises an illegal-instruction exception, as it already says for mseccfg
 
 **What the RTL does.**  ibex_cs_registers.sv: the PMP CSR addresses are legal only with PMPEnable; without it illegal_csr is set for them
 
-**From the RTL source (read, not measured).**  `rtl/ibex_cs_registers.sv`, lines 501-517, 705-713 (`illegal_csr`): the pmpcfg / pmpaddr / mseccfg cases of the CSR address decode are under `if (PMPEnable)`; the else branch sets illegal_csr for them, and illegal_csr_insn_o raises the illegal instruction exception
+**From the RTL source (read, not measured).**  `rtl/ibex_cs_registers.sv`, lines 501-517, 705-713 (`illegal_csr`): pmpcfg0-3 and pmpaddr0-15 set illegal_csr when !PMPEnable (705-713, a check after the address case); mseccfg and mseccfgh are decoded under if (PMPEnable) with the else branch illegal (501-519), and illegal_csr_insn_o raises the illegal instruction exception
 
 ### [pmp-w-without-r-under-mml](issues/pmp-w-without-r-under-mml/): The manual's W=1 R=0 rule holds only while mseccfg.MML is clear
 
@@ -236,13 +266,13 @@ pmp.rst says that with PMPEnable = 0 'all PMP registers read as zero (regardless
 - Status: clarified; to file
 - Issue directory: [issues/pmp-w-without-r-under-mml/](issues/pmp-w-without-r-under-mml/)
 
-cs_registers.rst says a pmpcfg byte with W = 1 and R = 0 'will be treated by the core as Read/Write permission = 0'; the RTL stores W = 0 in that case (R stays as written) while MML is clear, and with MML set stores the byte as written, since Smepmp gives W = 1, R = 0 the shared-region meanings (a locked region executable by both modes, an unlocked one readable by U and writable by M).  The sentence is the pre-Smepmp rule and says nothing of MML.
+cs_registers.rst says a pmpcfg byte with W = 1 and R = 0 'will be treated by the core as Read/Write permission = 0' (cs_registers.rst 357: 'Note that the combination of Write permission = 1, Read permission = 0 is reserved, and will be treated by the core as Read/Write permission = 0.'); the RTL stores W = 0 in that case (R stays as written) while MML is clear, and with MML set stores the byte as written (except that, with MML set and RLB clear, a write that would add a locked M-mode-executable configuration, a locked W = 1, R = 0 among them, is suppressed outright: is_mml_m_exec_cfg, ibex_cs_registers.sv 164-170, and pmp_cfg_wr_suppress, 1465-1467), since Smepmp gives W = 1, R = 0 the shared-region meanings (a locked region executable by both modes, an unlocked one readable by U and writable by M).  The sentence is the pre-Smepmp rule and says nothing of MML.
 
-**What the documentation says.**  cs_registers.rst, pmpcfgx: 'W = 1, R = 0 ... will be treated by the core as Read/Write permission = 0'; pmp.rst 'PMP Enhancements': Smepmp always included
+**What the documentation says.**  cs_registers.rst, pmpcfgx: line 357, 'Note that the combination of Write permission = 1, Read permission = 0 is reserved, and will be treated by the core as Read/Write permission = 0.'; pmp.rst 'PMP Enhancements' (lines 48-52): Smepmp always included, its configurations named as superseding the old ones ('These new configurations supersede the original ones'), though cs_registers.rst 357 itself names no MML case
 
 **What the RTL does.**  the four PMP files on ibex-pmp, 31 Oct 2026: under MML a region written W = 1, R = 0 reads back as written and decides as a shared region, as the model predicts; under MML clear it reads back W = 0
 
-**From the RTL source (read, not measured).**  `rtl/ibex_cs_registers.sv`, lines 1442 (`pmp_cfg_wdata`): the W bit is kept only with R set or mseccfg.mml set; R is stored as written
+**From the RTL source (read, not measured).**  `rtl/ibex_cs_registers.sv`, lines 1442 (`pmp_cfg_wdata`): the W bit is kept only with R set or mseccfg.mml set; R is stored as written; with MML set and RLB clear a write of a locked M-mode-executable configuration (a locked W = 1, R = 0 among them) is suppressed (pmp_cfg_wr_suppress, 1465-1467; is_mml_m_exec_cfg, 164-170)
 
 ### [interrupts-in-user-whatever-mie](issues/interrupts-in-user-whatever-mie/): In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it
 
@@ -284,13 +314,13 @@ pipeline_details.rst gives every instruction's cycles with no word on the privil
 - Status: confirmed; to file
 - Issue directory: [issues/icache-disabled-is-not-the-prefetch-buffer/](issues/icache-disabled-is-not-the-prefetch-buffer/)
 
-icache.rst says the cache's interface matches the IF stage so that the cache can be enabled or disabled, and that disabled, every lookup goes to the bus and nothing is allocated.  It does not say that the cache module replaces the prefetch buffer whole: with the enable bit clear the request stream is the cache's, four fill buffers, a speculative request in the lookup's own cycle after a redirect and the sequential request a cycle later, so a build with the cache off does not have the uncached build's timing under instruction-side wait states; it differs from the first redirect.
+icache.rst says the cache 'integrates into the CPU by replacing the prefetch buffer' (line 10) and that with icache_enable_i low it 'operates in pass-through mode, where every requested instruction is fetched from memory and no results are cached' (line 24).  It does not say what the fetch timing is in pass-through mode: the request stream stays the cache's own (its fill buffers, and with the enable low a speculative request on every lookup, not only after a branch), so a build with the cache off does not have the prefetch-buffer build's timing under instruction-side wait states; it differs from the first redirect.
 
-**What the documentation says.**  icache.rst 20 (the interface matches the IF stage, enable or disable), the enable's description (disabled: every lookup to the bus, nothing allocated); ibex_if_stage.sv 299-349 gen_icache or gen_prefetch_buffer, one or the other
+**What the documentation says.**  icache.rst 10 ('The I$ integrates into the CPU by replacing the prefetch buffer'), 24 (pass-through mode with icache_enable_i low), 20 (the interface matches the IF stage); ibex_if_stage.sv 299-349: gen_icache or gen_prefetch_buffer, one or the other
 
 **What the RTL does.**  the scheduled suite with the cache off, 4 Nov 2026: 0 differ with the cache's request rules, 175,077 differ with the prefetch buffer's
 
-**From the RTL source (read, not measured).**  `rtl/ibex_icache.sv`, lines 222-231, 248-253, 699-711, 764-782, 805-808, 846, 1033-1036 (`fill_alloc_cnt, fill_ext_req, branch_or_lookup`): the lookup is granted while a buffer is free; the speculative request goes out in the lookup's own cycle unless an older buffer still requests; each buffer requests beat by beat to the line's end; none of it depends on icache_enable_i
+**From the RTL source (read, not measured).**  `rtl/ibex_icache.sv`, lines 222-231, 248-253, 699-711, 764-782, 805-808, 846, 1033-1036 (`fill_alloc_cnt, fill_ext_req, branch_or_lookup`): the lookup is granted while a buffer is free; the speculative request goes out in the lookup's own cycle unless an older buffer still requests; each buffer requests beat by beat to the line's end; the speculative request depends on the enable: 'Speculative requests are only made for branches, or if the cache is disabled' (709-710: fill_spec_req = (~icache_enable_i | branch_i) & ~|fill_ext_req), and fill_cache_new reads it too (690)
 
 ### [icache-fence-i-walk-258-cycles](issues/icache-fence-i-walk-258-cycles/): A fence.i on the cached build costs a 258-cycle walk of bus fetches; the table says 1 - N
 
@@ -316,9 +346,9 @@ pipeline_details.rst's cycle table gives the instruction fence as '1 - N' and ic
 - Status: confirmed; to file
 - Issue directory: [issues/icache-reset-walk/](issues/icache-reset-walk/)
 
-icache.rst describes reset only for the scrambling key (RndCnstIbexKey, ic_scr_key_valid reads 1).  The cache also invalidates itself after reset, the same 256-set walk plus about two cycles, so the first 258 cycles of every program fetch through the bus with nothing allocated, cache enabled or not.
+icache.rst says the whole cache is invalidated after reset and that nothing is allocated while the invalidation runs (lines 233-235), but not how long it takes: the walk covers the 256 sets plus about two cycles, so the first 258 cycles of every program fetch through the bus with nothing allocated, cache enabled or not.
 
-**What the documentation says.**  icache.rst 105 (out of reset the key holds RndCnstIbexKey); nothing on the invalidation at reset
+**What the documentation says.**  icache.rst 233: 'After reset, and when requested by the core (due to a FENCE.I instruction), the whole cache is invalidated'; 235: 'While the invalidation is in-progress, lookups and instruction fetches can proceed, but nothing will be allocated to the cache'; no cycle count
 
 **What the RTL does.**  the cached build's runs of 4 Nov 2026: the first 258 cycles blocked on every one
 
@@ -332,13 +362,13 @@ icache.rst describes reset only for the scrambling key (RndCnstIbexKey, ic_scr_k
 - Status: confirmed; to file
 - Issue directory: [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/)
 
-a fill buffer's done state is registered: a word arriving or a beat popped in cycle c makes the buffer done in c + 1 and free from c + 2, so a lookup that needs that buffer is granted one cycle later than a buffer freed at once would allow.  Nothing in icache.rst describes when a buffer frees.
+a fill buffer's done state is registered: a word arriving or a beat popped in cycle c makes the buffer done in c + 1 and free from c + 2, so a lookup that needs that buffer is granted one cycle later than a buffer freed at once would allow.  icache.rst says a buffer is released once all its actions are complete (171) but not in which cycle.
 
-**What the documentation says.**  icache.rst 60-75 (the fill buffers), no word on when a buffer frees
+**What the documentation says.**  icache.rst 158-174 (the fill buffers): line 171 says a buffer is released 'once all required actions are complete', with no cycle
 
 **What the RTL does.**  the VCD of firstTest-imc under FSCHED=all, 4 Nov 2026; the scheduled suite at 0 differ with the rule
 
-**From the RTL source (read, not measured).**  `rtl/ibex_icache.sv`, lines 731-737 (`fill_done, fill_out_done, fill_rvd_done`): fill_done is registered from the done conditions, so the buffer is busy for the cycle after its last pop or arrival
+**From the RTL source (read, not measured).**  `rtl/ibex_icache.sv`, lines 734-741 (`fill_done, fill_out_done, fill_rvd_done`): fill_done is combinational from registered terms (fill_rvd_cnt_q, fill_out_cnt_q, fill_ram_done_q), so the buffer is busy for the cycle after its last pop or arrival
 
 ### [split-access-holds-until-both-halves-accepted](issues/split-access-holds-until-both-halves-accepted/): A misaligned access holds ID/EX until both halves are accepted and its first response
 
@@ -348,13 +378,85 @@ a fill buffer's done state is registered: a word arriving or a beat popped in cy
 - Status: confirmed; to file
 - Issue directory: [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/)
 
-load_store_unit.rst says a misaligned access is split into two and needs at least two cycles.  Under a bus schedule that withholds a grant or a response, the hold is longer and has a shape: ID/EX is held until the second half's request is accepted and the first half's response is on the wire (the LSU's WAIT_RVALID_MIS and GNTS_DONE states), so the fixed misaligned occupancy the specification carried is wrong under waits.  On every Ibex build.
+load_store_unit.rst says a misaligned access is split into two and needs at least two cycles.  Under a bus schedule that withholds a grant or a response, the hold is longer and has a shape: ID/EX is held until the second half's request is accepted and the first half's response is on the wire (the LSU's WAIT_RVALID_MIS and GNTS_DONE states), so the fixed misaligned occupancy the specification carried is wrong under waits.  On the builds with the writeback stage (ibex-maxperf, ibex-pmp, ibex-icache).  On the two-stage build (ibex) ID/EX is held longer still, until the second half's response (stall_mem, ibex_id_stage.sv 1141-1143; lsu_resp_valid_o only in IDLE, the LSU 709).
 
 **What the documentation says.**  load_store_unit.rst 81-86 (Misaligned Accesses: at least two cycles)
 
 **What the RTL does.**  the scheduled suites of the three Ibex builds on 4 Nov 2026 at 0 differ with the hold
 
-**From the RTL source (read, not measured).**  `rtl/ibex_load_store_unit.sv`, lines WAIT_RVALID_MIS, GNTS_DONE (`ls_fsm_cs, addr_incr_req_o`): the LSU holds the stage through the second half's request and the first half's response
+**From the RTL source (read, not measured).**  `rtl/ibex_load_store_unit.sv`, lines 509-538, 553-571 (`ls_fsm_cs, addr_incr_req_o`): the LSU holds the stage through the second half's request and the first half's response (WAIT_RVALID_MIS at 509-538, WAIT_RVALID_MIS_GNTS_DONE at 553-571)
+
+### mcause-read-only-but-written: mcause-read-only-but-written
+
+- Found on: ibex
+- Status: clarified; no issue directory
+- Issue directory: -
+
+the document contradicts itself on mcause: the CSR table's Access column marks it WLRL (cs_registers.rst 37), while the bit table of the mcause section marks both fields R (274, 277); the core takes a write within 0x8000001f and reads it back (ibex_cs_registers.sv 729-731, 798), as the table's WLRL says.
+
+**What the documentation says.**  cs_registers.rst 37 (the CSR table: mcause, Access WLRL) against 274 and 277 (the mcause section's bit table: Interrupt R, Exception Code R)
+
+**What the RTL does.**  a write of any value within 0x8000001f is taken and read back (every generated test's scratch use of mcause, the pipeline model scratch_csrs, agrees with Spike on the read-back)
+
+### mtvec-mode-2-reserved-reads-vectored: mtvec-mode-2-reserved-reads-vectored
+
+- Found on: ibex
+- Status: clarified; no issue directory
+- Issue directory: -
+
+the privileged specification reserves mtvec.MODE 2 and 3; on this core MODE is read-only 1 (always vectored), so a write of the reserved value 2 reads back 1 and the write has no effect: legal (WARL), but the document states the read-only MODE without saying what a write of a reserved value does.
+
+**What the documentation says.**  cs_registers.rst, the mtvec row: MODE read-only 1 (vectored); nothing on a write of a reserved MODE value
+
+**What the RTL does.**  a write of MODE 2 reads back 1; the write has no effect (WARL, legal)
+
+### mstatus-mpp-2-reads-machine: mstatus-mpp-2-reads-machine
+
+- Found on: ibex
+- Status: closed; no issue directory
+- Issue directory: -
+
+a write of the reserved value 2 to mstatus.MPP reads back 3 (M): cs_registers.rst says any write of an unsupported MPP value is interpreted as Machine mode, a legal WARL resolution stated by the document; recorded so that family G's read-back is read against the sentence.
+
+**What the documentation says.**  cs_registers.rst 168-169: 'Only Machine Mode and User Mode are supported. Any write to mstatus.MPP of an unsupported value will be interpreted as Machine Mode'
+
+**What the RTL does.**  a write of MPP 2 reads back 3 (M), as the sentence says
+
+### load-use-hold-unstated: load-use-hold-unstated
+
+- Found on: ibex-maxperf
+- Status: clarified; no issue directory
+- Issue directory: -
+
+a reader of a load's rd at distance 1 waits one cycle (stall_ld_hz: the load's data arrives from WB the cycle after the reader would read it); pipeline_details.rst gives the load's own cycles (1 - N for the memory) and says nothing of the instruction after it, so the one-cycle hold is in the specification only as an RTL reading (ibex-maxperf/the statements raw_*_load_d1 `stall 1`, grade rtl, from the RTL pass of 29 Oct 2026); every suite measures it (43 rules at limit 1 in the windows of 5 Nov 2026) and the RTL agrees on every interval.  On the builds with the writeback stage only (ibex-maxperf, ibex-pmp, ibex-icache): on the two-stage build there is no load-use cycle (stall_ld_hz tied to 0, ibex_id_stage.sv 1145-1146), and pipeline_details.rst 28-30 limits its table to the two-stage pipeline and says the writeback stage's effects are not yet documented.
+
+**What the documentation says.**  pipeline_details.rst 28-30: 'The details of its impact are not yet documented here. All of the information presented below applies only to the two stage pipeline'; the table's load and multiplier/divider rows give their own cycles only
+
+**What the RTL does.**  a reader of a load's rd at distance 1 retires one cycle later than after a one-cycle producer (stall_ld_hz, rtl/ibex_id_stage.sv 1102-1111): the load-use hold of one cycle, in every suite's measurement
+
+### multdiv-behind-load-waits-load-use-first: multdiv-behind-load-waits-load-use-first
+
+- Found on: ibex-maxperf
+- Status: clarified; no issue directory
+- Issue directory: -
+
+a multiplier or divider instruction reading a load's rd at distance 1 waits the load-use cycle first and only then starts its sequence (the multdiv start is gated by instr_executing, which the stall clears): a mulh retires 3 cycles after the load and a divide 38, not 2 and 37; the document states the multiplier's and divider's cycles alone and nothing of their start behind a load; the specification carries it as ibex-maxperf/the pipeline model control.occupancy_during_hold `waits` from the loop round of 29 Oct 2026.  On the builds with the writeback stage only (ibex-maxperf, ibex-pmp, ibex-icache): on the two-stage build there is no load-use cycle (stall_ld_hz tied to 0, ibex_id_stage.sv 1145-1146), and pipeline_details.rst 28-30 limits its table to the two-stage pipeline and says the writeback stage's effects are not yet documented.
+
+**What the documentation says.**  pipeline_details.rst 28-30: 'The details of its impact are not yet documented here. All of the information presented below applies only to the two stage pipeline'; the table's load and multiplier/divider rows give their own cycles only
+
+**What the RTL does.**  a mulh or a divide reading a load's rd at distance 1 waits the load-use cycle first and then runs its sequence (the multdiv start is gated by instr_executing, which the stall clears): a mulh retires 3 cycles after the load and a divide 38, not 2 and 37
+
+### unlisted-csrs-read-zero: Three implemented CSRs missing from the CSR table
+
+- Found on: ibex
+- Status: clarified; no issue directory
+- Issue directory: -
+
+mstatush (0x310), menvcfg (0x30A) and menvcfgh (0x31A) are implemented and read as all zeros, but the CSR table of cs_registers.rst does not list them, and the chapter does not say what an access to a CSR it does not list does: a reader of the document would expect these three accesses to raise an illegal instruction exception, as the chapter states for mseccfg without PMP.
+
+**What the documentation says.**  cs_registers.rst, the CSR table (20 addresses from mstatus 0x300 to mseccfgh 0x757; no mstatush, menvcfg or menvcfgh) and no sentence on an unlisted CSR; the illegal-instruction sentences cover mseccfg and mseccfgh without PMP, the U-mode counters, the RV32I-mode accesses and CHERIoT's mtvec and mepc
+
+**What the RTL does.**  ibex_cs_registers.sv 442-447: CSR_MSTATUSH reads '0 ('mstatush: All zeros for Ibex (fixed little endian and all other bits reserved)'); CSR_MENVCFG and CSR_MENVCFGH read '0 ('menvcfg: machine environment configuration, all zeros for Ibex (none of the relevant features are implemented)'); no exception on the read
 
 
 © 2026 processor-timing-anomalies, Apache License 2.0

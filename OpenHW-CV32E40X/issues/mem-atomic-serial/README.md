@@ -12,7 +12,7 @@ on cv32e40x-pma-a (A_EXT=A), every load, store, sc.w or AMO right behind an sc.w
 
 ## What the documentation says
 
-load_store_unit.rst 164-170 (Atomic Operations): the core supports exclusive and atomic transactions with an external adapter, lr.w / sc.w / the AMOs as single-copy atomic word transactions; nothing on their timing against the transactions before and after them, and the cycle table has no atomic row
+load_store_unit.rst 161-165 (Atomics): the core supports exclusive and atomic transactions with an external adapter that turns the OBI transactions into read-modify-write sequences; atomics.rst 60: AMO data timing 'the same as for non-AMOs'; nothing on their timing against the transactions before and after them, and the cycle table has no atomic row
 
 ## What the RTL does
 

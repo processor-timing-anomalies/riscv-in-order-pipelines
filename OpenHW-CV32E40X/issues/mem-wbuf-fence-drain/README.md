@@ -1,18 +1,18 @@
-# A fence behind a buffered store waits for the store's response, then runs its own cycles
+# A fence or fence.tso behind a buffered store waits for the store's response first
 
 - Title: mem-wbuf-fence-drain
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
-- Cost: a fence behind a store the write buffer took waits for the store's response, not its grant, before its own cycles
+- Cost: a fence or fence.tso behind a store the write buffer took waits for the store's response before its own two cycles
 - Core: cv32e40x
 - Found while running: cv32e40x-pma
 
 ## Issue
 
-on a configuration with a bufferable region (cv32e40x-pma, PMA_NUM_REGIONS = 1), a fence, fence.tso or fence.i behind a store the write buffer absorbed waits in WB until that store's response is on the wire -- not its grant -- and only then begins its own sequence (2 cycles in WB for fence and fence.tso, 3 for fence.i, the zero-wait figures), so it leaves WB at rsp + 3 (fence) or rsp + 4 (fence.i) whatever the split between the withheld grant and the late response.
+on a configuration with a bufferable region, a fence or fence.tso behind a store the write buffer absorbed begins its own two cycles in WB only once that store's response is on the wire: the wait and the fence's cycles add, they do not overlap.
 
 ## What the documentation says
 
-load_store_unit.rst 155-158: 'Transactions in the write buffer must be completed before the core is able to retire a fence / fence.i'; it does not say whether completed means granted or answered, nor that the fence's own cycles start after the completion rather than overlapping it
+load_store_unit.rst 154-156 ('Transactions in the write buffer must be completed before the' the core 'is able to:', then 'Retire a ``fence`` instruction'), with 90-91 and 152 making completed mean answered; for fence.i, fencei.rst 8-11 says its handshake starts only once earlier stores have fully completed, the write buffer emptied, so fence.i's own sequence follows the completion; for fence and fence.tso nothing says their own cycles follow it.  One sentence would say it
 
 ## What the RTL does
 

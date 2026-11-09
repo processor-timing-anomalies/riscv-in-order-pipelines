@@ -12,7 +12,7 @@ in CLIC mode a load or store one behind a write of mie retires in its normal cyc
 
 ## What the documentation says
 
-pipeline.rst, Hazards (lines 114-126): no row for a load or store behind a write that may enable an interrupt, in either mode; control_status_registers.rst's CLIC section: mie 'reads as zero' in CLIC mode with no word on the interlock
+pipeline.rst, Hazards (lines 114-126): no row for a load or store behind a write that may enable an interrupt, in either mode; control_status_registers.rst's CLIC section: mie in CLIC mode (the section 'Machine Interrupt Enable Register (mie) - CLIC == 1'): 'Reserved. Hardwired to 0.' with no word on the interlock
 
 ## What the RTL does
 

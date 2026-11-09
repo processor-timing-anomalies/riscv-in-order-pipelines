@@ -1,0 +1,33 @@
+VERSION 0 5
+VENDOR cv32e40x1_tb 1 0 'CV32E40X RTL under Verilator'
+PARAMS 6 ILEN 32 XLEN 32 FLEN 0 VLEN 0 NHART 1 RETIRE 1
+RET 0x80000000 0x00002117 'auipc sp, 0x2' MODE 0x3 CYCLE 16 X 2 0x80002000 META 2 PCW 0x80000004
+RET 0x80000004 0x01010113 'addi sp, sp, 16' MODE 0x3 CYCLE 1 X 2 0x80002010 META 2 PCW 0x80000008
+RET 0x80000008 0x00000297 'auipc t0, 0x0' MODE 0x3 CYCLE 1 X 5 0x80000008 META 2 PCW 0x8000000c
+RET 0x8000000c 0x07828293 'addi t0, t0, 120' MODE 0x3 CYCLE 1 X 5 0x80000080 META 2 PCW 0x80000010
+RET 0x80000010 0x30529073 'csrrw zero, mtvec, t0' MODE 0x3 CYCLE 1 C 0x305 0x80000080 META 2 PCW 0x80000014
+RET 0x80000014 0x00000493 'addi s1, zero, 0' MODE 0x3 CYCLE 1 X 9 0x00000000 META 2 PCW 0x80000018
+RET 0x80000018 0x00001037 'lui zero, 0x1' MODE 0x3 CYCLE 1 META 2 PCW 0x8000001c
+RET 0x8000001c 0x05500313 'addi t1, zero, 85' MODE 0x3 CYCLE 1 X 6 0x00000055 META 2 PCW 0x80000020
+RET 0x80000020 0x34031073 'csrrw zero, mscratch, t1' MODE 0x3 CYCLE 1 C 0x340 0x00000055 META 2 PCW 0x80000024
+TRAP 0x80000024 0x00000073 'ecall' MODE 0x3 CYCLE 1 C 0x300 0x00001800 C 0x341 0x80000024 C 0x342 0x0000000b META 2 PCW 0x80000080
+META 2 ISSUE "the CSR pairs the Hazards rows 119-120 might mean: an ecall one after csrw mscratch, the handler`s csrw mepc then mret (line 126`s stall in ID), and a csrr of mstatus at the mret`s target; the ecall and the csrr cost the flush alone, so neither is a row`s case (ecall: 1 cycles after the previous retirement)"
+RET 0x80000080 0x00148493 'addi s1, s1, 1' MODE 0x3 CYCLE 4 X 9 0x00000001 META 2 PCW 0x80000084
+META 2 ISSUE "the CSR pairs the Hazards rows 119-120 might mean: an ecall one after csrw mscratch, the handler`s csrw mepc then mret (line 126`s stall in ID), and a csrr of mstatus at the mret`s target; the ecall and the csrr cost the flush alone, so neither is a row`s case (addi s1, s1, 1: 4 cycles after the previous retirement)"
+RET 0x80000084 0x341022f3 'csrrs t0, mepc, zero' MODE 0x3 CYCLE 1 X 5 0x80000024 META 2 PCW 0x80000088
+META 2 ISSUE "the CSR pairs the Hazards rows 119-120 might mean: an ecall one after csrw mscratch, the handler`s csrw mepc then mret (line 126`s stall in ID), and a csrr of mstatus at the mret`s target; the ecall and the csrr cost the flush alone, so neither is a row`s case (csrrs t0, mepc, zero: 1 cycles after the previous retirement)"
+RET 0x80000088 0x00428293 'addi t0, t0, 4' MODE 0x3 CYCLE 1 X 5 0x80000028 META 2 PCW 0x8000008c
+META 2 ISSUE "the CSR pairs the Hazards rows 119-120 might mean: an ecall one after csrw mscratch, the handler`s csrw mepc then mret (line 126`s stall in ID), and a csrr of mstatus at the mret`s target; the ecall and the csrr cost the flush alone, so neither is a row`s case (addi t0, t0, 4: 1 cycles after the previous retirement)"
+RET 0x8000008c 0x34129073 'csrrw zero, mepc, t0' MODE 0x3 CYCLE 1 C 0x341 0x80000028 META 2 PCW 0x80000090
+META 2 ISSUE "the CSR pairs the Hazards rows 119-120 might mean: an ecall one after csrw mscratch, the handler`s csrw mepc then mret (line 126`s stall in ID), and a csrr of mstatus at the mret`s target; the ecall and the csrr cost the flush alone, so neither is a row`s case (csrrw zero, mepc, t0: 1 cycles after the previous retirement)"
+RET 0x80000090 0x30200073 'mret' MODE 0x3 CYCLE 3 C 0x300 0x00001880 META 2 PCW 0x80000028
+META 2 ISSUE "the CSR pairs the Hazards rows 119-120 might mean: an ecall one after csrw mscratch, the handler`s csrw mepc then mret (line 126`s stall in ID), and a csrr of mstatus at the mret`s target; the ecall and the csrr cost the flush alone, so neither is a row`s case (mret: 3 cycles after the previous retirement)"
+RET 0x80000028 0x300023f3 'csrrs t2, mstatus, zero' MODE 0x3 CYCLE 2 X 7 0x00001880 META 2 PCW 0x8000002c
+META 2 ISSUE "the CSR pairs the Hazards rows 119-120 might mean: an ecall one after csrw mscratch, the handler`s csrw mepc then mret (line 126`s stall in ID), and a csrr of mstatus at the mret`s target; the ecall and the csrr cost the flush alone, so neither is a row`s case (csrrs t2, mstatus, zero: 2 cycles after the previous retirement)"
+RET 0x8000002c 0x00002037 'lui zero, 0x2' MODE 0x3 CYCLE 1 META 2 PCW 0x80000030
+RET 0x80000030 0x00100e13 'addi t3, zero, 1' MODE 0x3 CYCLE 1 X 28 0x00000001 META 2 PCW 0x80000034
+RET 0x80000034 0x03c49c63 'bne s1, t3, 56' MODE 0x3 CYCLE 1 META 2 PCW 0x80000038
+RET 0x80000038 0x00001297 'auipc t0, 0x1' MODE 0x3 CYCLE 1 X 5 0x80001038 META 2 PCW 0x8000003c
+RET 0x8000003c 0xfc828293 'addi t0, t0, -56' MODE 0x3 CYCLE 1 X 5 0x80001000 META 2 PCW 0x80000040
+RET 0x80000040 0x00100313 'addi t1, zero, 1' MODE 0x3 CYCLE 1 X 6 0x00000001 META 2 PCW 0x80000044
+RET 0x80000044 0x0062a023 'sw t1, 0(t0)' MODE 0x3 CYCLE 1 MEM D 4 0x80001000 0x80001000 0 META 2 PCW 0x80000048

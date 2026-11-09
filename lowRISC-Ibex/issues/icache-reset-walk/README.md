@@ -8,11 +8,11 @@
 
 ## Issue
 
-icache.rst describes reset only for the scrambling key (RndCnstIbexKey, ic_scr_key_valid reads 1).  The cache also invalidates itself after reset, the same 256-set walk plus about two cycles, so the first 258 cycles of every program fetch through the bus with nothing allocated, cache enabled or not.
+icache.rst says the whole cache is invalidated after reset and that nothing is allocated while the invalidation runs (lines 233-235), but not how long it takes: the walk covers the 256 sets plus about two cycles, so the first 258 cycles of every program fetch through the bus with nothing allocated, cache enabled or not.
 
 ## What the documentation says
 
-icache.rst 105 (out of reset the key holds RndCnstIbexKey); nothing on the invalidation at reset
+icache.rst 233: 'After reset, and when requested by the core (due to a FENCE.I instruction), the whole cache is invalidated'; 235: 'While the invalidation is in-progress, lookups and instruction fetches can proceed, but nothing will be allocated to the cache'; no cycle count
 
 ## What the RTL does
 

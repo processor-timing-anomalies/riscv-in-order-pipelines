@@ -8,7 +8,7 @@
 
 ## Issue
 
-in CLIC mode a load or store one behind a write of mintthresh retires a cycle late: the write may enable an interrupt (it lowers the threshold) and the core holds the load or store in EX while the writer is in the write stage, as it does behind a write of mstatus; a write through mnxti (csrrsi x0, mnxti, 8), which the RTL source reads as a write of mstatus, does not hold it; the Hazards list has no row for any of this.
+in CLIC mode a load or store one behind a write of mintthresh retires a cycle late: the write may enable an interrupt (it lowers the threshold) and the core holds the load or store in EX while the writer is in the write stage, as it does behind a write of mstatus; the Hazards list has no row for it.  A write through mnxti (csrrsi x0, mnxti, 8) also writes mstatus (mstatus_we, cv32e40x_cs_registers.sv 936-937, one of the four terms of 1553), and a load or store behind it retires 2 cycles after it in one capture (clic-mie-write-no-stall, 6 Nov reading) against 1 in this entry's first measurement; the RTL answers it: mnxti_id_stall (cv32e40x_controller_bypass.sv 170) holds the next instruction in ID while mnxti is in EX, so a load or store behind the mnxti write costs 2 cycles.
 
 ## What the documentation says
 
@@ -16,11 +16,11 @@ pipeline.rst, Hazards (lines 114-126): no row for a load or store behind a write
 
 ## What the RTL does
 
-c.lbu and c.sb each one behind csrrs x0, mintthresh, rs1: 2 cycles (own-cv32e40x-clic-00: 2 of 2 blocks, RTL +1); c.lh and c.sh each one behind csrrsi x0, mnxti, 8: 1 cycle (2 of 2 blocks, no stall); the published traces, from the confirming run of the same test, show it on c.lhu a2, 0(a3) one behind csrrs zero, mintthresh, s5 (order 5051: 2 cycles)
+c.lbu and c.sb each one behind csrrs x0, mintthresh, rs1: 2 cycles (own-cv32e40x-clic-00: 2 of 2 blocks, RTL +1); c.lh and c.sh each one behind csrrsi x0, mnxti, 8: 2 cycles in the capture clic-mie-write-no-stall (its rtl.rvvi.txt, lines 5186-5187 and 5205-5206; this entry's first measurement had read 1 cycle); the published traces, from the confirming run of the same test, show it on c.lhu a2, 0(a3) one behind csrrs zero, mintthresh, s5 (order 5051: 2 cycles)
 
 ## From the RTL source (read, not measured)
 
-`rtl/cv32e40x_cs_registers.sv`, lines 1550-1557 (`csr_irq_enable_write_o`): the clic_irq_en branch (line 1553): csr_irq_enable_write_o includes mintthresh_we; the pass also read an mnxti write as writing mstatus (lines 936-938) and so expected the stall behind it, which the measurement does not show: the write enable it sets is not one of the four the branch names
+`rtl/cv32e40x_cs_registers.sv`, lines 1550-1557 (`csr_irq_enable_write_o`): the clic_irq_en branch (line 1553): csr_irq_enable_write_o includes mintthresh_we; an mnxti write sets mstatus_we (936-937), which is one of the four terms the branch names; the next instruction behind an mnxti write is held in ID while mnxti is in EX (mnxti_id_stall, cv32e40x_controller_bypass.sv 170), 2 cycles in the capture
 
 ## The core's configuration
 

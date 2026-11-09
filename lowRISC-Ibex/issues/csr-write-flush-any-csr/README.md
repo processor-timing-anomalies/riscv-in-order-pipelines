@@ -12,7 +12,7 @@ a CSR write of any CSR but mscratch and mepc flushes the pipeline, two cycles on
 
 ## What the documentation says
 
-pipeline_details.rst, the pipeline table: a CSR write 'flushes the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency' (the count and the CSR set unsaid: the entry csr-write-flush-two-cycles, for the documentation)
+pipeline_details.rst, the pipeline table's CSR Access cell (46-51): 'Note that most CSR writes flush the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency. This is mainly to ensure ePMP updates are taken into account for the next instruction fetch check. Writes to mscratch and mepc are exempt and do not flush the pipeline.' The rule and its stated reason are there; a write that cannot affect a fetch check (the counters, mtval, mcause, mcounteren) pays the flush all the same
 
 ## What the RTL does
 

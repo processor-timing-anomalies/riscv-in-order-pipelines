@@ -8,7 +8,7 @@
 
 ## Issue
 
-a response frees its outstanding-transaction slot the cycle after it is on the wire, not in it: with two responses open, the next request issues in the cycle of the second-to-last response at the earliest.
+a response frees its outstanding-transaction slot the cycle after it is on the wire, not in it: with two responses open, the next request issues the cycle after the older response at the earliest.
 
 ## What the documentation says
 

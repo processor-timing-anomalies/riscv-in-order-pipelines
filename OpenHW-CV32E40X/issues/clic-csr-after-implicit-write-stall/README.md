@@ -12,7 +12,7 @@ in CLIC mode a CSR instruction (read or write form, of any CSR: mintthresh, mscr
 
 ## What the documentation says
 
-pipeline.rst, Hazards: the list names the implicit CSR read in EX behind a CSR access in WB (line 119, the known finding clic-implicit-csr-read-stall) and no stall of an explicit CSR access behind an implicit CSR write; the CLIC chapter of control_status_registers.rst describes mscratchcswl's swap of mscratch and says nothing of timing
+pipeline.rst, Hazards, line 120: 'An instruction causing an explicit CSR read in EX while an instruction causing an implicit CSR write is in the WB stage' (the stall is listed); the CLIC chapter of control_status_registers.rst describes mscratchcswl's swap of mscratch and does not say the access makes an implicit CSR write
 
 ## What the RTL does
 

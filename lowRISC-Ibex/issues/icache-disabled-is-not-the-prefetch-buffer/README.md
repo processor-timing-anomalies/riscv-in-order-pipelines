@@ -8,11 +8,11 @@
 
 ## Issue
 
-icache.rst says the cache's interface matches the IF stage so that the cache can be enabled or disabled, and that disabled, every lookup goes to the bus and nothing is allocated.  It does not say that the cache module replaces the prefetch buffer whole: with the enable bit clear the request stream is the cache's, four fill buffers, a speculative request in the lookup's own cycle after a redirect and the sequential request a cycle later, so a build with the cache off does not have the uncached build's timing under instruction-side wait states; it differs from the first redirect.
+icache.rst says the cache 'integrates into the CPU by replacing the prefetch buffer' (line 10) and that with icache_enable_i low it 'operates in pass-through mode, where every requested instruction is fetched from memory and no results are cached' (line 24).  It does not say what the fetch timing is in pass-through mode: the request stream stays the cache's own (its fill buffers, and with the enable low a speculative request on every lookup, not only after a branch), so a build with the cache off does not have the prefetch-buffer build's timing under instruction-side wait states; it differs from the first redirect.
 
 ## What the documentation says
 
-icache.rst 20 (the interface matches the IF stage, enable or disable), the enable's description (disabled: every lookup to the bus, nothing allocated); ibex_if_stage.sv 299-349 gen_icache or gen_prefetch_buffer, one or the other
+icache.rst 10 ('The I$ integrates into the CPU by replacing the prefetch buffer'), 24 (pass-through mode with icache_enable_i low), 20 (the interface matches the IF stage); ibex_if_stage.sv 299-349: gen_icache or gen_prefetch_buffer, one or the other
 
 ## What the RTL does
 
@@ -24,7 +24,7 @@ The run delayed the instruction bus: every other word (by word address) was answ
 
 ## From the RTL source (read, not measured)
 
-`rtl/ibex_icache.sv`, lines 222-231, 248-253, 699-711, 764-782, 805-808, 846, 1033-1036 (`fill_alloc_cnt, fill_ext_req, branch_or_lookup`): the lookup is granted while a buffer is free; the speculative request goes out in the lookup's own cycle unless an older buffer still requests; each buffer requests beat by beat to the line's end; none of it depends on icache_enable_i
+`rtl/ibex_icache.sv`, lines 222-231, 248-253, 699-711, 764-782, 805-808, 846, 1033-1036 (`fill_alloc_cnt, fill_ext_req, branch_or_lookup`): the lookup is granted while a buffer is free; the speculative request goes out in the lookup's own cycle unless an older buffer still requests; each buffer requests beat by beat to the line's end; the speculative request depends on the enable: 'Speculative requests are only made for branches, or if the cache is disabled' (709-710: fill_spec_req = (~icache_enable_i | branch_i) & ~|fill_ext_req), and fill_cache_new reads it too (690)
 
 ## The core's configuration
 

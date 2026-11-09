@@ -8,11 +8,11 @@
 
 ## Issue
 
-the handler's first instruction retires 4 cycles after the trap entry of a load or store the PMP refused (the exception raised from WB by exc_req_lsu), where an ecall's or an illegal instruction's handler (raised from ID/EX) retires 3 cycles after its trap entry: the response reaches WB, the controller goes to FLUSH the cycle after, the handler is fetched from it.  The manual names the WB path for load and store errors but gives no cycles for either path.
+the handler's first instruction retires 4 cycles after the trap entry of a load or store the PMP refused (the exception raised from WB by exc_req_lsu), where an ecall's or an illegal instruction's handler (raised from ID/EX) retires 3 cycles after its trap entry: the error response arrives a cycle after the load or store has left ID/EX, the controller goes to FLUSH in the cycle it raises the exception (as it does for an exception raised in ID/EX), and the handler is fetched from it; measured on ibex-pmp, where the branch target ALU makes the vector's jal one cycle.  The manual names neither path (exception_interrupts.rst and load_store_unit.rst say nothing of it, and pipeline_details.rst 28-29 says the writeback stage's effects are not yet documented) and gives no cycles for either; only the RTL's comments name the writeback path.
 
 ## What the documentation says
 
-exception_interrupts.rst, 'Exceptions': the load and store access faults with their mcause; pipeline_details.rst: no row for a trap's entry; ibex_controller.sv's own comment (276-277): exceptions from the Writeback stage take priority over those from the ID/EX stage
+exception_interrupts.rst, 'Exceptions': the load and store access faults with their mcause, nothing on the stage that raises them; pipeline_details.rst 28-29: 'The details of its impact are not yet documented here' (the writeback stage); the RTL's comments name the path: ibex_controller.sv 283-284 ('exc_req_lsu which can come from the Writeback stage with no instr_valid_i from the ID stage') and 312-314 (with the writeback stage store/load errors occur on the instruction in writeback and take priority)
 
 ## What the RTL does
 
@@ -20,7 +20,7 @@ exception_interrupts.rst, 'Exceptions': the load and store access faults with th
 
 ## From the RTL source (read, not measured)
 
-`rtl/ibex_controller.sv`, lines 276-277, 283-294, 315-322, 819-836 (`exc_req_lsu`): exc_req_lsu = store_err_i | load_err_i, 'from the Writeback stage with no instruction valid': it takes the controller to FLUSH in the cycle after the response, where an ID/EX exception (exc_req_d) does so in the instruction's own cycle; the handler's fetch follows FLUSH in both
+`rtl/ibex_controller.sv`, lines 283-284, 291, 312-314, 679-680, 819-836 (`exc_req_lsu`): exc_req_lsu = store_err_i | load_err_i, 'from the Writeback stage with no instr_valid_i from the ID stage' (283-284): both paths decide FLUSH in the cycle they raise the exception (exc_req_lsu here, exc_req_d for an ID/EX exception); the extra cycle is the error response arriving a cycle after the load or store leaves ID/EX; the handler's fetch follows FLUSH in both
 
 ## The core's configuration
 

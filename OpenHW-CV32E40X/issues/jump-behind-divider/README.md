@@ -1,4 +1,4 @@
-# A jump behind a busy divider resolves at once, its bubble hidden
+# A jal behind a busy divider is taken at once: its cycle hides under the divide
 
 - Title: jump-behind-divider
 - Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
@@ -8,11 +8,11 @@
 
 ## Issue
 
-a jump behind a busy divider resolves at once; its bubble is hidden by the wait.
+a jal, or a jalr that does not read the divider's result, sitting in ID behind a divide or remainder in EX redirects fetch in its first ID cycle, so its target is fetched during the divide and the jump adds no cycle of its own; a jalr that reads the divider's result waits for it (the jalr data hazard) and pays its bubble after the divide.
 
 ## What the documentation says
 
-pipeline.rst line 18, 'Jumps are taken from the ID stage', and line 21, 'Multi-cycle instructions will stall this stage [EX] until they are complete': nothing about a jump held in ID behind a divider
+pipeline.rst line 21 ('Multi-cycle instructions will stall this stage until they are complete') and the cycle table's Jump row (66-70: 'The new PC request will appear on the instruction-side memory interface the same cycle the jump instruction is in the ID stage') together imply the overlap, but neither says it; a reader adding the Division and Jump rows counts one cycle too many.  One sentence would say it: a jump in ID behind a stalled EX is taken during the stall
 
 ## What the RTL does
 

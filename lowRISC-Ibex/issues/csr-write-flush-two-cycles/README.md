@@ -8,7 +8,7 @@
 
 ## Issue
 
-the instruction after a CSR write of any CSR but mscratch and mepc retires 3 cycles after it, two more than after a one-cycle instruction: the pipeline table says such a write 'flushes the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency' without the count, and the count is two (the flush, then the refetch), not the one that 'a fetch-latency' suggests; it is also every CSR but the two named, the counters and the read-only ones included.
+the instruction after a CSR write of any CSR but mscratch and mepc retires 3 cycles after it, two more than after a one-cycle instruction: the pipeline table (pipeline_details.rst 46-48) says of such a write 'Note that most CSR *writes* flush the pipeline, so the instruction immediately following a CSR write incurs an additional fetch-latency' without the count, and the count is two (the controller's FLUSH cycle, then the reload of the IF/ID register; no new fetch address is set for a CSR flush, ibex_controller.sv 819-823, 955-971), not the one that 'an additional fetch-latency' suggests; it is also every CSR but the two named, the counters included; a write to a read-only CSR (address bits 11:10 = 11) is an illegal instruction instead (ibex_cs_registers.sv 402).
 
 ## What the documentation says
 
@@ -16,7 +16,7 @@ pipeline_details.rst, the table row 'CSR Access | 0 | ... Note that most CSR wri
 
 ## What the RTL does
 
-a csrrw of mtvec, mie, mcause or mtval, or a csrrs/csrrc/csrrwi/csrrsi/csrrci of them, retires 1 cycle after the instruction before it, and the instruction after it 3 cycles later (its fetch restarted after a one-cycle flush); our model written from the table predicted 2
+a csrrw of mtvec, mie, mcause or mtval, or a csrrs/csrrc/csrrwi/csrrsi/csrrci of them, retires 1 cycle after the instruction before it, and the instruction after it 3 cycles later (after a one-cycle FLUSH and the IF/ID reload); our model written from the table predicted 2
 
 ## From the RTL source (read, not measured)
 

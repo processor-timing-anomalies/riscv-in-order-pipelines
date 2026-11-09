@@ -1,14 +1,14 @@
-# IF and ID freeze while a load or store in WB waits for its response
+# While a load or store waits in WB, nothing moves into ID or EX, even into an empty stage
 
 - Title: mem-response-wait-freeze
-- Class: over-wide -- the stall fires in cases that have no cause for it: an interlock wider than needed, a performance flaw. The freeze holds IF to ID and ID to EX whether the next stage is occupied or empty: a stage with room ahead of it waits without a cause, because the late rvalid-based ready fans into every stage; a timing-closure choice by the RTL comment, an interlock wider than its cause by the test
-- Cost: every cycle a load or store in WB waits for its response stalls the whole front: nothing enters EX or ID, occupied or empty
+- Class: over-wide -- the stall fires in cases that have no cause for it: an interlock wider than needed, a performance flaw. The freeze holds IF to ID and ID to EX whether the next stage is occupied or empty: a stage with room ahead of it waits without a cause, because the late rvalid-based ready fans into every stage; the ready chain is a stated timing-closure choice (ex_stage.sv 468-472); the over-width is that a stage with room ahead of it waits too
+- Cost: the work a wait could hide, typically a jump's cycle, on every data-side wait; nothing at zero wait
 - Core: cv32e40x
 - Found while running: cv32e40x (the base build)
 
 ## Issue
 
-from the cycle after a load or store enters WB until the cycle its response is on the wire, no instruction enters EX from ID and none enters ID from IF, occupied or empty: a jump target already fetched waits in IF, a jalr whose operand has just arrived waits in ID; at zero wait the window never opens.
+from the cycle after a load or store enters WB until its response is on the wire, no instruction enters EX from ID and none enters ID from IF, whether the stage ahead is occupied or empty; so a jump behind the waiting access pays its full cycle after the wait, where behind a busy divider its cycle hides under the stall, and a jalr whose operand has just arrived waits in ID until the response.
 
 ## What the documentation says
 
@@ -16,7 +16,7 @@ pipeline.rst 30-31: the cycle table assumes zero stall on the data-side interfac
 
 ## What the RTL does
 
-a generated store test under a bus answering every request two cycles after its grant: jal zero, 8 (order 161) behind sw gp, 8(ra) with a late response: the jal retires +1 as always, its target lui +2 instead of +1 (the target fetched in the jal's ID cycle sat in IF); under a schedule that delays every second response by one cycle, the single-hazard suite shows 377 intervals a cycle longer than the cycle table and the Hazards list give, in 61 tests, 217 of them the targets of taken jumps, all RTL +2 against the table's +1; all 377 are this rule.  hzc-interleave-00 random:0-3: jalr s4, 0(a6) (order 663) behind lw a6 and lb s2 with late responses retires two cycles after the lb, not one: the waveform shows id_ready and ex_ready low in the two cycles the lb waits in WB.  Waveforms from a tracing build read with a VCD script, 9 Oct 2026
+a generated store test under a bus answering every request two cycles after its grant: jal zero, 8 (order 161) behind sw gp, 8(ra) with a late response: the jal retires +1 as always, its target lui +2 instead of +1 (the target fetched in the jal's ID cycle sat in IF); under a schedule that delays every second response by one cycle, the single-hazard suite shows 377 intervals in which an instruction waited for a stage that was empty, in 61 tests, 217 of them jump targets retiring at the table's +2 where a stalled EX would have hidden the jump's cycle; all 377 are this rule.  hzc-interleave-00 random:0-3: jalr s4, 0(a6) (order 663) behind lw a6 and lb s2 with late responses retires two cycles after the lb, not one: the waveform shows id_ready and ex_ready low in the two cycles the lb waits in WB.  Waveforms from a tracing build read with a VCD script, 9 Oct 2026
 
 ## The bus timing of the run
 

@@ -1,0 +1,70 @@
+VERSION 0 5
+VENDOR cv32e40x1_tb 1 0 'CV32E40X RTL under Verilator'
+PARAMS 6 ILEN 32 XLEN 32 FLEN 0 VLEN 0 NHART 1 RETIRE 1
+RET 0x80000000 0x00002117 'auipc sp, 0x2' MODE 0x3 CYCLE 16 X 2 0x80002000 META 2 PCW 0x80000004
+RET 0x80000004 0x01010113 'addi sp, sp, 16' MODE 0x3 CYCLE 1 X 2 0x80002010 META 2 PCW 0x80000008
+RET 0x80000008 0x00000297 'auipc t0, 0x0' MODE 0x3 CYCLE 1 X 5 0x80000008 META 2 PCW 0x8000000c
+RET 0x8000000c 0x07828293 'addi t0, t0, 120' MODE 0x3 CYCLE 1 X 5 0x80000080 META 2 PCW 0x80000010
+RET 0x80000010 0x30529073 'csrrw zero, mtvec, t0' MODE 0x3 CYCLE 1 C 0x305 0x80000083 META 2 PCW 0x80000014
+RET 0x80000014 0x02010437 'lui s0, 0x2010' MODE 0x3 CYCLE 1 X 8 0x02010000 META 2 PCW 0x80000018
+RET 0x80000018 0x00004901 'c.li s2, 0' MODE 0x3 CYCLE 1 X 18 0x00000000 META 2 PCW 0x8000001a
+RET 0x8000001a 0x00004a01 'c.li s4, 0' MODE 0x3 CYCLE 1 X 20 0x00000000 META 2 PCW 0x8000001c
+RET 0x8000001c 0x900002b7 'lui t0, 0x90000' MODE 0x3 CYCLE 1 X 5 0x90000000 META 2 PCW 0x80000020
+RET 0x80000020 0x30729073 'csrrw zero, 0x307, t0' MODE 0x3 CYCLE 1 C 0x307 0x90000000 META 2 PCW 0x80000024
+RET 0x80000024 0x30047073 'csrrci zero, mstatus, 8' MODE 0x3 CYCLE 1 C 0x300 0x00001800 C 0x342 0x30000000 META 2 PCW 0x80000028
+RET 0x80000028 0x00006359 'c.lui t1, 0x16' MODE 0x3 CYCLE 1 X 6 0x00016000 META 2 PCW 0x8000002a
+RET 0x8000002a 0x41430313 'addi t1, t1, 1044' MODE 0x3 CYCLE 1 X 6 0x00016414 META 2 PCW 0x8000002e
+META 2 ISSUE "addi t1, t1, 1044: in the window of the instruction at order 15 (RTL 1 cycles)"
+RET 0x8000002e 0x02642023 'sw t1, 32(s0)' MODE 0x3 CYCLE 1 MEM D 4 0x02010020 0x02010020 0 META 2 PCW 0x80000032
+META 2 ISSUE "sw t1, 32(s0): in the window of the instruction at order 15 (RTL 1 cycles)"
+RET 0x80000032 0x30046073 'csrrsi zero, mstatus, 8' MODE 0x3 CYCLE 1 C 0x300 0x00001808 C 0x342 0x30000000 META 2 PCW 0x80000036
+META 2 ISSUE "csrrsi zero, mstatus, 8: in the window of the instruction at order 15 (RTL 1 cycles)"
+TRAP 0x90000050 0x00000000 'illegal 0x00000000' MODE 0x3 CYCLE 5 C 0x300 0x00001800 C 0x341 0x90000050 C 0x342 0x70640018 C 0xfb1 0x64000000 META 2 PCW 0x80000080
+META 2 ISSUE "illegal 0x00000000: the RTL retires it 5 cycle(s) after the previous retirement; the documentation, read as written, gives 4 -- in CLIC mode a vectored interrupt whose table entry fetch faults traps with mcause.minhv set and mepc the entry`s address; an mret with minhv set fetches the pointer again (the restart) and, when that fetch succeeds, enters the handler with minhv still set: the handler reads mcause with bit 30 up, and its own mret restarts a pointer fetch from mepc instead of returning, unless software clears the bit.  The manual (control_status_registers.rst, mcause in CLIC mode) says minhv is `cleared by hardware at end of successful hardware vectoring` -- the document: control_status_registers.rst, Machine Cause (mcause) - CLIC == 1, bit 30: `MINHV. Set by hardware at start of hardware vectoring, cleared by hardware at end of successful hardware vectoring`; the taking of a vectored interrupt reads minhv 0 in the handler (the clearing at the start is not observable"
+RET 0x80000080 0x342022f3 'csrrs t0, mcause, zero' MODE 0x3 CYCLE 4 X 5 0x70640018 META 2 PCW 0x80000084
+RET 0x80000084 0x0202c563 'blt t0, zero, 42' MODE 0x3 CYCLE 1 META 2 PCW 0x80000088
+RET 0x80000088 0x34102373 'csrrs t1, mepc, zero' MODE 0x3 CYCLE 1 X 6 0x90000050 META 2 PCW 0x8000008c
+RET 0x8000008c 0x00000317 'auipc t1, 0x0' MODE 0x3 CYCLE 1 X 6 0x8000008c META 2 PCW 0x80000090
+RET 0x80000090 0x0f430313 'addi t1, t1, 244' MODE 0x3 CYCLE 1 X 6 0x80000180 META 2 PCW 0x80000094
+RET 0x80000094 0x30731073 'csrrw zero, 0x307, t1' MODE 0x3 CYCLE 1 C 0x307 0x80000180 META 2 PCW 0x80000098
+RET 0x80000098 0x05030313 'addi t1, t1, 80' MODE 0x3 CYCLE 1 X 6 0x800001d0 META 2 PCW 0x8000009c
+RET 0x8000009c 0x34131073 'csrrw zero, mepc, t1' MODE 0x3 CYCLE 1 C 0x341 0x800001d0 META 2 PCW 0x800000a0
+RET 0x800000a0 0xc0000337 'lui t1, 0xc0000' MODE 0x3 CYCLE 1 X 6 0xc0000000 META 2 PCW 0x800000a4
+RET 0x800000a4 0x00000351 'c.addi t1, 20' MODE 0x3 CYCLE 1 X 6 0xc0000014 META 2 PCW 0x800000a6
+META 2 ISSUE "c.addi t1, 20: in the window of the instruction at order 28 (RTL 1 cycles)"
+META 2 ISSUE "c.addi t1, 20: in the window of the instruction at order 28 (RTL 1 cycles)"
+META 2 ISSUE "c.addi t1, 20: in the window of the instruction at order 28 (RTL 1 cycles)"
+META 2 ISSUE "c.addi t1, 20: in the window of the instruction at order 28 (RTL 1 cycles)"
+RET 0x800000a6 0x34231073 'csrrw zero, mcause, t1' MODE 0x3 CYCLE 1 C 0x300 0x00001800 C 0x342 0xf0000014 META 2 PCW 0x800000aa
+META 2 ISSUE "csrrw zero, mcause, t1: in the window of the instruction at order 28 (RTL 1 cycles)"
+META 2 ISSUE "csrrw zero, mcause, t1: in the window of the instruction at order 28 (RTL 1 cycles)"
+META 2 ISSUE "csrrw zero, mcause, t1: in the window of the instruction at order 28 (RTL 1 cycles)"
+META 2 ISSUE "csrrw zero, mcause, t1: in the window of the instruction at order 28 (RTL 1 cycles)"
+RET 0x800000aa 0x30200073 'mret' MODE 0x3 CYCLE 6 C 0x300 0x00001880 C 0x342 0xf8000014 C 0xfb1 0x00000000 META 2 PCW 0x800000b4
+META 2 ISSUE "mret: in the window of the instruction at order 28 (RTL 6 cycles)"
+META 2 ISSUE "mret: in the window of the instruction at order 28 (RTL 6 cycles)"
+META 2 ISSUE "mret: in the window of the instruction at order 28 (RTL 6 cycles)"
+META 2 ISSUE "mret: in the window of the instruction at order 28 (RTL 6 cycles)"
+RET 0x800000b4 0x34202973 'csrrs s2, mcause, zero' MODE 0x3 CYCLE 2 X 18 0xf8000014 META 2 PCW 0x800000b8
+META 2 ISSUE "csrrs s2, mcause, zero: the RTL retires it 2 cycle(s) after the previous retirement; the documentation, read as written, gives 1 -- in CLIC mode a vectored interrupt whose table entry fetch faults traps with mcause.minhv set and mepc the entry`s address; an mret with minhv set fetches the pointer again (the restart) and, when that fetch succeeds, enters the handler with minhv still set: the handler reads mcause with bit 30 up, and its own mret restarts a pointer fetch from mepc instead of returning, unless software clears the bit.  The manual (control_status_registers.rst, mcause in CLIC mode) says minhv is `cleared by hardware at end of successful hardware vectoring` -- the document: control_status_registers.rst, Machine Cause (mcause) - CLIC == 1, bit 30: `MINHV. Set by hardware at start of hardware vectoring, cleared by hardware at end of successful hardware vectoring`; the taking of a vectored interrupt reads minhv 0 in the handler (the clearing at the start is not observable"
+META 2 ISSUE "csrrs s2, mcause, zero: the RTL retires it 2 cycle(s) after the previous retirement; the documentation, read as written, gives 1 -- in CLIC mode a vectored interrupt whose table entry fetch faults traps with mcause.minhv set and mepc the entry`s address; an mret with minhv set fetches the pointer again (the restart) and, when that fetch succeeds, enters the handler with minhv still set: the handler reads mcause with bit 30 up, and its own mret restarts a pointer fetch from mepc instead of returning, unless software clears the bit.  The manual (control_status_registers.rst, mcause in CLIC mode) says minhv is `cleared by hardware at end of successful hardware vectoring` -- the document: control_status_registers.rst, Machine Cause (mcause) - CLIC == 1, bit 30: `MINHV. Set by hardware at start of hardware vectoring, cleared by hardware at end of successful hardware vectoring`; the taking of a vectored interrupt reads minhv 0 in the handler (the clearing at the start is not observable"
+META 2 ISSUE "csrrs s2, mcause, zero: the RTL retires it 2 cycle(s) after the previous retirement; the documentation, read as written, gives 1 -- in CLIC mode a vectored interrupt whose table entry fetch faults traps with mcause.minhv set and mepc the entry`s address; an mret with minhv set fetches the pointer again (the restart) and, when that fetch succeeds, enters the handler with minhv still set: the handler reads mcause with bit 30 up, and its own mret restarts a pointer fetch from mepc instead of returning, unless software clears the bit.  The manual (control_status_registers.rst, mcause in CLIC mode) says minhv is `cleared by hardware at end of successful hardware vectoring` -- the document: control_status_registers.rst, Machine Cause (mcause) - CLIC == 1, bit 30: `MINHV. Set by hardware at start of hardware vectoring, cleared by hardware at end of successful hardware vectoring`; the taking of a vectored interrupt reads minhv 0 in the handler (the clearing at the start is not observable"
+META 2 ISSUE "csrrs s2, mcause, zero: the RTL retires it 2 cycle(s) after the previous retirement; the documentation, read as written, gives 1 -- in CLIC mode a vectored interrupt whose table entry fetch faults traps with mcause.minhv set and mepc the entry`s address; an mret with minhv set fetches the pointer again (the restart) and, when that fetch succeeds, enters the handler with minhv still set: the handler reads mcause with bit 30 up, and its own mret restarts a pointer fetch from mepc instead of returning, unless software clears the bit.  The manual (control_status_registers.rst, mcause in CLIC mode) says minhv is `cleared by hardware at end of successful hardware vectoring` -- the document: control_status_registers.rst, Machine Cause (mcause) - CLIC == 1, bit 30: `MINHV. Set by hardware at start of hardware vectoring, cleared by hardware at end of successful hardware vectoring`; the taking of a vectored interrupt reads minhv 0 in the handler (the clearing at the start is not observable"
+RET 0x800000b8 0x00004a51 'c.li s4, 20' MODE 0x3 CYCLE 1 X 20 0x00000014 META 2 PCW 0x800000ba
+RET 0x800000ba 0x00004351 'c.li t1, 20' MODE 0x3 CYCLE 1 X 6 0x00000014 META 2 PCW 0x800000bc
+RET 0x800000bc 0x02642223 'sw t1, 36(s0)' MODE 0x3 CYCLE 1 MEM D 4 0x02010024 0x02010024 0 META 2 PCW 0x800000c0
+RET 0x800000c0 0x00000317 'auipc t1, 0x0' MODE 0x3 CYCLE 1 X 6 0x800000c0 META 2 PCW 0x800000c4
+RET 0x800000c4 0xf7630313 'addi t1, t1, -138' MODE 0x3 CYCLE 1 X 6 0x80000036 META 2 PCW 0x800000c8
+RET 0x800000c8 0x34131073 'csrrw zero, mepc, t1' MODE 0x3 CYCLE 1 C 0x341 0x80000036 META 2 PCW 0x800000cc
+RET 0x800000cc 0x40000337 'lui t1, 0x40000' MODE 0x3 CYCLE 1 X 6 0x40000000 META 2 PCW 0x800000d0
+RET 0x800000d0 0xfff34313 'xori t1, t1, -1' MODE 0x3 CYCLE 1 X 6 0xbfffffff META 2 PCW 0x800000d4
+RET 0x800000d4 0x006972b3 'and t0, s2, t1' MODE 0x3 CYCLE 1 X 5 0xb8000014 META 2 PCW 0x800000d8
+RET 0x800000d8 0x34229073 'csrrw zero, mcause, t0' MODE 0x3 CYCLE 1 C 0x300 0x00001880 C 0x342 0xb8000014 META 2 PCW 0x800000dc
+RET 0x800000dc 0x30200073 'mret' MODE 0x3 CYCLE 3 C 0x300 0x00001888 C 0x342 0xb8000014 C 0xfb1 0x00000000 META 2 PCW 0x80000036
+RET 0x80000036 0x00004f05 'c.li t5, 1' MODE 0x3 CYCLE 2 X 30 0x00000001 META 2 PCW 0x80000038
+RET 0x80000038 0x00004fd1 'c.li t6, 20' MODE 0x3 CYCLE 1 X 31 0x00000014 META 2 PCW 0x8000003a
+RET 0x8000003a 0x01fa1c63 'bne s4, t6, 24' MODE 0x3 CYCLE 1 META 2 PCW 0x8000003e
+RET 0x8000003e 0x00001297 'auipc t0, 0x1' MODE 0x3 CYCLE 1 X 5 0x8000103e META 2 PCW 0x80000042
+RET 0x80000042 0xfc228293 'addi t0, t0, -62' MODE 0x3 CYCLE 1 X 5 0x80001000 META 2 PCW 0x80000046
+RET 0x80000046 0x00004305 'c.li t1, 1' MODE 0x3 CYCLE 1 X 6 0x00000001 META 2 PCW 0x80000048
+RET 0x80000048 0x0062a023 'sw t1, 0(t0)' MODE 0x3 CYCLE 1 MEM D 4 0x80001000 0x80001000 0 META 2 PCW 0x8000004c

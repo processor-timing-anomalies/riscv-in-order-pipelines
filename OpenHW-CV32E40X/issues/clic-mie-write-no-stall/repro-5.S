@@ -24,7 +24,7 @@ TEST_BEGIN
     lui x6, 10                        # quiet
     csrrs x0, mie, x24                # order 5223 of the run
     .option push
-    .option rvc
+    .option arch, +zca, +zcb
     c.lh x12, 0(x13)   # order 5224 of the run: the mismatching instruction, the instruction under test
     .option pop
     lui x7, 11                        # quiet: DMAX+1 fillers, nothing older in flight
