@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the Ibex
 
-Generated from our records of the Ibex on 9 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the Ibex on 17 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the ibex core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -533,27 +533,24 @@ The manual states no latency and no taking stage for interrupts; every row here 
 
 ## 8. What real programs pay on this core: the cycles lost to stalls, by cause
 
-Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 2 retirements before the subject) over 53,126,158 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
+Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 2 retirements before the subject) over 53,405,629 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
 
 | measure | value |
 |---|---|
-| cycles per retirement, the programs' single-cost skeletons (44,433,834 of the 48,141,362 retirements of the certification tests and the benchmarks, 92%) | 44,433,834 retirements, 65,521,179 cycles: CPI 1.475 (IPC 0.68) |
-| real code's shapes no generated suite makes | 21.7% of the programs' retirements (by class) |
+| cycles per retirement, the programs' single-cost skeletons (26,485,228 of the 48,141,362 retirements of the certification tests and the benchmarks, 55%) | 26,485,228 retirements, 44,253,057 cycles: CPI 1.671 (IPC 0.60) |
+| real code's shapes no generated suite makes | 1.9% of the programs' retirements (by class) |
 
 The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the README beside this document.
 
 What an ideal mechanism would save, as a ceiling and not a design (the profile summary carries the caveats):
 
-| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 65,521,179 single-cost cycles |
+| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 44,253,057 single-cost cycles |
 |---|---:|---:|---:|
-| a perfect branch prediction: the follower of a taken branch at 1 cycle | 2,849,978 | 3,998,029 | 6.1% |
-| no extra cycle at a pc+2 target | 757,994 | 757,994 | 1.2% |
-| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 1,977,946 | 452,532 | 0.7% |
-| no load-use bubble | 252,411 | 252,411 | 0.4% |
-| `c.lwsp` at one cycle | 211,087 | 211,087 | 0.3% |
-| `c.swsp` at one cycle | 182,111 | 182,111 | 0.3% |
-| `mul` at one cycle | 10,909 | 21,818 | 0.0% |
-| `mulhu` at one cycle | 1 | 3 | 0.0% |
+| a perfect branch prediction: the follower of a taken branch at 1 cycle | 1,781,116 | 2,787,863 | 6.3% |
+| no extra cycle at a pc+2 target | 728,907 | 728,907 | 1.6% |
+| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 796,638 | 418,476 | 0.9% |
+| no load-use bubble | 252,403 | 252,403 | 0.6% |
+| `c.swsp` at one cycle | 182,111 | 182,111 | 0.4% |
 
 ## 9. Where the RTL and the manual differ: the anomalies we found
 
@@ -568,7 +565,7 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 | The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU | rtl | function | none in execution; a trace consumer that trusts rvfi_pc_wdata (a cosimulation comparing the next pc, as ours) sees a mismatch on every odd-target jalr under Bra | ibex-maxperf | open; to file | [issues/rvfi-jalr-target-bit0-btalu/](issues/rvfi-jalr-target-bit0-btalu/) |
 | A PMP-refused load or store faults after two cycles, no bus request | document | intent | two cycles on every load or store the PMP refuses, before the trap's own entry; a zero-wait memory's permitted access pays one | ibex-pmp | clarified; to file | [issues/pmp-fault-two-cycles/](issues/pmp-fault-two-cycles/) |
 | A writeback-raised trap enters its handler a cycle after an ID/EX one | document | intent | one cycle more on the entry of every handler of a load or store fault than of an ID/EX exception | ibex-pmp | clarified; to file | [issues/pmp-fault-wb-entry-four-cycles/](issues/pmp-fault-wb-entry-four-cycles/) |
-| A misaligned store the PMP refuses still writes its second half | rtl | function | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
+| A misaligned store the PMP refuses still writes its second half | document | intent | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
 | With PMPEnable 0 the PMP CSRs trap as illegal, not read as zero | document | intent | none in cycles; an illegal-instruction trap where software expects a zero | ibex | clarified; to file | [issues/pmp-disabled-csrs-illegal/](issues/pmp-disabled-csrs-illegal/) |
 | The manual's W=1 R=0 rule holds only while mseccfg.MML is clear | document | intent | none in cycles; a permission reading software would get wrong from the manual under MML | ibex-pmp | clarified; to file | [issues/pmp-w-without-r-under-mml/](issues/pmp-w-without-r-under-mml/) |
 | In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it | document | intent | none in cycles; software reading the manual would expect MIE to mask interrupts in U, which it does not | ibex | confirmed; to file | [issues/interrupts-in-user-whatever-mie/](issues/interrupts-in-user-whatever-mie/) |
@@ -579,12 +576,12 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 | The first 258 cycles after reset are an invalidation walk: every fetch a bus request | document | intent | 258 cycles at the start of every run at the bus's miss cost; a short program's cycles per instruction on the cached build say more about the walk than the cache | ibex-icache | confirmed; to file | [issues/icache-reset-walk/](issues/icache-reset-walk/) |
 | A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | document | intent | one cycle on a lookup that waits for a buffer to free, under instruction-side wait states | ibex-icache | confirmed; to file | [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/) |
 | A misaligned access holds ID/EX until both halves are accepted and its first response | document | intent | under data-side wait states, the cycles of the second half's grant and the first half's response, on every misaligned access | ibex-icache | confirmed; to file | [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/) |
-| mcause-read-only-but-written | document | - | - | ibex | clarified; no issue | - |
-| mtvec-mode-2-reserved-reads-vectored | document | - | - | ibex | clarified; no issue | - |
+| mcause-read-only-but-written | document | intent | - | ibex | clarified; no issue | - |
+| mtvec-mode-2-reserved-reads-vectored | document | intent | - | ibex | clarified; no issue | - |
 | mstatus-mpp-2-reads-machine | document | - | - | ibex | closed; no issue | - |
-| load-use-hold-unstated | document | - | - | ibex-maxperf | clarified; no issue | - |
-| multdiv-behind-load-waits-load-use-first | document | - | - | ibex-maxperf | clarified; no issue | - |
-| Three implemented CSRs missing from the CSR table | document | - | - | ibex | clarified; no issue | - |
+| load-use-hold-unstated | document | intent | - | ibex-maxperf | clarified; no issue | - |
+| multdiv-behind-load-waits-load-use-first | document | intent | - | ibex-maxperf | clarified; no issue | - |
+| Three implemented CSRs missing from the CSR table | document | intent | - | ibex | clarified; no issue | - |
 | An unsupported MPP value is kept as User mode, not Machine mode | rtl | function | no cycles; software that writes an unsupported value to mstatus.MPP and then executes mret would continue in User mode, without access to the machine-mode CSRs, | ibex-maxperf | open; to file | [issues/mpp-unsupported-reads-user/](issues/mpp-unsupported-reads-user/) |
 
 ## 10. What the base build's rows leave to a configuration, and what no test reaches
@@ -624,7 +621,7 @@ Every stall and flush term in the RTL source that the base build's own rows do n
 
 | measure | value |
 |---|---|
-| findings in the record | 25 (21 document, 3 rtl, 1 performance) |
+| findings in the record | 25 (22 document, 2 rtl, 1 performance) |
 
 Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
 

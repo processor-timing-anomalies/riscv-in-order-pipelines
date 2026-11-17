@@ -37,21 +37,21 @@ pages stop.  The anomalies below name the build they were found on.
 
 <!-- generated: found -->
 **Comparing the RTL against the timing its documentation promises, on the base build, the maxperf build with B full, PMP and the instruction cache, the maxperf build and the maxperf build with B full and PMP, we
-found 25 anomalies: 3 in the RTL, 1 on performance, 21 in the documentation.**  19 of them have an issue directory: 19 hold a program that reproduces the anomaly and the two traces of its run.  The other 6 (`mcause-read-only-but-written`, `mtvec-mode-2-reserved-reads-vectored`, `mstatus-mpp-2-reads-machine`, `load-use-hold-unstated`, `multdiv-behind-load-waits-load-use-first`, `unlisted-csrs-read-zero`) have no directory; the findings page states each.
+found 25 anomalies: 2 in the RTL, 1 on performance, 22 in the documentation.**  19 of them have an issue directory: 19 hold a program that reproduces the anomaly and the two traces of its run.  The other 6 (`mcause-read-only-but-written`, `mtvec-mode-2-reserved-reads-vectored`, `mstatus-mpp-2-reads-machine`, `load-use-hold-unstated`, `multdiv-behind-load-waits-load-use-first`, `unlisted-csrs-read-zero`) have no directory; the findings page states each.
 
 | | |
 |---|---|
-| RTL, 3 | The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU; A misaligned store the PMP refuses still writes its second half; An unsupported MPP value is kept as User mode, not Machine mode |
+| RTL, 2 | The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU; An unsupported MPP value is kept as User mode, not Machine mode |
 | performance, 1 | stalls that fire wider than their cause: a cycle paid in cases that have no reason to pay it |
-| documentation, 21 | places where the manual is silent, behind the hardware, or wrong about a stall or a cost |
+| documentation, 22 | places where the manual is silent, behind the hardware, or wrong about a stall or a cost |
 
 Everywhere else the core's timing was as predicted.  Our predictions for this core, built from its documentation and
 corrected by the issues above, agreed with the RTL on every other instruction:
 
 | | |
 |---|---|
-| the focused test suites | 8,182 tests (7,502 generated in 10 suites, the RISC-V architecture certification tests and a smoke program), 36,863,577 instruction intervals compared on the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP, 0 disagreeing |
-| the benchmarks | 107 programs (CoreMark, Dhrystone, Embench-IoT, Mälardalen, riscv-tests, TACLeBench), 41,100,262 instruction intervals, 0 disagreeing |
+| the focused test suites | 8,199 tests (7,519 generated in 10 suites, the RISC-V architecture certification tests and a smoke program), 37,342,853 instruction intervals compared on the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP, 0 disagreeing |
+| the benchmarks | 103 programs (Dhrystone, CoreMark, riscv-tests, Embench-IoT, Mälardalen, TACLeBench), 47,692,966 instruction intervals, 0 disagreeing |
 | the search beyond the suites | not yet run on this core |
 | the documentation's own timing statements | 18 of 18 proved on the RTL (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
 <!-- end -->
@@ -92,19 +92,19 @@ behind, where the architecture leaves the word untouched.
 ## The numbers
 
 <!-- generated: numbers -->
-As of the regression recorded on 9 November 2026, at commit `dfdfcc8` of our tree (the commit that recorded it); the test and interval counts are
+As of the regression recorded on 12 November 2026, at commit `e437206` of our tree (the commit that recorded it); the test and interval counts are
 summed from the per-test tables of the records of the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP.
 
 | | |
 |---|---|
 | statements of the documentation, each proved against the RTL | 18 of 18 (the statement rows of sections 4.2 and 4.3 of the specification of the base build and the maxperf build with B full, PMP and the instruction cache and the maxperf build and the maxperf build with B full and PMP, as its record groups them) |
-| instruction intervals compared, RTL against the documented timing | 36,863,577 over 10 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
+| instruction intervals compared, RTL against the documented timing | 37,342,853 over 10 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
 | instruction sequences searched beyond the suites | not yet run on this core |
-| anomalies | 25: 15 where the documentation is behind the hardware, 1 where a stall fires wider than its cause, 3 not a timing matter |
+| anomalies | 25: 21 where the documentation is behind the hardware, 1 where a stall fires wider than its cause, 2 not a timing matter |
 | issue directories | 19: 15 for the documentation, 1 on performance, 3 on the RTL |
 | injected timing and functional mutation faults the programs catch | not yet run on this core |
-| instruction shapes of real programs that the generated suites also exercise | 78.3% of their retirements; the remaining 21.7% are shapes no suite makes yet |
-| cycles per instruction over the benchmarks' timed parts | CPI 1.517, IPC 0.659, over 41,100,369 instructions in 107 programs (per suite in the runs table below) |
+| instruction shapes of real programs that the generated suites also exercise | 98.1% of their retirements; the remaining 1.9% are shapes no suite makes yet |
+| cycles per instruction over the benchmarks' timed parts | CPI 1.517, IPC 0.659, over 41,041,570 instructions in 103 programs (per suite in the runs table below) |
 <!-- end -->
 
 ## The runs behind the numbers
@@ -112,23 +112,23 @@ summed from the per-test tables of the records of the base build and the maxperf
 <!-- generated: runs -->
 | our test suites | tests | passed | skipped | intervals compared | disagreeing |
 |---|---:|---:|---:|---:|---:|
-| the base build: 10 generated suites, the RISC-V architecture certification tests and a smoke program | 1,492 | 1,409 | 83 | 5,524,138 | 0 |
-| the maxperf build with B full, PMP and the instruction cache: 10 generated suites, the RISC-V architecture certification tests and a smoke program | 2,443 | 2,416 | 27 | 11,937,286 | 0 |
-| the maxperf build: 10 generated suites, the RISC-V architecture certification tests and a smoke program | 1,797 | 1,721 | 76 | 7,432,699 | 0 |
-| the maxperf build with B full and PMP: 10 generated suites, the RISC-V architecture certification tests and a smoke program | 2,450 | 2,422 | 28 | 11,969,454 | 0 |
-| **all** | **8,182** | **7,968** | **214** | **36,863,577** | **0** |
+| the base build: 10 generated suites, the RISC-V architecture certification tests and a smoke program | 1,491 | 1,409 | 82 | 5,523,789 | 0 |
+| the maxperf build with B full, PMP and the instruction cache: 10 generated suites, the RISC-V architecture certification tests and a smoke program | 2,452 | 2,425 | 27 | 12,258,487 | 0 |
+| the maxperf build: 10 generated suites, the RISC-V architecture certification tests and a smoke program | 1,797 | 1,721 | 76 | 7,430,234 | 0 |
+| the maxperf build with B full and PMP: 10 generated suites, the RISC-V architecture certification tests and a smoke program | 2,459 | 2,427 | 32 | 12,130,343 | 0 |
+| **all** | **8,199** | **7,982** | **217** | **37,342,853** | **0** |
 
 A skipped test is one the core cannot run as built (an extension it lacks, a case the generator could not place); it is counted, not hidden.
 
 | benchmark suite | programs | intervals compared | disagreeing | instructions (timed part) | cycles | CPI | IPC |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| CoreMark | 1 | 313,228 | 0 | 313,229 | 478,213 | 1.527 | 0.655 |
-| Dhrystone | 5 | 59,560 | 0 | 59,565 | 101,971 | 1.712 | 0.584 |
-| Embench-IoT | 19 | 6,526,916 | 0 | 6,526,935 | 9,797,175 | 1.501 | 0.666 |
-| Mälardalen | 33 | 9,092,735 | 0 | 9,092,768 | 14,164,361 | 1.558 | 0.642 |
-| riscv-tests | 7 | 1,143,998 | 0 | 1,144,005 | 1,612,676 | 1.410 | 0.709 |
-| TACLeBench | 42 | 23,963,825 | 0 | 23,963,867 | 36,214,110 | 1.511 | 0.662 |
-| **all** | **107** | **41,100,262** | **0** | **41,100,369** | **62,368,506** | **1.517** | **0.659** |
+| Dhrystone | 1 | 42,013 | 0 | 766 | 1,303 | 1.701 | 0.588 |
+| CoreMark | 1 | 343,723 | 0 | 313,229 | 478,213 | 1.527 | 0.655 |
+| riscv-tests | 7 | 1,253,555 | 0 | 1,144,005 | 1,612,676 | 1.410 | 0.709 |
+| Embench-IoT | 19 | 6,799,812 | 0 | 6,526,935 | 9,797,175 | 1.501 | 0.666 |
+| Mälardalen | 33 | 9,481,812 | 0 | 9,092,768 | 14,164,361 | 1.558 | 0.642 |
+| TACLeBench | 42 | 29,772,051 | 0 | 23,963,867 | 36,214,110 | 1.511 | 0.662 |
+| **all** | **103** | **47,692,966** | **0** | **41,041,570** | **62,267,838** | **1.517** | **0.659** |
 
 An interval is the cycles between one retirement and the one before it; every retirement of every run, start-up and check included, is compared against our prediction.  Instructions and cycles are the timed part of each program, between its own two timer marks, on the RTL; CPI is cycles per instruction there, IPC its inverse.
 <!-- end -->
@@ -145,7 +145,7 @@ What "no timing anomaly left" rests on, in eight parts, each with its state:
 | the RTL's own stall and flush mechanisms, read from its source: each exercised by a test or named unreachable with its reason | closed, except 7 terms not yet exercised (`data_ind_timing_i`, `INSTR_EXPANDED_COMMIT`, `icache_enable_i`, `instr_intg_err`, `irq_nm_int`, `ic_scr_key_valid_i`, `illegal_csr`), each awaiting a feature of ours; the specification's section 10 says which |
 | bus timing under a schedule | the scheduled suite: 3,504,118 intervals, 0 disagreeing; the survey does not yet read the schedule |
 | state interactions: CSR side effects, modes, reserved forms | open: the search has not run on this core yet |
-| real programs' shapes, covered by the suites | 78.3% covered; the rest open |
+| real programs' shapes, covered by the suites | 98.1% covered; the rest open |
 | detection power: injected timing and functional mutation faults | open: no mutation campaign on this core yet |
 | timing conditions in the RTL that the manual says nothing about, each a question answered by reading the source and measuring | 28 questions (6 on the base build, 8 on the maxperf build with B full, PMP and the instruction cache, 9 on the maxperf build, 5 on the maxperf build with B full and PMP); 16 answered and now stated in the specification; 12 open: `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry` (the base build); `fetch_ecc_error_refetch` (the maxperf build with B full, PMP and the instruction cache); `data_err_fault`, `fetch_err_trap`, `ebreak_debug_entry`, `debug_req_entry` (the maxperf build); `pmp_fault_lsu_misaligned_first`, `pmp_fault_lsu_misaligned_second`, `pmp_fault_zcmp_uop` (the maxperf build with B full and PMP) |
 <!-- end -->

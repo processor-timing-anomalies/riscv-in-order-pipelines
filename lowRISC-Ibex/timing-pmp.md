@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the Ibex maxperf build with B full and PMP
 
-Generated from our records of the Ibex maxperf build with B full and PMP on 9 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: ibex-icache (the maxperf build with B full, PMP and the instruction cache).  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the Ibex maxperf build with B full and PMP on 17 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: ibex-icache (the maxperf build with B full, PMP and the instruction cache).  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the ibex-pmp core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -611,7 +611,23 @@ No events section in this specification.
 
 ## 8. What real programs pay on this core: the cycles lost to stalls, by cause
 
-No profile yet (make -C hazards profiles CORE=ibex-pmp).
+Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 3 retirements before the subject) over 58,491,999 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
+
+| measure | value |
+|---|---|
+| cycles per retirement, the programs' single-cost skeletons (23,437,481 of the 46,937,438 retirements of the certification tests and the benchmarks, 50%) | 23,437,481 retirements, 30,019,762 cycles: CPI 1.281 (IPC 0.78) |
+| real code's shapes no generated suite makes | 3.9% of the programs' retirements (by class) |
+
+The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the README beside this document.
+
+What an ideal mechanism would save, as a ceiling and not a design (the profile summary carries the caveats):
+
+| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 30,019,762 single-cost cycles |
+|---|---:|---:|---:|
+| a perfect branch prediction: the follower of a taken branch at 1 cycle | 1,641,742 | 1,672,954 | 5.6% |
+| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 756,231 | 863,799 | 2.9% |
+| no load-use bubble | 706,215 | 706,215 | 2.4% |
+| no extra cycle at a pc+2 target | 683,375 | 683,375 | 2.3% |
 
 ## 9. Where the RTL and the manual differ: the anomalies we found
 
@@ -621,7 +637,7 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 |---|---|---|---|---|---|---|
 | A PMP-refused load or store faults after two cycles, no bus request | document | intent | two cycles on every load or store the PMP refuses, before the trap's own entry; a zero-wait memory's permitted access pays one | ibex-pmp | clarified; to file | [issues/pmp-fault-two-cycles/](issues/pmp-fault-two-cycles/) |
 | A writeback-raised trap enters its handler a cycle after an ID/EX one | document | intent | one cycle more on the entry of every handler of a load or store fault than of an ID/EX exception | ibex-pmp | clarified; to file | [issues/pmp-fault-wb-entry-four-cycles/](issues/pmp-fault-wb-entry-four-cycles/) |
-| A misaligned store the PMP refuses still writes its second half | rtl | function | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
+| A misaligned store the PMP refuses still writes its second half | document | intent | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
 | The manual's W=1 R=0 rule holds only while mseccfg.MML is clear | document | intent | none in cycles; a permission reading software would get wrong from the manual under MML | ibex-pmp | clarified; to file | [issues/pmp-w-without-r-under-mml/](issues/pmp-w-without-r-under-mml/) |
 
 ## 10. What the base build's rows leave to a configuration, and what no test reaches
@@ -658,7 +674,7 @@ Every stall and flush term in the RTL source that the base build's own rows do n
 
 | measure | value |
 |---|---|
-| findings in the record | 4 (3 document, 1 rtl) |
+| findings in the record | 4 (4 document) |
 
 Our generated test suites run against this specification's prediction at every retirement on every regression; their counts and coverage are in the README beside this document.  Deliberate faults injected into the RTL (the timing and functional mutation campaign) prove the suites see what they claim.
 

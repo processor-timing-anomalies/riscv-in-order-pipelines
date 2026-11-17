@@ -4,7 +4,7 @@ This document lists every timing anomaly we found on the CV32E40X: each place wh
 
 Each anomaly has a **class** (the table below: how the hardware's trigger compares with the cause it exists for), a **cost** in cycles, **whom it concerns** (the RTL's developers, the core's performance, or the documentation), a **status**, and, for most, an **issue directory** under `issues/` with the issue's text and, when a small program reproduces it, that program, the two RVVI traces (the RTL's and the reference's) and the capture's facts; `issues/README.md` says what each directory holds.  The timing specification beside this document (`timing.md`) carries the same anomalies as rows of its section 9, in the context of the rules they break.
 
-Generated from our record on 9 November 2026: 37 anomalies -- 2 in the RTL, 9 on performance, 26 in the documentation.
+Generated from our record on 17 November 2026: 37 anomalies -- 2 in the RTL, 9 on performance, 26 in the documentation.
 
 | class | meaning |
 |---|---|
@@ -86,7 +86,7 @@ Generated from our record on 9 November 2026: 37 anomalies -- 2 in the RTL, 9 on
 | A split access requests its second half from WB, the cycle after the first grant | document | intent | a misaligned access pays its second half's grant and response wait from WB, one cycle more than a single access | cv32e40x | closed; won't file: documented (pipeline.rst 48-52) | [issues/mem-split-second-half/](issues/mem-split-second-half/) |
 | A jalr two behind a load waits a cycle, even at zero wait | document | intent | one cycle on a jalr two behind the load that writes its rs1 | cv32e40x | clarified; to file | [issues/mem-late-data-forward/](issues/mem-late-data-forward/) |
 | A fence or fence.tso behind a buffered store waits for the store's response first | document | intent | a fence or fence.tso behind a store the write buffer took waits for the store's response before its own two cycles | cv32e40x-pma | clarified; to file | [issues/mem-wbuf-fence-drain/](issues/mem-wbuf-fence-drain/) |
-| A misaligned load refused on its second half has already read its first | document | function | - | cv32e40x-pma | clarified; to file | [issues/mem-pma-split-first-half/](issues/mem-pma-split-first-half/) |
+| A misaligned load refused on its second half has already read its first | document | intent | - | cv32e40x-pma | clarified; to file | [issues/mem-pma-split-first-half/](issues/mem-pma-split-first-half/) |
 | A store the write buffer could take still waits while two transfers are outstanding | document | intent | one cycle on a bufferable store when the buffer's transfer holds the last outstanding slot | cv32e40x-pma | clarified; to file | [issues/mem-wbuf-third-store/](issues/mem-wbuf-third-store/) |
 | A misaligned atomic raises an access fault (5, 7), not a misaligned one (4, 6) | document | function | - | cv32e40x-pma-a | clarified; to file | [issues/mem-atomic-misaligned-cause/](issues/mem-atomic-misaligned-cause/) |
 | A bus error's NMI is taken the cycle after the faulting access retires, every stage killed | document | intent | the NMI handler's first retirement 5 cycles after the carrier's (the faulting load or store); the instruction behind the carrier retires before the handler only when its data request was outstanding when the error was seen, otherwise it is killed and runs again after the handler's mret | cv32e40x | clarified; to file | [issues/nmi-taken-kill/](issues/nmi-taken-kill/) |
@@ -466,7 +466,7 @@ on a configuration with a bufferable region, a fence or fence.tso behind a store
 
 ### [mem-pma-split-first-half](issues/mem-pma-split-first-half/): A misaligned load refused on its second half has already read its first
 
-- Class: function -- not a timing finding: a value, a fault or a sequence
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Found on: cv32e40x-pma
 - Status: clarified; to file
 - Issue directory: [issues/mem-pma-split-first-half/](issues/mem-pma-split-first-half/)

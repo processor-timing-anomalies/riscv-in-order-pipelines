@@ -4,7 +4,7 @@ This document lists every timing anomaly we found on the Ibex: each place where 
 
 Each anomaly has a **class** (the table below: how the hardware's trigger compares with the cause it exists for), a **cost** in cycles, **whom it concerns** (the RTL's developers, the core's performance, or the documentation), a **status**, and, for most, an **issue directory** under `issues/` with the issue's text and, when a small program reproduces it, that program, the two RVVI traces (the RTL's and the reference's) and the capture's facts; `issues/README.md` says what each directory holds.  The timing specification beside this document (`timing.md`) carries the same anomalies as rows of its section 9, in the context of the rules they break.
 
-Generated from our record on 9 November 2026: 25 anomalies -- 3 in the RTL, 1 on performance, 21 in the documentation.
+Generated from our record on 17 November 2026: 25 anomalies -- 2 in the RTL, 1 on performance, 22 in the documentation.
 
 | class | meaning |
 |---|---|
@@ -19,7 +19,6 @@ Generated from our record on 9 November 2026: 25 anomalies -- 3 in the RTL, 1 on
 - [All of them](#all-of-them): the table listing all the found anomalies
 - [For the RTL's developers](#for-the-rtls-developers)
   - [rvfi-jalr-target-bit0-btalu](#rvfi-jalr-target-bit0-btalu-the-rvfis-pc_wdata-of-an-odd-jalr-target-keeps-bit-0-under-the-branch-target-alu): The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU
-  - [pmp-misaligned-store-second-half-written](#pmp-misaligned-store-second-half-written-a-misaligned-store-the-pmp-refuses-still-writes-its-second-half): A misaligned store the PMP refuses still writes its second half
   - [mpp-unsupported-reads-user](#mpp-unsupported-reads-user-an-unsupported-mpp-value-is-kept-as-user-mode-not-machine-mode): An unsupported MPP value is kept as User mode, not Machine mode
 - [Performance: a cycle paid without a cause](#performance-a-cycle-paid-without-a-cause)
   - [csr-write-flush-any-csr](#csr-write-flush-any-csr-any-csr-write-but-mscratch-and-mepc-flushes-the-pipeline-harmless-ones-too): Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too
@@ -30,6 +29,7 @@ Generated from our record on 9 November 2026: 25 anomalies -- 3 in the RTL, 1 on
   - [interrupt-and-wake-latency-unstated](#interrupt-and-wake-latency-unstated-no-cycle-count-for-an-interrupts-entry-or-a-wake-from-wfi): No cycle count for an interrupt's entry or a wake from wfi
   - [pmp-fault-two-cycles](#pmp-fault-two-cycles-a-pmp-refused-load-or-store-faults-after-two-cycles-no-bus-request): A PMP-refused load or store faults after two cycles, no bus request
   - [pmp-fault-wb-entry-four-cycles](#pmp-fault-wb-entry-four-cycles-a-writeback-raised-trap-enters-its-handler-a-cycle-after-an-idex-one): A writeback-raised trap enters its handler a cycle after an ID/EX one
+  - [pmp-misaligned-store-second-half-written](#pmp-misaligned-store-second-half-written-a-misaligned-store-the-pmp-refuses-still-writes-its-second-half): A misaligned store the PMP refuses still writes its second half
   - [pmp-disabled-csrs-illegal](#pmp-disabled-csrs-illegal-with-pmpenable-0-the-pmp-csrs-trap-as-illegal-not-read-as-zero): With PMPEnable 0 the PMP CSRs trap as illegal, not read as zero
   - [pmp-w-without-r-under-mml](#pmp-w-without-r-under-mml-the-manuals-w1-r0-rule-holds-only-while-mseccfgmml-is-clear): The manual's W=1 R=0 rule holds only while mseccfg.MML is clear
   - [interrupts-in-user-whatever-mie](#interrupts-in-user-whatever-mie-in-u-mode-an-interrupt-is-taken-with-mstatusmie-clear-the-manuals-enable-rule-omits-it): In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it
@@ -51,7 +51,6 @@ Generated from our record on 9 November 2026: 25 anomalies -- 3 in the RTL, 1 on
 | anomaly | for | class | cost | found on | status | issue |
 |---|---|---|---|---|---|---|
 | The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU | rtl | function | none in execution; a trace consumer that trusts rvfi_pc_wdata (a cosimulation comparing the next pc, as ours) sees a mismatch on every odd-target jalr under BranchTargetALU = 1 | ibex-maxperf | open; to file | [issues/rvfi-jalr-target-bit0-btalu/](issues/rvfi-jalr-target-bit0-btalu/) |
-| A misaligned store the PMP refuses still writes its second half | rtl | function | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
 | An unsupported MPP value is kept as User mode, not Machine mode | rtl | function | no cycles; software that writes an unsupported value to mstatus.MPP and then executes mret would continue in User mode, without access to the machine-mode CSRs, where the manual promises Machine mode (the mret itself not run) | ibex-maxperf | open; to file | [issues/mpp-unsupported-reads-user/](issues/mpp-unsupported-reads-user/) |
 | Any CSR write but mscratch and mepc flushes the pipeline, harmless ones too | performance | over-wide | two cycles on every write of a CSR that changes nothing in flight: the counters and their inhibit, the event selectors, mtval, mcause, mcounteren; a trap handler that writes mcause or mtval pays it, and a counter-reading loop that resets a counter | ibex | clarified; to file | [issues/csr-write-flush-any-csr/](issues/csr-write-flush-any-csr/) |
 | A CSR write's flush costs two cycles; the manual gives no count | document | intent | two cycles on the instruction after a CSR write (csrrw, csrrs, csrrc and the immediate forms) of any CSR but mscratch and mepc, where the table's wording suggests one | ibex | clarified; to file | [issues/csr-write-flush-two-cycles/](issues/csr-write-flush-two-cycles/) |
@@ -60,6 +59,7 @@ Generated from our record on 9 November 2026: 25 anomalies -- 3 in the RTL, 1 on
 | No cycle count for an interrupt's entry or a wake from wfi | document | intent | an interrupt's entry costs 3 cycles beyond the pipeline's own (DECODE's decision, IRQ_TAKEN, the fetch) plus the vector table's jal; a wfi costs 4 cycles with the line already up; a request withdrawn in the IRQ_TAKEN cycle costs 2 and is dropped; none of it is in the document | ibex | clarified; to file | [issues/interrupt-and-wake-latency-unstated/](issues/interrupt-and-wake-latency-unstated/) |
 | A PMP-refused load or store faults after two cycles, no bus request | document | intent | two cycles on every load or store the PMP refuses, before the trap's own entry; a zero-wait memory's permitted access pays one | ibex-pmp | clarified; to file | [issues/pmp-fault-two-cycles/](issues/pmp-fault-two-cycles/) |
 | A writeback-raised trap enters its handler a cycle after an ID/EX one | document | intent | one cycle more on the entry of every handler of a load or store fault than of an ID/EX exception | ibex-pmp | clarified; to file | [issues/pmp-fault-wb-entry-four-cycles/](issues/pmp-fault-wb-entry-four-cycles/) |
+| A misaligned store the PMP refuses still writes its second half | document | intent | none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect | ibex-pmp | clarified; to file | [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/) |
 | With PMPEnable 0 the PMP CSRs trap as illegal, not read as zero | document | intent | none in cycles; an illegal-instruction trap where software expects a zero | ibex | clarified; to file | [issues/pmp-disabled-csrs-illegal/](issues/pmp-disabled-csrs-illegal/) |
 | The manual's W=1 R=0 rule holds only while mseccfg.MML is clear | document | intent | none in cycles; a permission reading software would get wrong from the manual under MML | ibex-pmp | clarified; to file | [issues/pmp-w-without-r-under-mml/](issues/pmp-w-without-r-under-mml/) |
 | In U-mode an interrupt is taken with mstatus.MIE clear; the manual's enable rule omits it | document | intent | none in cycles; software reading the manual would expect MIE to mask interrupts in U, which it does not | ibex | confirmed; to file | [issues/interrupts-in-user-whatever-mie/](issues/interrupts-in-user-whatever-mie/) |
@@ -69,12 +69,12 @@ Generated from our record on 9 November 2026: 25 anomalies -- 3 in the RTL, 1 on
 | The first 258 cycles after reset are an invalidation walk: every fetch a bus request | document | intent | 258 cycles at the start of every run at the bus's miss cost; a short program's cycles per instruction on the cached build say more about the walk than the cache (caches-PLAN decision 17) | ibex-icache | confirmed; to file | [issues/icache-reset-walk/](issues/icache-reset-walk/) |
 | A fill buffer frees the cycle after its last word, so the next lookup waits a cycle | document | intent | one cycle on a lookup that waits for a buffer to free, under instruction-side wait states | ibex-icache | confirmed; to file | [issues/icache-fill-buffer-frees-a-cycle-late/](issues/icache-fill-buffer-frees-a-cycle-late/) |
 | A misaligned access holds ID/EX until both halves are accepted and its first response | document | intent | under data-side wait states, the cycles of the second half's grant and the first half's response, on every misaligned access | ibex-icache | confirmed; to file | [issues/split-access-holds-until-both-halves-accepted/](issues/split-access-holds-until-both-halves-accepted/) |
-| mcause-read-only-but-written | document | - | - | ibex | clarified; no issue directory | - |
-| mtvec-mode-2-reserved-reads-vectored | document | - | - | ibex | clarified; no issue directory | - |
+| mcause-read-only-but-written | document | intent | - | ibex | clarified; no issue directory | - |
+| mtvec-mode-2-reserved-reads-vectored | document | intent | - | ibex | clarified; no issue directory | - |
 | mstatus-mpp-2-reads-machine | document | - | - | ibex | closed; no issue directory | - |
-| load-use-hold-unstated | document | - | - | ibex-maxperf | clarified; no issue directory | - |
-| multdiv-behind-load-waits-load-use-first | document | - | - | ibex-maxperf | clarified; no issue directory | - |
-| Three implemented CSRs missing from the CSR table | document | - | - | ibex | clarified; no issue directory | - |
+| load-use-hold-unstated | document | intent | - | ibex-maxperf | clarified; no issue directory | - |
+| multdiv-behind-load-waits-load-use-first | document | intent | - | ibex-maxperf | clarified; no issue directory | - |
+| Three implemented CSRs missing from the CSR table | document | intent | - | ibex | clarified; no issue directory | - |
 
 ## For the RTL's developers
 
@@ -93,22 +93,6 @@ with BranchTargetALU = 1 the RVFI's rvfi_pc_wdata of a jalr (and c.jalr, c.jr) w
 **What the RTL does.**  act4 I-jalr-00 on ibex-maxperf: 2 of 3,506 retirements differ from Spike in pc_wdata by bit 0, both jalr with an odd rs1 + imm; on ibex (small) 0 differ
 
 **From the RTL source (read, not measured).**  `rtl/ibex_ex_block.sv`, lines 88-95, 103 (`branch_target_o`): with BranchTargetALU the target is bt_alu_result[31:0] = bt_a_operand_i + bt_b_operand_i, raw; without it alu_adder_result_ex_o.  ibex_core.sv 2093: rvfi_stage_pc_wdata <= pc_set ? branch_target_ex : pc_if; ibex_if_stage.sv 289: prefetch_addr = {fetch_addr_n[31:1], 1'b0} clears it for the fetch
-
-### [pmp-misaligned-store-second-half-written](issues/pmp-misaligned-store-second-half-written/): A misaligned store the PMP refuses still writes its second half
-
-- Class: function -- not a timing finding: a value, a fault or a sequence
-- Cost: none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect
-- Found on: ibex-pmp
-- Status: clarified; to file
-- Issue directory: [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/)
-
-a misaligned store splits into two word-aligned transactions, each checked by the PMP on its own; when the first is refused the LSU goes WAIT_GNT_MIS to WAIT_RVALID_MIS without a transaction and then requests the second half when that half's own check passes, so the store faults (mcause 7) and the memory holds the second half's bytes.  The manual states the bus side of it ('the second part is still issued and its response ignored', for a first part the bus answered with an error); for a PMP refusal the same path writes memory under a faulting store.  Spike faults the whole access and writes nothing, so the two engines differ in memory, visible to the comparison only through a later load of that word.
-
-**What the documentation says.**  load_store_unit.rst, 'Misaligned Accesses': if the first part of a misaligned access receives an error response, the second part is still issued and its response ignored; pmp.rst says nothing of misaligned accesses
-
-**What the RTL does.**  ibex_load_store_unit.sv: the second half's request is gated by its own pmp_err, not the first's
-
-**From the RTL source (read, not measured).**  `rtl/ibex_load_store_unit.sv`, lines 495-530 (`pmp_err_d`): WAIT_GNT_MIS with pmp_err_q: no request, WAIT_RVALID_MIS; there the second half's request goes out (data_req_o with addr_incr_req_o) unless its own check (pmp_err) refuses it; the first half's error is kept in pmp_err_q and the access faults when both halves are done
 
 ### [mpp-unsupported-reads-user](issues/mpp-unsupported-reads-user/): An unsupported MPP value is kept as User mode, not Machine mode
 
@@ -241,6 +225,22 @@ the handler's first instruction retires 4 cycles after the trap entry of a load 
 **What the RTL does.**  21 of 21 refused loads and stores of hzpmp-pmp-00 on the first run (31 Oct 2026, 01:08): RTL +4 from the trap entry to the handler's jal, our model's ID/EX rule +3; the one fetch fault of the file (raised at issue in ID/EX) +3 on both
 
 **From the RTL source (read, not measured).**  `rtl/ibex_controller.sv`, lines 283-284, 291, 312-314, 679-680, 819-836 (`exc_req_lsu`): exc_req_lsu = store_err_i | load_err_i, 'from the Writeback stage with no instr_valid_i from the ID stage' (283-284): both paths decide FLUSH in the cycle they raise the exception (exc_req_lsu here, exc_req_d for an ID/EX exception); the extra cycle is the error response arriving a cycle after the load or store leaves ID/EX; the handler's fetch follows FLUSH in both
+
+### [pmp-misaligned-store-second-half-written](issues/pmp-misaligned-store-second-half-written/): A misaligned store the PMP refuses still writes its second half
+
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
+- Cost: none in cycles; a store that faults leaves half its data in memory, which software handling the fault may not expect
+- Found on: ibex-pmp
+- Status: clarified; to file
+- Issue directory: [issues/pmp-misaligned-store-second-half-written/](issues/pmp-misaligned-store-second-half-written/)
+
+a misaligned store splits into two word-aligned transactions, each checked by the PMP on its own; when the first is refused the LSU goes WAIT_GNT_MIS to WAIT_RVALID_MIS without a transaction and then requests the second half when that half's own check passes, so the store faults (mcause 7) and the memory holds the second half's bytes.  The manual states the bus side of it ('the second part is still issued and its response ignored', for a first part the bus answered with an error); for a PMP refusal the same path writes memory under a faulting store.  Spike faults the whole access and writes nothing, so the two engines differ in memory, visible to the comparison only through a later load of that word.
+
+**What the documentation says.**  load_store_unit.rst, 'Misaligned Accesses': if the first part of a misaligned access receives an error response, the second part is still issued and its response ignored; pmp.rst says nothing of misaligned accesses
+
+**What the RTL does.**  ibex_load_store_unit.sv: the second half's request is gated by its own pmp_err, not the first's
+
+**From the RTL source (read, not measured).**  `rtl/ibex_load_store_unit.sv`, lines 495-530 (`pmp_err_d`): WAIT_GNT_MIS with pmp_err_q: no request, WAIT_RVALID_MIS; there the second half's request goes out (data_req_o with addr_incr_req_o) unless its own check (pmp_err) refuses it; the first half's error is kept in pmp_err_q and the access faults when both halves are done
 
 ### [pmp-disabled-csrs-illegal](issues/pmp-disabled-csrs-illegal/): With PMPEnable 0 the PMP CSRs trap as illegal, not read as zero
 
@@ -388,6 +388,7 @@ load_store_unit.rst says a misaligned access is split into two and needs at leas
 
 ### mcause-read-only-but-written: mcause-read-only-but-written
 
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Found on: ibex
 - Status: clarified; no issue directory
 - Issue directory: -
@@ -400,6 +401,7 @@ the document contradicts itself on mcause: the CSR table's Access column marks i
 
 ### mtvec-mode-2-reserved-reads-vectored: mtvec-mode-2-reserved-reads-vectored
 
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Found on: ibex
 - Status: clarified; no issue directory
 - Issue directory: -
@@ -424,6 +426,7 @@ a write of the reserved value 2 to mstatus.MPP reads back 3 (M): cs_registers.rs
 
 ### load-use-hold-unstated: load-use-hold-unstated
 
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Found on: ibex-maxperf
 - Status: clarified; no issue directory
 - Issue directory: -
@@ -436,6 +439,7 @@ a reader of a load's rd at distance 1 waits one cycle (stall_ld_hz: the load's d
 
 ### multdiv-behind-load-waits-load-use-first: multdiv-behind-load-waits-load-use-first
 
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Found on: ibex-maxperf
 - Status: clarified; no issue directory
 - Issue directory: -
@@ -448,6 +452,7 @@ a multiplier or divider instruction reading a load's rd at distance 1 waits the 
 
 ### unlisted-csrs-read-zero: Three implemented CSRs missing from the CSR table
 
+- Class: intent -- the core behaves as it was designed to and the documentation is behind: the stall has a cause and fires only with it
 - Found on: ibex
 - Status: clarified; no issue directory
 - Issue directory: -

@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the CV32E40X
 
-Generated from our records of the CV32E40X on 9 November 2026, for the RTL at commit `d952cd63bc1b4eb58cd893c28ef8283c781e345e`; the configurations measured: cv32e40x-clic (the CLIC build), cv32e40x-pma (the PMA build), cv32e40x-pma-a (the PMA with A build), cv32e40x-rv32i (the RV32I build), cv32e40x-zbc (the Zbc build).  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the CV32E40X on 17 November 2026, for the RTL at commit `d952cd63bc1b4eb58cd893c28ef8283c781e345e`; the configurations measured: cv32e40x-clic (the CLIC build), cv32e40x-pma (the PMA build), cv32e40x-pma-a (the PMA with A build), cv32e40x-rv32i (the RV32I build), cv32e40x-zbc (the Zbc build).  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the cv32e40x core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -516,7 +516,7 @@ What the structure does not derive: each row fires on the trace by its match rul
 | csr_r/raw_csr_csr_*_d1, csr_i/raw_csr_csr_*_d1 | the expanded cases csr_r/raw_csr_csr_*_d1, csr_i/raw_csr_csr_*_d1 | stall 1 | EX | confirmed | - | - | pipeline.rst Hazards 121 | the single-hazard suite on cv32e40x, 24 Sep 2026 (run, 244 tests, 2,268,792 intervals): 118 fired, 0 disagree |
 | trap/raw_csr_*_d1 | the expanded cases trap/raw_csr_*_d1 | none | EX | inferred | - | - | pipeline.rst Hazards 119 | the manual names neither the instructions that read a CSR implicitly in EX nor those with an implicit CSR access in WB; on the RTL (the single-hazard suite on cv32e40x, 24 Sep 2026 (run, 244 tests, 2,268,792 intervals)) an ecall or an mret 1 after a CSR write, and an ecall 1 after an mret, cost the flush alone -- a trap or an mret resolves before the next instruction reads, so the pair cannot overlap; t... |
 | csr_r/raw_csr_trap_d1, csr_i/raw_csr_trap_d1 | the expanded cases csr_r/raw_csr_trap_d1, csr_i/raw_csr_trap_d1 | none | EX | inferred | - | - | pipeline.rst Hazards 120 | the manual does not name the instructions causing an implicit CSR write; on the RTL (the single-hazard suite on cv32e40x, 24 Sep 2026 (run, 244 tests, 2,268,792 intervals)) a CSR read of mstatus 1 after an mret (4 tests) cost the mret's flush alone (RTL +2, the row's stall would make +3): mret resolves in ID, so the CSR read cannot be in EX while the mret is in WB.  The row's writer is not mret nor a tr... |
-| csr_counter_read_d1 | an access of mcycle, mcycleh, minstret, minstreth, mhpmcounter3, mhpmcounter3h, mhpmcounter4, mhpmcounter4h, mhpmcounter31, mhpmcounter31h, cycle, cycleh, instret, instreth, hpmcounter3, hpmcounter3h, hpmcounter4, hpmcounter31 1 behind alu_rr or alu_ri or alu_nosrc or mul or mulh or div or load or store or csr_r or csr_i | stall 1 | - | confirmed | a counter read racing the update every retiring instruction makes in WB | wider | pipeline.rst Hazards 114-126 | found by the Dhrystone work: a scratch program timed with csrrs mcycle showed RTL 2 against our model's 1; the hazard suites never read a counter (its value differs between Spike and the RTL), so they never saw it; the finding is in the pipeline model |
+| csr_counter_read_d1 | an access of mcycle, mcycleh, minstret, minstreth, mhpmcounter3, mhpmcounter3h, mhpmcounter4, mhpmcounter4h, mhpmcounter31, mhpmcounter31h, cycle, cycleh, instret, instreth, hpmcounter3, hpmcounter3h, hpmcounter4, hpmcounter31 1 behind alu_rr or alu_ri or alu_nosrc or mul or mulh or div or load or store or csr_r or csr_i | stall 1 | - | read | a counter read racing the update every retiring instruction makes in WB | wider | pipeline.rst Hazards 114-126 | found by the Dhrystone work: a scratch program timed with csrrs mcycle showed RTL 2 against our model's 1; the hazard suites never read a counter (its value differs between Spike and the RTL), so they never saw it; the finding is in the pipeline model |
 | csr_implicit_mret_d1 | mret or cm.jt or cm.jalt 1 behind csr_r or csr_i | stall 2 | ID | confirmed | mret's implicit read of mstatus and mepc in ID racing a CSR write in EX | wider | pipeline.rst Hazards 126 | the single-hazard suite on cv32e40x, 24 Sep 2026 (run, 244 tests, 2,268,792 intervals): 2 mret tests behind a CSR write of mscratch at d1, RTL +2 as stated; the mstatus ones fired the pattern id and agreed |
 | csr_implicit_mret_d2 | mret or cm.jt or cm.jalt 2 behind csr_r or csr_i | stall 1 | ID | confirmed | mret's implicit read of mstatus and mepc in ID racing a CSR write in WB | wider | pipeline.rst Hazards 118 | the single-hazard suite on cv32e40x, 24 Sep 2026 (run, 244 tests, 2,268,792 intervals): RTL +1 behind a CSR write of mscratch at d2, as stated |
 | irq_enable_lsu_d1 | load or store 1 behind a write of mstatus, mie | stall 1 | EX | confirmed | an interrupt the write may enable must be taken before the LSU issues a request it cannot abandon | wider | pipeline.rst Hazards 114-126 | found by the RTL pass (the RTL questions: irq_enable_stall), measured by the blocks generated from the question's match rule; the finding irq-enable-stall |
@@ -558,7 +558,7 @@ Which CSR accesses wait, on what, and for how long.  A CSR instruction reads and
 | csr_r/raw_csr_csr_*_d1, csr_i/raw_csr_csr_*_d1 | csr_r/raw_csr_csr_*_d1, csr_i/raw_csr_csr_*_d1 | stall 1, held in EX | confirmed |
 | trap/raw_csr_*_d1 | trap/raw_csr_*_d1 | none, held in EX | inferred |
 | csr_r/raw_csr_trap_d1, csr_i/raw_csr_trap_d1 | csr_r/raw_csr_trap_d1, csr_i/raw_csr_trap_d1 | none, held in EX | inferred |
-| csr_counter_read_d1 | an access of mcycle, mcycleh, minstret, minstreth, mhpmcounter3, mhpmcounter3h, mhpmcounter4, mhpmcounter4h, mhpmcounter31, mhpmcounter31h, cycle, cycleh, instret, instreth, hpmcounter3, hpmcounter3h, hpmcounter4, hpmcounter31 1 behind alu_rr or alu_ri or alu_nosrc or mul or mulh or div or load or store or csr_r or csr_i | stall 1, held in - | confirmed |
+| csr_counter_read_d1 | an access of mcycle, mcycleh, minstret, minstreth, mhpmcounter3, mhpmcounter3h, mhpmcounter4, mhpmcounter4h, mhpmcounter31, mhpmcounter31h, cycle, cycleh, instret, instreth, hpmcounter3, hpmcounter3h, hpmcounter4, hpmcounter31 1 behind alu_rr or alu_ri or alu_nosrc or mul or mulh or div or load or store or csr_r or csr_i | stall 1, held in - | read |
 | csr_implicit_mret_d1 | mret or cm.jt or cm.jalt 1 behind csr_r or csr_i | stall 2, held in ID | confirmed |
 | csr_implicit_mret_d2 | mret or cm.jt or cm.jalt 2 behind csr_r or csr_i | stall 1, held in ID | confirmed |
 | irq_enable_lsu_d1 | load or store 1 behind a write of mstatus, mie | stall 1, held in EX | confirmed |
@@ -650,24 +650,24 @@ The manual states no latency and no taking stage for interrupts; every row here 
 
 ## 8. What real programs pay on this core: the cycles lost to stalls, by cause
 
-Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 4 retirements before the subject) over 55,005,160 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
+Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 4 retirements before the subject) over 55,052,975 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
 
 | measure | value |
 |---|---|
-| cycles per retirement, the programs' single-cost skeletons (42,214,140 of the 46,867,380 retirements of the certification tests and the benchmarks, 90%) | 42,214,140 retirements, 51,773,020 cycles: CPI 1.226 (IPC 0.82) |
+| cycles per retirement, the programs' single-cost skeletons (22,628,132 of the 46,867,380 retirements of the certification tests and the benchmarks, 48%) | 22,628,132 retirements, 29,590,831 cycles: CPI 1.308 (IPC 0.76) |
 | real code's shapes no generated suite makes | 2.2% of the programs' retirements (by class) |
 
 The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the README beside this document.
 
 What an ideal mechanism would save, as a ceiling and not a design (the profile summary carries the caveats):
 
-| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 51,773,020 single-cost cycles |
+| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 29,590,831 single-cost cycles |
 |---|---:|---:|---:|
-| a perfect branch prediction: the follower of a taken branch at 1 cycle | 2,494,469 | 5,014,833 | 9.7% |
-| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 1,512,815 | 1,599,227 | 3.1% |
-| no load-use bubble | 777,102 | 777,102 | 1.5% |
-| no extra cycle at a pc+2 target | 743,147 | 743,147 | 1.4% |
-| a divider with half the steps | 84,687 | 667,450 | 1.3% |
+| a perfect branch prediction: the follower of a taken branch at 1 cycle | 1,603,480 | 3,232,855 | 10.9% |
+| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 757,666 | 844,205 | 2.9% |
+| no load-use bubble | 767,730 | 767,730 | 2.6% |
+| no extra cycle at a pc+2 target | 693,669 | 693,669 | 2.3% |
+| a divider with half the steps | 84,687 | 667,450 | 2.3% |
 
 ## 9. Where the RTL and the manual differ: the anomalies we found
 
@@ -691,7 +691,7 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 | A jalr two behind a load waits a cycle, even at zero wait | document | intent | one cycle on a jalr two behind the load that writes its rs1 | cv32e40x | clarified; to file | [issues/mem-late-data-forward/](issues/mem-late-data-forward/) |
 | While a load or store waits in WB, nothing moves into ID or EX, even into an empty stage | performance | over-wide | the work a wait could hide, typically a jump's cycle, on every data-side wait; nothing at zero wait | cv32e40x | clarified; to file | [issues/mem-response-wait-freeze/](issues/mem-response-wait-freeze/) |
 | A fence or fence.tso behind a buffered store waits for the store's response first | document | intent | a fence or fence.tso behind a store the write buffer took waits for the store's response before its own two cycles | cv32e40x-pma | clarified; to file | [issues/mem-wbuf-fence-drain/](issues/mem-wbuf-fence-drain/) |
-| A misaligned load refused on its second half has already read its first | document | function | - | cv32e40x-pma | clarified; to file | [issues/mem-pma-split-first-half/](issues/mem-pma-split-first-half/) |
+| A misaligned load refused on its second half has already read its first | document | intent | - | cv32e40x-pma | clarified; to file | [issues/mem-pma-split-first-half/](issues/mem-pma-split-first-half/) |
 | A store the write buffer could take still waits while two transfers are outstanding | document | intent | one cycle on a bufferable store when the buffer's transfer holds the last outstanding slot | cv32e40x-pma | clarified; to file | [issues/mem-wbuf-third-store/](issues/mem-wbuf-third-store/) |
 | An atomic transaction overlaps no other: a cycle lost on each side of an lr, sc or AMO | performance | over-wide | one cycle on every load, store, sc.w or AMO right behind an sc.w or an AMO, and on an atomic right behind a load or store | cv32e40x-pma-a | clarified; to file | [issues/mem-atomic-serial/](issues/mem-atomic-serial/) |
 | A misaligned atomic raises an access fault (5, 7), not a misaligned one (4, 6) | document | function | - | cv32e40x-pma-a | clarified; to file | [issues/mem-atomic-misaligned-cause/](issues/mem-atomic-misaligned-cause/) |
@@ -796,7 +796,7 @@ Findings made on it: mcause.minhv stays set after an mret restarts a faulted CLI
 
 Its pipeline model changes: the memory side (the regions: the hole past the memory, the I/O window, what is bufferable).
 
-Findings made on it: A fence or fence.tso behind a buffered store waits for the store's response first (document, intent); A misaligned load refused on its second half has already read its first (document, function); A store the write buffer could take still waits while two transfers are outstanding (document, intent); A jump in the last word before an I/O region puts its target's fetch a cycle late (performance, over-wide).
+Findings made on it: A fence or fence.tso behind a buffered store waits for the store's response first (document, intent); A misaligned load refused on its second half has already read its first (document, intent); A store the write buffer could take still waits while two transfers are outstanding (document, intent); A jump in the last word before an I/O region puts its target's fetch a cycle late (performance, over-wide).
 
 ### cv32e40x-pma-a: the PMA with A build
 

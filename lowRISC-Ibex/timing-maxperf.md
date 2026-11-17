@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the Ibex maxperf build
 
-Generated from our records of the Ibex maxperf build on 9 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: ibex-icache (the maxperf build with B full, PMP and the instruction cache), ibex-pmp (the maxperf build with B full and PMP).  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the Ibex maxperf build on 17 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: ibex-icache (the maxperf build with B full, PMP and the instruction cache), ibex-pmp (the maxperf build with B full and PMP).  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the ibex-maxperf core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -690,24 +690,23 @@ The manual states no latency and no taking stage for interrupts; every row here 
 
 ## 8. What real programs pay on this core: the cycles lost to stalls, by cause
 
-Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 3 retirements before the subject) over 53,323,676 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
+Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 3 retirements before the subject) over 55,304,428 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
 
 | measure | value |
 |---|---|
-| cycles per retirement, the programs' single-cost skeletons (43,560,978 of the 48,148,382 retirements of the certification tests and the benchmarks, 90%) | 43,560,978 retirements, 52,372,837 cycles: CPI 1.202 (IPC 0.83) |
-| real code's shapes no generated suite makes | 18.2% of the programs' retirements (by class) |
+| cycles per retirement, the programs' single-cost skeletons (24,360,554 of the 48,148,382 retirements of the certification tests and the benchmarks, 51%) | 24,360,554 retirements, 30,979,215 cycles: CPI 1.272 (IPC 0.79) |
+| real code's shapes no generated suite makes | 2.1% of the programs' retirements (by class) |
 
 The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the README beside this document.
 
 What an ideal mechanism would save, as a ceiling and not a design (the profile summary carries the caveats):
 
-| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 52,372,837 single-cost cycles |
+| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 30,979,215 single-cost cycles |
 |---|---:|---:|---:|
-| a perfect branch prediction: the follower of a taken branch at 1 cycle | 2,529,107 | 2,560,355 | 4.9% |
-| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 1,750,295 | 1,862,399 | 3.6% |
-| no load-use bubble | 758,470 | 758,470 | 1.4% |
-| no extra cycle at a pc+2 target | 716,087 | 716,087 | 1.4% |
-| `mulhu` at one cycle | 2 | 2 | 0.0% |
+| a perfect branch prediction: the follower of a taken branch at 1 cycle | 1,679,576 | 1,710,788 | 5.5% |
+| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 782,137 | 894,241 | 2.9% |
+| no load-use bubble | 691,380 | 691,380 | 2.2% |
+| no extra cycle at a pc+2 target | 667,305 | 667,305 | 2.2% |
 
 ## 9. Where the RTL and the manual differ: the anomalies we found
 
@@ -716,8 +715,8 @@ Each row is a finding: what the manual says, what the RTL measured, the class (i
 | finding | for | class | cost | found on | status | issue directory |
 |---|---|---|---|---|---|---|
 | The RVFI's pc_wdata of an odd jalr target keeps bit 0 under the branch target ALU | rtl | function | none in execution; a trace consumer that trusts rvfi_pc_wdata (a cosimulation comparing the next pc, as ours) sees a mismatch on every odd-target jalr under Bra | ibex-maxperf | open; to file | [issues/rvfi-jalr-target-bit0-btalu/](issues/rvfi-jalr-target-bit0-btalu/) |
-| load-use-hold-unstated | document | - | - | ibex-maxperf | clarified; no issue | - |
-| multdiv-behind-load-waits-load-use-first | document | - | - | ibex-maxperf | clarified; no issue | - |
+| load-use-hold-unstated | document | intent | - | ibex-maxperf | clarified; no issue | - |
+| multdiv-behind-load-waits-load-use-first | document | intent | - | ibex-maxperf | clarified; no issue | - |
 | An unsupported MPP value is kept as User mode, not Machine mode | rtl | function | no cycles; software that writes an unsupported value to mstatus.MPP and then executes mret would continue in User mode, without access to the machine-mode CSRs, | ibex-maxperf | open; to file | [issues/mpp-unsupported-reads-user/](issues/mpp-unsupported-reads-user/) |
 
 ## 10. What the base build's rows leave to a configuration, and what no test reaches

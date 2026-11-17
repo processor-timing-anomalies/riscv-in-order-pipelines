@@ -35,8 +35,8 @@ corrected by the issues above, agreed with the RTL on every other instruction:
 
 | | |
 |---|---|
-| the focused test suites | 4,543 tests (4,373 generated in 9 suites, the RISC-V architecture certification tests and a smoke program), 8,506,116 instruction intervals compared on the base build, 0 disagreeing |
-| the benchmarks | 105 programs (Dhrystone, CoreMark, riscv-tests, Embench-IoT, Mälardalen, TACLeBench), 66,570,521 instruction intervals, 0 disagreeing |
+| the focused test suites | 4,547 tests (4,377 generated in 9 suites, the RISC-V architecture certification tests and a smoke program), 8,505,845 instruction intervals compared on the base build, 0 disagreeing |
+| the benchmarks | 107 programs (Dhrystone, CoreMark, riscv-tests, Embench-IoT, Mälardalen, TACLeBench), 72,995,297 instruction intervals, 0 disagreeing |
 | the search beyond the suites | 463,409 distinct instruction shapes, 0 disagreeing |
 | the documentation's own timing statements | 19 of 19 proved on the RTL (the rows of the timing specification's sections 4.2 and 4.3) |
 <!-- end -->
@@ -52,19 +52,19 @@ corrected by the issues above, agreed with the RTL on every other instruction:
 ## The numbers
 
 <!-- generated: numbers -->
-As of the regression recorded on 9 November 2026, at commit `dfdfcc8` of our tree (the commit that recorded it); the test and interval counts are
+As of the regression recorded on 12 November 2026, at commit `db9630d` of our tree (the commit that recorded it); the test and interval counts are
 summed from that record's per-test table.
 
 | | |
 |---|---|
 | statements of the documentation, each proved against the RTL | 19 of 19 (the rows of the timing specification's sections 4.2 and 4.3) |
-| instruction intervals compared, RTL against the documented timing | 8,506,116 over 9 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
+| instruction intervals compared, RTL against the documented timing | 8,505,845 over 9 generated suites, the RISC-V architecture certification tests and a smoke program, 0 disagreeing |
 | instruction sequences searched beyond the suites | 463,409 distinct shapes, 0 disagreeing |
-| anomalies | 37: 21 where the documentation is behind the hardware, 9 where a stall fires wider than its cause, 4 not a timing matter |
+| anomalies | 37: 22 where the documentation is behind the hardware, 9 where a stall fires wider than its cause, 3 not a timing matter |
 | issue directories | 34: 23 for the documentation, 9 on performance, 2 on the RTL |
 | injected timing and functional mutation faults the programs catch | 46 of 49 caught; the 3 survivors equivalent to the original, each explained |
 | instruction shapes of real programs that the generated suites also exercise | 97.8% of their retirements; the remaining 2.2% are shapes no suite makes yet |
-| cycles per instruction over the benchmarks' timed parts | CPI 1.233, IPC 0.811, over 59,646,454 instructions in 105 programs (per suite in the runs table below) |
+| cycles per instruction over the benchmarks' timed parts | CPI 1.235, IPC 0.809, over 66,037,248 instructions in 107 programs (per suite in the runs table below) |
 <!-- end -->
 
 ## The runs behind the numbers
@@ -72,7 +72,7 @@ summed from that record's per-test table.
 <!-- generated: runs -->
 | our test suites | tests | passed | skipped | intervals compared | disagreeing |
 |---|---:|---:|---:|---:|---:|
-| 9 generated suites, the RISC-V architecture certification tests and a smoke program | 4,543 | 2,081 | 2,462 | 8,506,116 | 0 |
+| 9 generated suites, the RISC-V architecture certification tests and a smoke program | 4,547 | 2,081 | 2,466 | 8,505,845 | 0 |
 
 A skipped test is one the core cannot run as built (an extension it lacks, a case the generator could not place); it is counted, not hidden.
 
@@ -81,10 +81,10 @@ A skipped test is one the core cannot run as built (an extension it lacks, a cas
 | Dhrystone | 1 | 41,941 | 0 | 762 | 1,035 | 1.358 | 0.736 |
 | CoreMark | 1 | 333,418 | 0 | 303,752 | 403,470 | 1.328 | 0.753 |
 | riscv-tests | 7 | 1,222,232 | 0 | 1,114,729 | 1,293,683 | 1.161 | 0.862 |
-| Embench-IoT | 18 | 3,121,053 | 0 | 2,857,345 | 3,725,143 | 1.304 | 0.767 |
-| Mälardalen | 32 | 6,374,105 | 0 | 6,010,971 | 7,665,702 | 1.275 | 0.784 |
+| Embench-IoT | 19 | 6,454,366 | 0 | 6,182,392 | 7,943,690 | 1.285 | 0.778 |
+| Mälardalen | 33 | 9,465,568 | 0 | 9,076,718 | 11,465,244 | 1.263 | 0.792 |
 | TACLeBench | 46 | 55,477,772 | 0 | 49,358,895 | 60,472,824 | 1.225 | 0.816 |
-| **all** | **105** | **66,570,521** | **0** | **59,646,454** | **73,561,857** | **1.233** | **0.811** |
+| **all** | **107** | **72,995,297** | **0** | **66,037,248** | **81,579,946** | **1.235** | **0.809** |
 
 An interval is the cycles between one retirement and the one before it; every retirement of every run, start-up and check included, is compared against our prediction.  Instructions and cycles are the timed part of each program, between its own two timer marks, on the RTL; CPI is cycles per instruction there, IPC its inverse.
 <!-- end -->

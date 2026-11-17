@@ -1,6 +1,6 @@
 # Our accurate, complete timing specification for the Ibex maxperf build with B full, PMP and the instruction cache
 
-Generated from our records of the Ibex maxperf build with B full, PMP and the instruction cache on 9 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
+Generated from our records of the Ibex maxperf build with B full, PMP and the instruction cache on 17 November 2026, for the RTL at commit `c0c07085791e4d16a0f2d9a753b2fb79d72e5ffa`; the configurations measured: none.  The timing is as measured on that commit; the document is regenerated after every run we record.
 
 This document states what the ibex-icache core promises in time: the pipeline as a structure, the cycle each instruction class takes, the stalls and bubbles between instructions, the memory side under a stated bus, the CSR accesses that wait, the interrupts and other events, what real programs pay on it, and where the RTL and the user manual disagree.  It is the rendering of our internal machine-readable version of the RISC-V ISA, this core's layer distilled from its user manual with a citation or a graded reading on every field, a configuration layer for each variant, and the RTL read only to answer what the manual leaves open.  It describes the implementation as measured; a row graded inferred or read is not design intent until the core's authors take it as theirs (the grade authored).
 
@@ -611,23 +611,23 @@ No events section in this specification.
 
 ## 8. What real programs pay on this core: the cycles lost to stalls, by cause
 
-Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 3 retirements before the subject) over 11,769,828 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
+Measured by the timing survey: every retirement of every trace read as a timing skeleton (our timing-skeleton definition; the window 3 retirements before the subject) over 58,459,912 retirements of the generated suites, the certification tests and the benchmarks.  The manual has no equivalent.
 
 | measure | value |
 |---|---|
-| cycles per retirement, the programs' single-cost skeletons (145,896 of the 370,350 retirements of the certification tests and the benchmarks, 39%) | 145,896 retirements, 264,779 cycles: CPI 1.815 (IPC 0.55) |
-| real code's shapes no generated suite makes | 9.2% of the programs' retirements (by class) |
+| cycles per retirement, the programs' single-cost skeletons (14,802,695 of the 46,937,545 retirements of the certification tests and the benchmarks, 32%) | 14,802,695 retirements, 18,732,724 cycles: CPI 1.265 (IPC 0.79) |
+| real code's shapes no generated suite makes | 10.5% of the programs' retirements (by class) |
 
 The cycles-per-retirement row covers the architecture certification tests and the benchmarks, over the retirements whose timing skeleton has a single cost; the whole-program CPI and IPC per benchmark suite are in the README beside this document.
 
 What an ideal mechanism would save, as a ceiling and not a design (the profile summary carries the caveats):
 
-| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 264,779 single-cost cycles |
+| mechanism (the ideal, not a design) | retirements affected | upper bound on cycles saved | of the 18,732,724 single-cost cycles |
 |---|---:|---:|---:|
-| no load-use bubble | 34,695 | 34,695 | 13.1% |
-| a perfect branch prediction: the follower of a taken branch at 1 cycle | 7,887 | 8,709 | 3.3% |
-| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 1,924 | 3,285 | 1.2% |
-| no extra cycle at a pc+2 target | 12 | 12 | 0.0% |
+| a perfect branch prediction: the follower of a taken branch at 1 cycle | 770,169 | 796,771 | 4.3% |
+| no load-use bubble | 713,566 | 713,566 | 3.8% |
+| no extra cycle at a pc+2 target | 392,978 | 392,978 | 2.1% |
+| jump targets resolved in IF: the follower of a jal or jalr at 1 cycle | 203,587 | 295,108 | 1.6% |
 
 ## 9. Where the RTL and the manual differ: the anomalies we found
 
